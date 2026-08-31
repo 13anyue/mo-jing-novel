@@ -1,0 +1,26 @@
+{
+  "name": "墨境 - AI视觉小说引擎",
+  "short_name": "墨境",
+  "description": "纯前端AI视觉小说引擎，支持酒馆AI格式导入、PWA离线运行",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F5E6D3",
+  "theme_color": "#2C1810",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["entertainment", "games"],
+  "lang": "zh-CN"
+}
