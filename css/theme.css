@@ -1,0 +1,90 @@
+/**
+ * =========================================================
+ * AI Visual Novel Engine v2 - Theme
+ * Yi Ci Yuan / Jun Cheng Lu Chinese Visual Novel Aesthetic
+ * Warm parchment, ink wash, gold accents
+ * =========================================================
+ */
+
+:root {
+  /* === Primary Palette === */
+  --color-primary: #8B4513;
+  --color-primary-dark: #5D2E0C;
+  --color-primary-light: #A0522D;
+  --color-accent: #D4AF37;
+  --color-accent-light: #F0D878;
+  --color-gold: #C9A227;
+  --color-ink: #2C1810;
+  --color-ink-light: #5C4033;
+
+  /* === Backgrounds === */
+  --bg-body: #F5E6D3;
+  --bg-parchment: #FAF0E6;
+  --bg-card: #FFF8F0;
+  --bg-card-hover: #FFF0E0;
+  --bg-input: #FFF5E6;
+  --bg-sidebar: #E8D5C4;
+  --bg-overlay: rgba(44, 24, 16, 0.75);
+  --bg-dialog: rgba(44, 24, 16, 0.88);
+
+  /* === Text === */
+  --text-primary: #2C1810;
+  --text-secondary: #6B4423;
+  --text-muted: #A08060;
+  --text-light: #FFF8F0;
+  --text-gold: #C9A227;
+  --text-link: #8B4513;
+
+  /* === Borders === */
+  --border-color: #D4B896;
+  --border-gold: #C9A227;
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --border-radius-lg: 16px;
+
+  /* === Shadows === */
+  --shadow-sm: 0 2px 8px rgba(44, 24, 16, 0.12);
+  --shadow-md: 0 4px 16px rgba(44, 24, 16, 0.16);
+  --shadow-lg: 0 8px 32px rgba(44, 24, 16, 0.20);
+  --shadow-gold: 0 0 20px rgba(201, 162, 39, 0.25);
+
+  /* === Spacing === */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* === Typography === */
+  --font-main: 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', 'STSong', serif;
+  --font-display: 'Noto Serif SC', 'KaiTi', 'STKaiti', serif;
+  --font-mono: 'Fira Code', 'Consolas', monospace;
+
+  /* === Transitions === */
+  --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* === Layout === */
+  --sidebar-width: 260px;
+  --header-height: 56px;
+  --max-width: 1280px;
+}
+
+/* === Dark Theme (Game Runtime) === */
+[data-theme="dark"] {
+  --bg-body: #1a1210;
+  --bg-parchment: #251a15;
+  --bg-card: #2d1f18;
+  --bg-card-hover: #3d2a20;
+  --bg-input: #352518;
+  --bg-sidebar: #1e1510;
+  --bg-overlay: rgba(0, 0, 0, 0.80);
+  --bg-dialog: rgba(26, 18, 16, 0.92);
+  --text-primary: #F5E6D3;
+  --text-secondary: #C4A882;
+  --text-muted: #8B7355;
+  --border-color: #4a3528;
+  --border-gold: #A08040;
+}
