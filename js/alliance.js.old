@@ -1,0 +1,114 @@
+/**
+ * =========================================================
+ * AllianceSystem v6 — 联盟/门派系统
+ * 模块名：AllianceSystem
+ * 功能：创建/加入门派，门派等级，成员管理
+ * =========================================================
+ */
+const AllianceSystem = {
+  init() { this.renderPage(); },
+  onEnter() { this.renderAlliance(); },
+
+  getAlliances() { return Storage.get('alliances_v6', []); },
+  saveAlliances(list) { Storage.set('alliances_v6', list); },
+  getMyAlliance() { return Storage.get('myAlliance', null); },
+
+  renderPage() {
+    const page = document.getElementById('page-alliance');
+    if (!page) return;
+    page.innerHTML = `
+      <div style="padding:var(--space-lg);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);">
+          <h2 class="section-title">⚔️ 联盟</h2>
+          <button class="btn btn-primary" onclick="AllianceSystem.createAlliance()">➕ 创建联盟</button>
+        </div>
+        <div id="allianceContent"></div>
+      </div>
+    `;
+    this.renderAlliance();
+  },
+
+  renderAlliance() {
+    const c = document.getElementById('allianceContent');
+    if (!c) return;
+    const myId = this.getMyAlliance();
+    if (myId) {
+      const alliance = this.getAlliances().find(a => a.id === myId);
+      if (alliance) {
+        c.innerHTML = `
+          <div class="card" style="margin-bottom:var(--space-md);text-align:center;">
+            <div class="card-body">
+              <div style="font-size:48px;margin-bottom:8px;">🏰</div>
+              <h3 style="font-size:20px;margin-bottom:4px;">${alliance.name}</h3>
+              <p style="color:var(--text-secondary);margin-bottom:8px;">${alliance.desc || ''}</p>
+              <div style="display:flex;justify-content:center;gap:16px;font-size:13px;color:var(--text-muted);">
+                <span>👥 ${(alliance.members || []).length} 成员</span>
+                <span>⭐ 等级 ${alliance.level || 1}</span>
+                <span>📅 ${new Date(alliance.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+          </div>
+          <h4 style="margin-bottom:12px;">成员列表</h4>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${(alliance.members || []).map(m => `
+              <div style="padding:10px 14px;background:var(--bg-sidebar);border-radius:var(--border-radius);display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:500;">${m.name}</span>
+                <span style="font-size:12px;color:var(--color-gold);padding:2px 8px;background:rgba(201,162,39,0.1);border-radius:10px;">${m.role || '成员'}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
+        return;
+      }
+    }
+    const alliances = this.getAlliances();
+    if (alliances.length === 0) {
+      c.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">⚔️</div>
+          <p>暂无联盟</p>
+          <p style="font-size:12px;color:var(--text-muted);">创建一个门派，招募成员吧！</p>
+        </div>
+      `;
+      return;
+    }
+    c.innerHTML = alliances.map(a => `
+      <div class="card" style="margin-bottom:var(--space-md);">
+        <div class="card-body" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+          <div>
+            <h4 style="font-size:16px;margin-bottom:4px;">${a.name}</h4>
+            <p style="font-size:12px;color:var(--text-muted);">${a.desc || ''} · 👥 ${(a.members || []).length}人 · ⭐ Lv.${a.level || 1}</p>
+          </div>
+          <button class="btn btn-sm btn-primary" onclick="AllianceSystem.joinAlliance('${a.id}')">加入</button>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  createAlliance() {
+    const name = prompt('联盟名称：'); if (!name) return;
+    const desc = prompt('联盟描述：', '');
+    const alliances = this.getAlliances();
+    const id = 'alliance_' + Date.now();
+    alliances.push({
+      id, name, desc, level: 1,
+      members: [{ name: Storage.get('playerName', '玩家'), role: '掌门' }],
+      createdAt: Date.now()
+    });
+    this.saveAlliances(alliances);
+    Storage.set('myAlliance', id);
+    this.renderAlliance();
+    App.toast(`联盟「${name}」已创建`, 'success');
+  },
+
+  joinAlliance(id) {
+    const alliances = this.getAlliances();
+    const a = alliances.find(x => x.id === id); if (!a) return;
+    a.members = a.members || [];
+    a.members.push({ name: Storage.get('playerName', '玩家'), role: '成员' });
+    this.saveAlliances(alliances);
+    Storage.set('myAlliance', id);
+    this.renderAlliance();
+    App.toast(`已加入「${a.name}」`, 'success');
+  }
+};
