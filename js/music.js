@@ -21,6 +21,9 @@ const MusicManager = {
     const page = document.getElementById('page-music');
     if (!page) return;
     page.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button>
+      </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);">
         <h2 class="section-title">🎵 音乐</h2>
         <button class="btn btn-primary" onclick="MusicManager.openUploader()">➕ 上传</button>

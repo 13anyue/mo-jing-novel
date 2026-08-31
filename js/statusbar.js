@@ -26,6 +26,9 @@ const StatusBar = {
     const page = document.getElementById('page-status');
     if (!page) return;
     page.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button>
+      </div>
       <h2 class="section-title" style="margin-bottom:var(--space-lg);">📊 状态栏</h2>
       <div class="grid grid-2">
         <div class="card"><div class="card-header"><h3>配置</h3></div><div class="card-body" id="statusConfigArea"></div></div>

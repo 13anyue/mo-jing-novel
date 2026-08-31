@@ -43,6 +43,9 @@ const APISettings = {
     const c = this.getConfig();
 
     page.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button>
+      </div>
       <div class="card" style="margin-bottom: var(--space-lg);">
         <div class="card-header"><h3>主 API</h3><span class="tag tag-gold">对话生成</span></div>
         <div class="card-body">

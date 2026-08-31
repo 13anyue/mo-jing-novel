@@ -17,6 +17,7 @@ const CustomCreator = {
     const page = document.getElementById('page-custom-creator');
     if (!page) return;
     page.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
         <h2 class="section-title">🛠️ 功能创建器</h2>
         <button class="btn btn-secondary" onclick="CustomCreator.showHelp()">❓ 使用说明</button>

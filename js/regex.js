@@ -532,6 +532,7 @@ const RegexEngine = {
     const page = document.getElementById('page-regex');
     if (!page) return;
     page.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 14px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div id="regex-page" style="display:flex;flex-direction:column;height:100%;background:#F5E6D3;color:#2C1810;font-family:'Noto Serif SC','Microsoft YaHei',serif;">
         <!-- 顶部工具栏 -->
         <div id="regex-toolbar" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #C9A227;background:#F5E6D3;flex-shrink:0;flex-wrap:wrap;">

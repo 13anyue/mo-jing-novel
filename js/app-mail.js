@@ -23,7 +23,8 @@ const AppMail = {
     const container = document.getElementById('mailInterface');
     if (!container) return;
     container.innerHTML = `
-      <div style="display:flex;height:100%;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+<div style="display:flex;height:100%;">
         <div style="width:220px;border-right:1px solid var(--border-color);background:var(--bg-sidebar);flex-shrink:0;">
           <div style="padding:12px 16px;">
             <button class="btn btn-primary" style="width:100%;" onclick="AppMail.compose()">✉️ 写信</button>

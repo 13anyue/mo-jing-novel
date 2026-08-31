@@ -171,6 +171,7 @@ const Assistant = {
     if (!page) return;
 
     page.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <!-- 页面标题与API设置按钮 -->
       <div class="assistant-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg,16px);">
         <h2 class="section-title" style="margin:0;color:${this._colors.inkDark};">🤖 万能小助手 v3</h2>

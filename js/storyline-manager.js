@@ -1212,7 +1212,8 @@ const StorylineManager = {
     const page = document.getElementById('page-storyline-manager');
     if (!page) return;
     page.innerHTML = `
-      <div id="storylineToolbar" style="display:flex;justify-content:space-between;align-items:center;
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+<div id="storylineToolbar" style="display:flex;justify-content:space-between;align-items:center;
            padding:12px 16px;background:linear-gradient(135deg,#2C1810,#4A3025);
            border-bottom:2px solid #C9A227;flex-wrap:wrap;gap:8px;">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">

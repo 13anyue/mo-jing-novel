@@ -12,7 +12,8 @@ const HomePage = {
     const page = document.getElementById('page-home');
     if (!page) return;
     page.innerHTML = `
-      <div class="hero-section" style="background: linear-gradient(180deg, rgba(139,69,19,0.08), transparent); padding: var(--space-2xl); border-radius: var(--border-radius); margin-bottom: var(--space-xl); text-align: center;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+<div class="hero-section" style="background: linear-gradient(180deg, rgba(139,69,19,0.08), transparent); padding: var(--space-2xl); border-radius: var(--border-radius); margin-bottom: var(--space-xl); text-align: center;">
         <h2 style="font-family:var(--font-display); font-size: 32px; margin-bottom: 8px; color: var(--color-primary-dark); letter-spacing: 8px;">墨 境</h2>
         <p style="color: var(--text-secondary); font-size: 16px; letter-spacing: 4px;">AI 视觉小说引擎 · 浏览器即运行</p>
       </div>

@@ -35,7 +35,8 @@ const VirtualAppPlatform = {
     const page = document.getElementById('page-virtual-apps');
     if (!page) return;
     page.innerHTML = `
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
         <h2 class="section-title">📱 虚拟应用平台</h2>
         <button class="btn btn-primary" onclick="VirtualAppPlatform.createCustomApp()">➕ 新建App</button>
       </div>

@@ -13,7 +13,8 @@ const FunFeatures = {
     const page = document.getElementById('page-fun');
     if (!page) return;
     page.innerHTML = `
-      <div style="padding:var(--space-lg);max-width:900px;margin:0 auto;">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+<div style="padding:var(--space-lg);max-width:900px;margin:0 auto;">
         <h2 class="section-title" style="margin-bottom:var(--space-lg);">🎮 趣味功能</h2>
         <div id="funContent"></div>
       </div>

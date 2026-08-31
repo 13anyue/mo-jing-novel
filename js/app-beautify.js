@@ -20,7 +20,9 @@ const AppBeautify = {
   renderPage() {
     const page = document.getElementById('page-beautify');
     if (!page) return;
-    page.innerHTML = `<div id="beautifyInterface"></div>`;
+    page.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+      <div id="beautifyInterface"></div>`;
     this.renderBeautifyInterface();
   },
 

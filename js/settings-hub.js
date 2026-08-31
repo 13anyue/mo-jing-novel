@@ -459,6 +459,12 @@ const SettingsHub = {
 
     // 页面容器
     const page = document.createElement('div');
+        // 返回按钮
+    const backBtn = document.createElement('div');
+    backBtn.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:8px;';
+    backBtn.innerHTML = `<button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button>`;
+    page.appendChild(backBtn);
+
     page.className = 'settings-hub-page';
 
     // 顶部标题栏

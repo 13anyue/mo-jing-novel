@@ -148,6 +148,7 @@ const MemorySystem = {
     const page = document.getElementById('page-memory');
     if (!page) return;
     page.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <h2 class="section-title" style="margin-bottom:var(--space-lg);">仿向量记忆 v3</h2>
       <div class="grid grid-3" id="memStats" style="margin-bottom:var(--space-lg);"></div>
 

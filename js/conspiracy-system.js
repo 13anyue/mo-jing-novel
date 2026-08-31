@@ -1447,6 +1447,7 @@ const ConspiracySystem = (function() {
     if (!page) return;
 
     page.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;flex-direction:column;height:100%;background:${COLORS.parchment};">
         <!-- 顶部工具栏 -->
         <div style="padding:12px 16px;border-bottom:1px solid ${COLORS.borderLight};display:flex;

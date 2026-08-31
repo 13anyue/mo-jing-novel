@@ -841,7 +841,8 @@ GroupChat._renderUI = function () {
   const container = this._getOrCreateContainer();
 
   container.innerHTML = `
-    <div id="group-chat-overlay" style="
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+<div id="group-chat-overlay" style="
       position: fixed;
       top: 0;
       left: 0;

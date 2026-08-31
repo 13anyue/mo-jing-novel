@@ -68,6 +68,9 @@ const PromptSystem = {
     const page = document.getElementById('page-prompts');
     if (!page) return;
     page.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+        <button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button>
+      </div>
       <h2 class="section-title" style="margin-bottom:var(--space-lg);">📝 提示词工坊</h2>
       <div class="card" style="margin-bottom:var(--space-lg);">
         <div class="card-header"><h3>可用变量</h3></div>

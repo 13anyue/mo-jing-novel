@@ -242,7 +242,8 @@ const PortalSystem = {
     if (!page) return;
 
     page.innerHTML = `
-      <div class="portal-header">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+<div class="portal-header">
         <h2 class="section-title">🏛️ 场景殿堂</h2>
         <div class="portal-header-actions">
           <button class="btn btn-primary" onclick="PortalSystem.openCreateDialog()">➕ 创建场景</button>

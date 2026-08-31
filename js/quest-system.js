@@ -105,6 +105,7 @@ const QuestSystem = {
     if (!page) return;
 
     page.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div class="quest-system-container">
         <!-- 顶部工具栏 -->
         <div class="quest-toolbar">

@@ -222,6 +222,7 @@ const MapSystem = {
     if (!page) return;
 
     page.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <style>
         .map-v12-container { position:relative; width:100%; height:100vh; overflow:hidden; background:${this.COLORS.parchment}; }
         .map-v12-canvas { position:absolute; top:0; left:0; width:100%; height:100%; cursor:grab; }

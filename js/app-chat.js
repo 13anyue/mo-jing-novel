@@ -102,7 +102,8 @@ const AppChat = {
     const page = document.getElementById('page-chat');
     if (!page) return;
     page.innerHTML = `
-      <div style="display:flex;height:100%;overflow:hidden;border-radius:var(--radius-lg);border:1px solid var(--border-color);background:var(--card-bg);">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+<div style="display:flex;height:100%;overflow:hidden;border-radius:var(--radius-lg);border:1px solid var(--border-color);background:var(--card-bg);">
         <!-- 左侧：聊天列表 -->
         <div id="chatListPanel" style="width:280px;min-width:280px;border-right:1px solid var(--border-color);display:flex;flex-direction:column;background:var(--bg-secondary);">
           <div style="padding:12px 16px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;gap:8px;">

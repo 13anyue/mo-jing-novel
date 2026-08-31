@@ -10,6 +10,21 @@
  * + WorldviewEngine + FamilySystem + PoliticalSystem + ConspiracySystem + ButtonCustomizer
  * =========================================================
  */
+// 全局错误捕获，防止任何JS错误阻塞整个系统
+window.addEventListener('error', function(e) {
+  console.error('[全局错误]', e.message, 'at', e.filename, ':', e.lineno);
+  if (window.App && App.toast) {
+    App.toast('系统遇到小问题，但不影响其他功能', 'error', 3000);
+  }
+});
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('[未处理Promise]', e.reason);
+  if (window.App && App.toast) {
+    App.toast('后台任务出错，已自动恢复', 'error', 3000);
+  }
+  e.preventDefault();
+});
+
 const App = {
   NAV_ITEMS: [
     { iconSvg: 'icon-home', label: '首页', page: 'home' },
@@ -136,10 +151,13 @@ const App = {
   renderTopBar() {
     const bar = document.getElementById('topBar');
     if (!bar) return;
+    const currentPage = this.NAV_ITEMS.find(n => n.page === this._currentPage);
+    const showBack = this._currentPage && this._currentPage !== 'home';
     bar.innerHTML = `
       <div style="display:flex;align-items:center;gap:12px;">
+        ${showBack ? `<button class="btn-icon mobile-back-btn" onclick="App.navigate('home')">←</button>` : ''}
         <button class="menu-toggle" onclick="App.toggleSidebar()">☰</button>
-        <span class="page-title" id="pageTitle">首页</span>
+        <span class="page-title" id="pageTitle">${currentPage?.label || '墨境'}</span>
       </div>
       <div class="top-actions">
         <button class="btn-icon" onclick="BackupManager.createBackup()" title="备份">💾</button>
@@ -206,20 +224,27 @@ const App = {
   },
 
   navigate(pageId) {
-    // 若正在场景内，先清理场景覆盖层
-    if (window.SceneSystem && typeof SceneSystem.cleanup === 'function' && !pageId.startsWith('scene-')) {
-      SceneSystem.cleanup();
+    try {
+      // 若正在场景内，先清理场景覆盖层
+      if (window.SceneSystem && typeof SceneSystem.cleanup === 'function' && !pageId.startsWith('scene-')) {
+        SceneSystem.cleanup();
+      }
+      this._currentPage = pageId;
+      document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
+      const target = document.getElementById('page-' + pageId);
+      if (target) { target.classList.add('active'); }
+      else { document.getElementById('page-home')?.classList.add('active'); pageId = 'home'; }
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.page === pageId));
+      const navItem = this.NAV_ITEMS.find(i => i.page === pageId);
+      const titleEl = document.getElementById('pageTitle');
+      if (titleEl && navItem) titleEl.textContent = navItem.label;
+      this.renderTopBar();
+      this.toggleSidebar(false);
+      this.onPageEnter(pageId);
+    } catch(e) {
+      console.error('[导航错误]', e);
+      App.toast('页面加载失败，请重试', 'error');
     }
-    document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
-    const target = document.getElementById('page-' + pageId);
-    if (target) { target.classList.add('active'); }
-    else { document.getElementById('page-home')?.classList.add('active'); pageId = 'home'; }
-    document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.page === pageId));
-    const navItem = this.NAV_ITEMS.find(i => i.page === pageId);
-    const titleEl = document.getElementById('pageTitle');
-    if (titleEl && navItem) titleEl.textContent = navItem.label;
-    this.toggleSidebar(false);
-    this.onPageEnter(pageId);
   },
 
   onPageEnter(pageId) {
@@ -259,6 +284,7 @@ const App = {
       'button-customizer': ButtonCustomizer
     };
     const cb = callbacks[pageId];
+    if (!cb) { App.toast('该功能模块暂未就绪', 'info'); return; }
     if (cb && cb.onEnter) { try { cb.onEnter(); } catch (e) { console.warn('onEnter error:', e); } }
   },
 

@@ -887,7 +887,9 @@ const LetterSystem = {
   renderPage() {
     const page = document.getElementById('page-letter');
     if (!page) return;
-    page.innerHTML = `<div id="letterInterface" style="height:100%;"></div>`;
+    page.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+      <div id="letterInterface" style="height:100%;"></div>`;
     this.renderLetterInterface();
   },
 

@@ -89,6 +89,7 @@ const TextNovel = {
         const borderColor = isDark ? '#5a4a3a' : '#C9A227';
 
         container.innerHTML = `
+            <div style="display:flex;align-items:center;gap:8px;padding:12px 20px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
             <div class="text-novel-wrapper" style="
                 font-family:'Noto Serif SC',serif;
                 color:${textColor};

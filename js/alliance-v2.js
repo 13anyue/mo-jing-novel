@@ -1564,7 +1564,8 @@ const AllianceSystem = {
 
     const C = this.COLORS;
     page.innerHTML = `
-      <div id="alliancePage" style="display:flex;flex-direction:column;height:100%;background:${C.parchment};color:${C.ink};">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+<div id="alliancePage" style="display:flex;flex-direction:column;height:100%;background:${C.parchment};color:${C.ink};">
         ${this._renderHeader()}
         <div style="display:flex;flex:1;overflow:hidden;">
           ${this._renderLeftPanel()}

@@ -726,7 +726,7 @@ const SystemBuilder = {
     const page = document.getElementById('page-system-builder');
     if (!page) return;
 
-    page.innerHTML = this._renderUI();
+    page.innerHTML = `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>` + this._renderUI();
     this._bindUIEvents();
   },
 
