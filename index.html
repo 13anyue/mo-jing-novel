@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#2C1810">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="墨境">
+  <meta name="description" content="AI视觉小说引擎 - 纯前端运行时">
+  <link rel="manifest" href="manifest.json">
+  <title>墨境 - AI 视觉小说引擎 v16</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+
+<!-- SVG Icon Sprite (hidden, referenced by ID) -->
+<svg style="display:none;" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <symbol id="icon-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></symbol>
+    <symbol id="icon-game" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></symbol>
+    <symbol id="icon-api" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></symbol>
+    <symbol id="icon-npc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol>
+    <symbol id="icon-bg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+    <symbol id="icon-music" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></symbol>
+    <symbol id="icon-map" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 21 18 21 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></symbol>
+    <symbol id="icon-status" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+    <symbol id="icon-prompts" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></symbol>
+    <symbol id="icon-memory" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></symbol>
+    <symbol id="icon-presets" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></symbol>
+    <symbol id="icon-regex" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z"/><path d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></symbol>
+    <symbol id="icon-worldbook" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></symbol>
+    <symbol id="icon-import" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+    <symbol id="icon-backup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 11a8 8 0 11-16 0 8 8 0 0116 0z"/><polyline points="12 15 12 11 9 11"/></symbol>
+    <symbol id="icon-ui" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></symbol>
+    <symbol id="icon-baike" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></symbol>
+    <symbol id="icon-design" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></symbol>
+    <symbol id="icon-skills" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></symbol>
+    <symbol id="icon-creator" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></symbol>
+    <symbol id="icon-mobile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></symbol>
+    <symbol id="icon-pwa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></symbol>
+    <symbol id="icon-assistant" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></symbol>
+    <symbol id="icon-plugins" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></symbol>
+    <symbol id="icon-notes" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></symbol>
+    <symbol id="icon-relations" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="3"/><circle cx="19" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><line x1="5" y1="9" x2="10" y2="15"/><line x1="19" y1="9" x2="14" y2="15"/></symbol>
+    <symbol id="icon-cg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></symbol>
+  </defs>
+</svg>
+
+<!-- ==================== 游戏启动器 ==================== -->
+<div id="gameLauncher" class="launcher-page">
+  <div class="launcher-bg-pattern"></div>
+  <div class="launcher-title">墨 境</div>
+  <div class="launcher-subtitle">AI 视觉小说引擎 v10</div>
+  <div class="launcher-menu">
+    <button class="launcher-btn launcher-btn-primary" onclick="Launcher.newGame()">
+      <svg width="20" height="20"><use href="#icon-game"/></svg>
+      开启新篇
+    </button>
+    <button class="launcher-btn launcher-btn-secondary" onclick="Launcher.loadGame()">
+      <svg width="20" height="20"><use href="#icon-import"/></svg>
+      续读存档
+    </button>
+    <button class="launcher-btn launcher-btn-secondary" onclick="Launcher.userMask()">
+      <svg width="20" height="20"><use href="#icon-npc"/></svg>
+      用户面具
+    </button>
+    <button class="launcher-btn launcher-btn-secondary" onclick="Launcher.settings()">
+      <svg width="20" height="20"><use href="#icon-skills"/></svg>
+      系统设置
+    </button>
+  </div>
+    <div style="position:absolute;bottom:24px;font-size:11px;color:var(--text-muted);letter-spacing:2px;">
+    墨境 v16
+  </div>
+</div>
+
+<!-- ==================== 新游戏向导 ==================== -->
+<div id="worldWizard" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;background:var(--bg-body);overflow-y:auto;">
+  <div style="max-width:800px;margin:0 auto;padding:var(--space-xl);">
+    <div style="text-align:center;margin-bottom:var(--space-xl);">
+      <h2 style="font-family:var(--font-display);font-size:28px;color:var(--color-primary-dark);">构建你的故事世界</h2>
+      <p style="color:var(--text-muted);margin-top:8px;">第 <span id="wizStepNum">1</span> / 4 步</p>
+    </div>
+    <div id="wizardContent"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:var(--space-xl);">
+      <button class="btn btn-secondary" id="wizPrev" onclick="Wizard.prev()">上一步</button>
+      <button class="btn btn-primary" id="wizNext" onclick="Wizard.next()">下一步</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 主应用 ==================== -->
+<div class="app-layout" id="mainApp" style="display:none;">
+
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <h1>墨 境</h1>
+      <p>AI 视觉小说引擎 v10</p>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav"></nav>
+    <div class="sidebar-footer">
+      <p>纯前端 · 本地存储</p>
+    </div>
+  </aside>
+
+  <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+  <main class="main-content">
+    <header class="top-bar" id="topBar"></header>
+    <div class="content-area" id="contentArea">
+
+      <section class="page-view" id="page-home"></section>
+      <section class="page-view" id="page-runtime"></section>
+      <section class="page-view" id="page-api"></section>
+      <section class="page-view" id="page-npc"></section>
+      <section class="page-view" id="page-background"></section>
+      <section class="page-view" id="page-music"></section>
+      <section class="page-view" id="page-map"></section>
+      <section class="page-view" id="page-status"></section>
+      <section class="page-view" id="page-prompts"></section>
+      <section class="page-view" id="page-memory"></section>
+      <section class="page-view" id="page-presets"></section>
+      <section class="page-view" id="page-regex"></section>
+      <section class="page-view" id="page-worldbook"></section>
+      <section class="page-view" id="page-assistant"></section>
+      <section class="page-view" id="page-plugins"></section>
+      <section class="page-view" id="page-notes"></section>
+      <section class="page-view" id="page-relations"></section>
+
+      <section class="page-view" id="page-import"></section>
+      <section class="page-view" id="page-backup"></section>
+      <section class="page-view" id="page-ui-diy"></section>
+      <section class="page-view" id="page-baike"></section>
+      <section class="page-view" id="page-design-suite"></section>
+      <section class="page-view" id="page-skill-discovery"></section>
+      <section class="page-view" id="page-custom-creator"></section>
+
+      <section class="page-view" id="page-mobile-preview"></section>
+      <section class="page-view" id="page-pwa"></section>
+
+      <!-- v5 -->
+      <section class="page-view" id="page-cg-gallery"></section>
+
+      <!-- v6: Storyline + Virtual App Platform + Alliance + Inventory + Achievement + Fun + JunCheng -->
+      <section class="page-view" id="page-storyline"></section>
+      <section class="page-view" id="page-chat"></section>
+      <section class="page-view" id="page-forum"></section>
+      <section class="page-view" id="page-mail"></section>
+      <section class="page-view" id="page-settings"></section>
+      <section class="page-view" id="page-beautify"></section>
+      <section class="page-view" id="page-custom"></section>
+      <section class="page-view" id="page-achievement"></section>
+      <section class="page-view" id="page-inventory"></section>
+      <section class="page-view" id="page-alliance"></section>
+      <section class="page-view" id="page-fun"></section>
+      <section class="page-view" id="page-juncheng"></section>
+      <section class="page-view" id="page-storyline-manager"></section>
+      <section class="page-view" id="page-world-notes"></section>
+
+      <!-- v7 New Modules -->
+      <section class="page-view" id="page-timeline"></section>
+      <section class="page-view" id="page-events"></section>
+      <section class="page-view" id="page-save-manager"></section>
+      <section class="page-view" id="page-chapter-editor"></section>
+
+      <!-- v10 New Modules -->
+      <section class="page-view" id="page-text-novel"></section>
+
+      <section class="page-view" id="page-quest"></section>
+      <section class="page-view" id="page-weather"></section>
+      <section class="page-view" id="page-letter"></section>
+      <section class="page-view" id="page-random-events"></section>
+      <section class="page-view" id="page-badge-wall"></section>
+
+      <!-- v13 New Modules -->
+      <section class="page-view" id="page-scene"></section>
+      <section class="page-view" id="page-npc-behavior"></section>
+
+      <!-- v14 New Modules -->
+      <section class="page-view" id="page-settings-hub"></section>
+      <section class="page-view" id="page-code-patcher"></section>
+
+      <!-- v15 New Modules -->
+      <section class="page-view" id="page-system-builder"></section>
+
+      <!-- v16 New Modules -->
+      <section class="page-view" id="page-worldview"></section>
+      <section class="page-view" id="page-family"></section>
+      <section class="page-view" id="page-political"></section>
+      <section class="page-view" id="page-conspiracy"></section>
+      <section class="page-view" id="page-button-customizer"></section>
+
+    </div>
+  </main>
+</div>
+
+<div id="toastContainer"></div>
+
+<!-- Scripts -->
+<script src="js/event-bridge.js"></script>
+<script src="js/api.js"></script>
+<script src="js/data.js"></script>
+<script src="js/home.js"></script>
+<script src="js/music.js"></script>
+<script src="js/statusbar.js"></script>
+<script src="js/regex.js"></script>
+<script src="js/plugins.js"></script>
+<script src="js/notes.js"></script>
+<script src="js/relations.js"></script>
+<script src="js/launcher.js"></script>
+<script src="js/worldbook.js"></script>
+<script src="js/memory.js"></script>
+<script src="js/prompts.js"></script>
+<script src="js/assistant.js"></script>
+<script src="js/presets.js"></script>
+
+<script src="js/storage-v3.js"></script>
+<script src="js/npc-v3.js"></script>
+<script src="js/background-v3.js"></script>
+<script src="js/map-v3.js"></script>
+<script src="js/runtime-v3.js"></script>
+
+<script src="js/import-manager.js"></script>
+<script src="js/backup-manager.js"></script>
+<script src="js/ui-diy.js"></script>
+<script src="js/baike-integration.js"></script>
+<script src="js/design-suite-integration.js"></script>
+<script src="js/skill-discovery.js"></script>
+<script src="js/custom-creator.js"></script>
+
+<script src="js/mobile-preview.js"></script>
+<script src="js/pwa-system.js"></script>
+
+<script src="js/cg-gallery.js"></script>
+
+<!-- v6 New Modules -->
+<script src="js/storyline.js"></script>
+<script src="js/storyline-manager.js"></script>
+<script src="js/virtual-app-platform.js"></script>
+<script src="js/app-chat.js"></script>
+<script src="js/app-forum.js"></script>
+<script src="js/app-mail.js"></script>
+<script src="js/app-settings.js"></script>
+<script src="js/app-beautify.js"></script>
+<script src="js/app-custom.js"></script>
+<script src="js/achievement.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/alliance-v2.js"></script>
+<script src="js/fun-features.js"></script>
+<script src="js/portal.js"></script>
+
+<!-- v7 New Modules -->
+<script src="js/timeline.js"></script>
+<script src="js/events.js"></script>
+<script src="js/save-manager.js"></script>
+<script src="js/chapter-editor.js"></script>
+
+<!-- v9 New Modules -->
+<script src="js/world-notes.js"></script>
+
+<!-- v10 New Modules -->
+<script src="js/markdown-renderer.js"></script>
+<script src="js/text-novel.js"></script>
+
+<!-- v11 New Modules -->
+<script src="js/npc-mood.js"></script>
+
+<!-- v12 New Modules -->
+<script src="js/quest-system.js"></script>
+<script src="js/weather-system.js"></script>
+<script src="js/letter-system.js"></script>
+<script src="js/random-events.js"></script>
+<script src="js/badge-wall.js"></script>
+
+<!-- v13 Scene System -->
+<script src="js/scene-system.js"></script>
+<script src="js/npc-behavior.js"></script>
+<script src="js/group-chat.js"></script>
+
+      <!-- v14 CodePatcher -->
+      <script src="js/code-patcher.js"></script>
+      <script src="js/settings-hub.js"></script>
+
+      <!-- v15 SystemBuilder -->
+      <script src="js/system-builder.js"></script>
+
+      <!-- v16 New Modules -->
+      <script src="js/worldview-engine.js"></script>
+      <script src="js/family-system.js"></script>
+      <script src="js/political-system.js"></script>
+      <script src="js/conspiracy-system.js"></script>
+      <script src="js/button-customizer.js"></script>
+
+      <script src="js/app-v4.js"></script>
+
+</body>
+</html>
