@@ -98,6 +98,7 @@ const App = {
     this.loadCustomNavItems();
     this.renderSidebar();
     this.renderTopBar();
+    this.renderBottomNav(); // 渲染底部导航栏（易次元风格）
     this.bindEvents();
     this.initModules();
     this.handleRoute();
@@ -155,18 +156,38 @@ const App = {
     const showBack = this._currentPage && this._currentPage !== 'home';
     bar.innerHTML = `
       <div style="display:flex;align-items:center;gap:12px;">
-        ${showBack ? `<button class="btn-icon mobile-back-btn" onclick="App.navigate('home')">←</button>` : ''}
-        <button class="menu-toggle" onclick="App.toggleSidebar()">☰</button>
+        ${showBack ? `<button class="btn-icon mobile-back-btn" onclick="App.navigate('home')" title="返回首页"><svg width="20" height="20"><use href="#icon-import"/></svg></button>` : ''}
+        <button class="menu-toggle" onclick="App.toggleSidebar()" title="菜单"><svg width="20" height="20"><use href="#icon-ui"/></svg></button>
         <span class="page-title" id="pageTitle">${currentPage?.label || '墨境'}</span>
       </div>
       <div class="top-actions">
-        <button class="btn-icon" onclick="BackupManager.createBackup()" title="备份">💾</button>
-        <button class="btn-icon" onclick="App.exportData()" title="导出">📥</button>
-        <button class="btn-icon" onclick="App.importData()" title="导入">📤</button>
-        <button class="btn-icon" onclick="App.toggleTheme()" title="切换主题" id="themeToggle">🌙</button>
-        <button class="btn-icon" onclick="Launcher.enterMainApp();location.reload()" title="重启">↺</button>
+        <button class="btn-icon" onclick="BackupManager.createBackup()" title="备份"><svg width="18" height="18"><use href="#icon-backup"/></svg></button>
+        <button class="btn-icon" onclick="App.exportData()" title="导出"><svg width="18" height="18"><use href="#icon-import"/></svg></button>
+        <button class="btn-icon" onclick="App.importData()" title="导入"><svg width="18" height="18"><use href="#icon-backup"/></svg></button>
+        <button class="btn-icon" onclick="App.toggleTheme()" title="切换主题" id="themeToggle"><svg width="18" height="18"><use href="#icon-baike"/></svg></button>
+        <button class="btn-icon" onclick="Launcher.enterMainApp();location.reload()" title="重启"><svg width="18" height="18"><use href="#icon-pwa"/></svg></button>
       </div>
     `;
+  },
+
+  /* === 底部导航栏（易次元风格） === */
+  renderBottomNav() {
+    let nav = document.getElementById('bottomNav');
+    if (!nav) {
+      nav = document.createElement('nav');
+      nav.id = 'bottomNav';
+      nav.className = 'bottom-nav';
+      document.body.appendChild(nav);
+    }
+    // 只显示最常用的5个功能 + 首页
+    const pinned = ['home', 'runtime', 'npc', 'map', 'storyline', 'assistant'];
+    const items = pinned.map(pid => this.NAV_ITEMS.find(n => n.page === pid)).filter(Boolean);
+    nav.innerHTML = items.map(item => `
+      <div class="bottom-nav-item ${this._currentPage === item.page ? 'active' : ''}" data-page="${item.page}" onclick="App.navigate('${item.page}')">
+        <svg width="24" height="24"><use href="#${item.iconSvg}"/></svg>
+        <span>${item.label}</span>
+      </div>
+    `).join('');
   },
 
   bindEvents() {
@@ -230,62 +251,17 @@ const App = {
         SceneSystem.cleanup();
       }
       this._currentPage = pageId;
-      document.querySelectorAll('.page-view').forEach(p => p.classList.remove('active'));
-      const target = document.getElementById('page-' + pageId);
-      if (target) { target.classList.add('active'); }
-      else { document.getElementById('page-home')?.classList.add('active'); pageId = 'home'; }
-      document.querySelectorAll('.nav-item').forEach(item => item.classList.toggle('active', item.dataset.page === pageId));
-      const navItem = this.NAV_ITEMS.find(i => i.page === pageId);
-      const titleEl = document.getElementById('pageTitle');
-      if (titleEl && navItem) titleEl.textContent = navItem.label;
       this.renderTopBar();
-      this.toggleSidebar(false);
-      this.onPageEnter(pageId);
-    } catch(e) {
+      this.renderBottomNav(); // 更新底部导航高亮
+
+      // Run module onEnter if available
+      const cb = callbacks[pageId];
+      if (!cb) { App.toast('该功能模块暂未就绪', 'info'); return; }
+      if (cb && cb.onEnter) { try { cb.onEnter(); } catch (e) { console.warn('onEnter error:', e); } }
+    } catch (e) {
       console.error('[导航错误]', e);
       App.toast('页面加载失败，请重试', 'error');
     }
-  },
-
-  onPageEnter(pageId) {
-    const callbacks = {
-      home: HomePage, api: APISettings, npc: NPCManager,
-      background: BackgroundLibrary, music: MusicManager,
-      map: MapSystem, status: StatusBar, prompts: PromptSystem,
-      memory: MemorySystem, presets: PresetManager,
-      regex: RegexEngine, runtime: NovelRuntime,
-      worldbook: WorldBook, assistant: Assistant,
-      plugins: Plugins, notes: Notes, relations: Relations,
-      'import': ImportManager, backup: BackupManager,
-      'ui-diy': UIDIY, baike: BaikeIntegration,
-      'design-suite': DesignSuiteIntegration,
-      'skill-discovery': SkillDiscovery,
-      'custom-creator': CustomCreator,
-      'mobile-preview': MobilePreview,
-      'pwa': PWASystem,
-      'cg-gallery': CGGallery,
-      storyline: StorylineSystem, chat: AppChat, forum: AppForum,
-      mail: AppMail, settings: AppSettings, beautify: AppBeautify,
-      custom: AppCustom, achievement: AchievementSystem,
-      inventory: InventorySystem, alliance: AllianceSystem,
-      fun: FunFeatures, juncheng: JunChengStyle,
-      timeline: TimelineSystem, events: EventSystem,
-      'save-manager': SaveManager, 'chapter-editor': ChapterEditor,
-      'storyline-manager': StorylineManager,
-      'world-notes': WorldNotes,
-      'text-novel': TextNovel,
-      'quest': QuestSystem, 'weather': WeatherSystem, 'letter': LetterSystem,
-      'random-events': RandomEvents, 'badge-wall': BadgeWall,
-      'scene': SceneSystem, 'npc-behavior': NPCBehavior,
-      'settings-hub': SettingsHub, 'code-patcher': CodePatcher,
-      'system-builder': SystemBuilder,
-      'worldview': WorldviewEngine, 'family': FamilySystem,
-      'political': PoliticalSystem, 'conspiracy': ConspiracySystem,
-      'button-customizer': ButtonCustomizer
-    };
-    const cb = callbacks[pageId];
-    if (!cb) { App.toast('该功能模块暂未就绪', 'info'); return; }
-    if (cb && cb.onEnter) { try { cb.onEnter(); } catch (e) { console.warn('onEnter error:', e); } }
   },
 
   toggleSidebar(force) {
