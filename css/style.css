@@ -1436,3 +1436,797 @@ textarea { resize: vertical; min-height: 80px; }
 @media (min-width: 769px) {
   .bottom-nav { display: none; }
 }
+
+/* =========================================================
+ * Markdown 对话模式样式
+ * 左立绘 + 右米色面板布局
+ * ========================================================= */
+#markdownModeContainer {
+  display: flex;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  min-height: 60vh;
+}
+
+#mdPortraitArea {
+  width: 35%;
+  min-width: 120px;
+  background: linear-gradient(180deg, #e8ddd0, #f5e6d3);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+#mdPortraitArea img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+}
+
+/* Markdown模式对话条目 */
+#mdDialogText > div {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(245, 230, 211, 0.5);
+  border-left: 3px solid var(--color-gold);
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Markdown模式移动端适配 */
+@media (max-width: 480px) {
+  #markdownModeContainer {
+    flex-direction: column !important;
+  }
+  #mdPortraitArea {
+    width: 100% !important;
+    min-width: auto !important;
+    height: 180px;
+    min-height: 180px;
+  }
+  #mdPortraitArea img {
+    max-height: 160px;
+  }
+}
+
+/* =========================================================
+ * v14 易次元风格全局增强 CSS
+ * 大圆角、精致阴影、毛玻璃、沉浸动画、触控友好
+ * ========================================================= */
+
+/* ----------------------------------------------------------
+   1. 卡片统一样式 — 大圆角、精致阴影、悬停效果
+   ---------------------------------------------------------- */
+.ez-card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  box-shadow:
+    0 2px 6px rgba(44, 24, 16, 0.06),
+    0 8px 24px rgba(44, 24, 16, 0.04);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease;
+}
+.ez-card:hover {
+  transform: translateY(-3px);
+  box-shadow:
+    0 6px 18px rgba(44, 24, 16, 0.1),
+    0 16px 40px rgba(44, 24, 16, 0.06);
+  border-color: rgba(201, 162, 39, 0.35);
+}
+.ez-card:active {
+  transform: scale(0.98);
+  transition-duration: 0.1s;
+}
+
+/* 精致毛玻璃卡片 */
+.ez-glass-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.ez-glass-card:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.35);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.25),
+    0 0 24px rgba(201, 162, 39, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* ----------------------------------------------------------
+   2. 按钮统一样式 — 大圆角、渐变背景、触摸反馈
+   ---------------------------------------------------------- */
+.ez-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 24px;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 500;
+  font-family: var(--font-display);
+  letter-spacing: 2px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 48px;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.ez-btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: var(--text-light);
+  box-shadow: 0 4px 14px rgba(139, 69, 19, 0.3);
+}
+.ez-btn-primary:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(201, 162, 39, 0.25);
+}
+.ez-btn-primary:active { transform: scale(0.97); }
+
+.ez-btn-secondary {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+.ez-btn-secondary:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--color-gold);
+  transform: translateY(-1px);
+}
+.ez-btn-secondary:active { transform: scale(0.97); }
+
+.ez-btn-gold {
+  background: linear-gradient(135deg, #C9A227, #D4AF37);
+  color: var(--color-ink);
+  box-shadow: 0 4px 14px rgba(201, 162, 39, 0.3);
+}
+.ez-btn-gold:hover {
+  filter: brightness(1.08);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(201, 162, 39, 0.3);
+}
+.ez-btn-gold:active { transform: scale(0.97); }
+
+/* 圆形图标按钮 */
+.ez-btn-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.ez-btn-icon:hover {
+  background: var(--bg-card-hover);
+  color: var(--color-primary);
+  border-color: var(--color-gold);
+  transform: scale(1.06);
+  box-shadow: 0 2px 8px rgba(201, 162, 39, 0.15);
+}
+.ez-btn-icon:active { transform: scale(0.94); }
+
+/* ----------------------------------------------------------
+   3. 输入框统一样式 — 圆角、聚焦发光
+   ---------------------------------------------------------- */
+.ez-input {
+  background: var(--bg-input);
+  color: var(--text-primary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 14px;
+  padding: 12px 16px;
+  font-size: 15px;
+  width: 100%;
+  font-family: var(--font-main);
+  transition: all 0.25s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.ez-input:focus {
+  border-color: var(--color-gold);
+  box-shadow:
+    0 0 0 4px rgba(201, 162, 39, 0.12),
+    0 2px 8px rgba(201, 162, 39, 0.08);
+  outline: none;
+}
+.ez-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.7;
+}
+.ez-textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.7;
+}
+.ez-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B7355' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 40px;
+}
+
+/* ----------------------------------------------------------
+   4. 模态框统一样式 — 大圆角、毛玻璃效果
+   ---------------------------------------------------------- */
+.ez-modal {
+  background: var(--bg-parchment);
+  border-radius: 24px;
+  border: 1px solid var(--border-gold);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.18),
+    0 0 0 1px rgba(201, 162, 39, 0.15),
+    0 0 40px rgba(201, 162, 39, 0.08);
+  max-width: 560px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.ez-modal.lg { max-width: 800px; }
+.ez-modal.xl { max-width: 1000px; }
+.ez-modal-header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--bg-parchment), var(--bg-card));
+  border-radius: 24px 24px 0 0;
+}
+.ez-modal-header h3 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--color-primary-dark);
+  letter-spacing: 2px;
+}
+.ez-modal-body {
+  padding: 24px;
+}
+.ez-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: rgba(245, 230, 211, 0.5);
+  border-radius: 0 0 24px 24px;
+}
+
+/* 毛玻璃模态覆盖层 */
+.ez-modal-overlay-glass {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(44, 24, 16, 0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.ez-modal-overlay-glass.show {
+  display: flex;
+  animation: fadeIn 0.25s ease forwards;
+}
+
+/* ----------------------------------------------------------
+   5. 动画定义 — fadeInUp、fadeIn、scaleIn、slideUp
+   ---------------------------------------------------------- */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* 骨架屏微光动画 */
+.ez-skeleton {
+  background: linear-gradient(
+    90deg,
+    rgba(245, 230, 211, 0.6) 25%,
+    rgba(235, 220, 195, 0.9) 50%,
+    rgba(245, 230, 211, 0.6) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+  border-radius: 16px;
+}
+
+/* 通用入场动画类 */
+.ez-animate-fadeInUp {
+  animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.ez-animate-scaleIn {
+  animation: scaleIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.ez-animate-slideUp {
+  animation: slideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* ----------------------------------------------------------
+   6. 滚动条美化（v14 完善版）
+   ---------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-body);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(201, 162, 39, 0.5);
+  border-radius: 4px;
+  border: 2px solid var(--bg-body);
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 162, 39, 0.75);
+}
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 162, 39, 0.5) var(--bg-body);
+}
+
+/* ----------------------------------------------------------
+   7. 空状态友好UI
+   ---------------------------------------------------------- */
+.ez-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+.ez-empty svg {
+  margin-bottom: 16px;
+  opacity: 0.35;
+  stroke: var(--text-muted);
+}
+.ez-empty h4 {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  letter-spacing: 2px;
+}
+.ez-empty p {
+  font-size: 13px;
+  line-height: 1.7;
+  max-width: 280px;
+}
+
+/* ----------------------------------------------------------
+   8. 标签与徽章
+   ---------------------------------------------------------- */
+.ez-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+.ez-tag-primary {
+  background: rgba(201, 162, 39, 0.15);
+  color: var(--color-gold);
+  border: 1px solid rgba(201, 162, 39, 0.25);
+}
+.ez-tag-primary:hover {
+  background: rgba(201, 162, 39, 0.25);
+}
+.ez-tag-secondary {
+  background: var(--bg-input);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+.ez-tag-ink {
+  background: rgba(44, 24, 16, 0.08);
+  color: var(--color-ink);
+  border: 1px solid rgba(44, 24, 16, 0.15);
+}
+
+/* ----------------------------------------------------------
+   9. 移动端适配强化：375px以下特殊处理、更大的触控区域
+   ---------------------------------------------------------- */
+@media (max-width: 375px) {
+  /* 更小屏幕下的圆角微调 */
+  .ez-card, .ez-glass-card { border-radius: 16px; }
+  .ez-btn { border-radius: 14px; padding: 10px 18px; font-size: 14px; }
+  .ez-input, .ez-select, .ez-textarea { border-radius: 12px; padding: 10px 14px; }
+  .ez-modal { border-radius: 20px; }
+  .ez-modal-header { border-radius: 20px 20px 0 0; }
+  .ez-modal-footer { border-radius: 0 0 20px 20px; }
+
+  /* 确保触控区域至少 48px */
+  .ez-btn,
+  .ez-btn-icon,
+  .ez-input,
+  .ez-select,
+  .nav-item,
+  .menu-toggle,
+  .world-card-v2,
+  .world-card-add-v2,
+  .detail-card-header,
+  .home-entry-card,
+  .mobile-back-btn {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  /* 内容区更紧凑 */
+  .content-area { padding: 10px; }
+  .top-bar { padding: 0 10px; height: 52px; }
+
+  /* 字体微调 */
+  body, html { font-size: 14px; }
+  input, textarea, select { font-size: 16px; }
+
+  /* 底部导航更紧凑 */
+  .bottom-nav {
+    height: 52px;
+    padding: 0 8px;
+  }
+  .bottom-nav-item {
+    min-width: 48px;
+    padding: 3px 6px;
+    font-size: 9px;
+  }
+  .bottom-nav-item svg {
+    width: 20px;
+    height: 20px;
+  }
+  .app-layout {
+    padding-bottom: 52px;
+  }
+}
+
+/* 480px 以下额外触控优化 */
+@media (max-width: 480px) {
+  .ez-btn, .btn, .launcher-btn, .vn-choice-btn, .vn-classic-choice {
+    min-height: 48px;
+  }
+  .world-card-v2, .world-card-add-v2 {
+    min-height: 48px;
+  }
+}
+
+/* ----------------------------------------------------------
+   10. 头像与缩略图统一样式
+   ---------------------------------------------------------- */
+.ez-avatar {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 2px solid var(--border-gold);
+  box-shadow: 0 2px 8px rgba(44, 24, 16, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--bg-body);
+}
+.ez-avatar:hover {
+  transform: scale(1.04);
+  box-shadow: 0 4px 14px rgba(44, 24, 16, 0.15);
+}
+.ez-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.ez-avatar-round {
+  border-radius: 50%;
+}
+.ez-thumb {
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(44, 24, 16, 0.08);
+}
+
+/* ----------------------------------------------------------
+   11. 分割线/分隔符
+   ---------------------------------------------------------- */
+.ez-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--border-color) 20%,
+    var(--border-color) 80%,
+    transparent 100%
+  );
+  margin: 16px 0;
+  border: none;
+}
+.ez-divider-gold {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(201, 162, 39, 0.3) 20%,
+    rgba(201, 162, 39, 0.3) 80%,
+    transparent 100%
+  );
+}
+
+/* ----------------------------------------------------------
+   12. 加载状态
+   ---------------------------------------------------------- */
+.ez-loading-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ez-loading-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-gold);
+  animation: loadingDot 1.2s ease-in-out infinite;
+}
+.ez-loading-dots span:nth-child(1) { animation-delay: 0s; }
+.ez-loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+.ez-loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes loadingDot {
+  0%, 100% { transform: scale(0.6); opacity: 0.4; }
+  50%      { transform: scale(1);   opacity: 1; }
+}
+
+/* =========================================================
+ * 易次元风格全局增强 CSS 结束
+ * ========================================================= */
+
+
+/* ===== v7 全局视觉增强 ===== */
+/* 毛玻璃卡片效果 */
+.glass-card {
+  background: rgba(255, 248, 240, 0.7);
+  backdrop-filter: blur(16px) saturate(1.2);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  border: 1px solid rgba(201, 162, 39, 0.25);
+  border-radius: var(--border-radius-lg);
+  box-shadow: 0 4px 24px rgba(44, 24, 16, 0.08), inset 0 1px 0 rgba(255,255,255,0.4);
+}
+
+/* 金色发光边框 */
+.glow-gold {
+  box-shadow: 0 0 20px rgba(201, 162, 39, 0.3), 0 0 40px rgba(201, 162, 39, 0.1);
+  border-color: rgba(201, 162, 39, 0.6) !important;
+}
+
+/* 场景切换遮罩 */
+.scene-transition-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--bg-body);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+.scene-transition-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 打字机光标 */
+.vn-dialog-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.2em;
+  background: #C9A227;
+  margin-left: 2px;
+  animation: cursorBlink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* 按钮悬停涟漪效果 */
+.btn-ripple {
+  position: relative;
+  overflow: hidden;
+}
+.btn-ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 0; height: 0;
+  background: rgba(201, 162, 39, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+}
+.btn-ripple:active::after {
+  width: 200%; height: 200%;
+}
+
+/* 浮动动画 */
+.float-animation {
+  animation: float 3s ease-in-out infinite;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* 脉冲发光 */
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 10px rgba(201, 162, 39, 0.2); }
+  50% { box-shadow: 0 0 25px rgba(201, 162, 39, 0.5); }
+}
+
+/* 移动端底部安全区适配 */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  .vn-dialog-immersive {
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+  .vn-bottom-bar {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+}
+
+/* 世界卡片 */
+.world-card {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  background-size: cover;
+  background-position: center;
+}
+.world-card:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+.world-card-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent 20%, rgba(0, 0, 0, 0.6) 100%);
+  padding: 28px 14px 14px;
+}
+.world-card-content {
+  position: relative;
+  z-index: 2;
+}
+.world-card-name {
+  font-size: 17px;
+  font-weight: 600;
+  color: #fff;
+  font-family: 'Noto Serif SC', serif;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  letter-spacing: 1px;
+}
+.world-card-badge {
+  display: inline-block;
+  margin-top: 4px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(201, 162, 39, 0.35);
+  padding: 2px 10px;
+  border-radius: 10px;
+}
+
+/* 新建世界占位 */
+.world-card-add {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 2px dashed var(--border-gold);
+  background: rgba(201, 162, 39, 0.05);
+  transition: all 0.2s;
+}
+.world-card-add:hover {
+  background: rgba(201, 162, 39, 0.1);
+}
+.world-card-add span {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* 详情页卡片 */
+.detail-card {
+  background: var(--bg-card);
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  transition: box-shadow 0.2s;
+}
+.detail-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.detail-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'Noto Serif SC', serif;
+  user-select: none;
+}
+.detail-card-header:hover {
+  background: rgba(0, 0, 0, 0.02);
+}

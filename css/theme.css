@@ -1,15 +1,31 @@
 /**
  * =========================================================
- * AI Visual Novel Engine v2 - Theme
- * Yi Ci Yuan / Jun Cheng Lu Chinese Visual Novel Aesthetic
- * Warm parchment, ink wash, gold accents
+ * AI Visual Novel Engine v3 - Multi-Theme System
+ * 5 Built-in Themes: Ancient / Modern / SciFi / Campus / Dark
+ * CSS custom properties + body class override
  * =========================================================
  */
 
+/* === Root defaults (Ancient 古风墨境) === */
 :root {
-  /* === Primary Palette === */
+  --bg-body: #F5E6D3;
+  --bg-card: #FFF8F0;
+  --bg-parchment: #FAF0E6;
+  --bg-card-hover: #FFF0E0;
+  --bg-input: #FFF5E6;
+  --bg-sidebar: #E8D5C4;
+  --bg-overlay: rgba(44, 24, 16, 0.75);
+  --bg-dialog: rgba(44, 24, 16, 0.88);
+
+  --text-primary: #2C1810;
+  --text-secondary: #5C4033;
+  --text-muted: #A08060;
+  --text-light: #FFF8F0;
+  --text-gold: #C9A227;
+  --text-link: #8B4513;
+
   --color-primary: #8B4513;
-  --color-primary-dark: #5D2E0C;
+  --color-primary-dark: #5D3A1A;
   --color-primary-light: #A0522D;
   --color-accent: #D4AF37;
   --color-accent-light: #F0D878;
@@ -17,38 +33,17 @@
   --color-ink: #2C1810;
   --color-ink-light: #5C4033;
 
-  /* === Backgrounds === */
-  --bg-body: #F5E6D3;
-  --bg-parchment: #FAF0E6;
-  --bg-card: #FFF8F0;
-  --bg-card-hover: #FFF0E0;
-  --bg-input: #FFF5E6;
-  --bg-sidebar: #E8D5C4;
-  --bg-overlay: rgba(44, 24, 16, 0.75);
-  --bg-dialog: rgba(44, 24, 16, 0.88);
-
-  /* === Text === */
-  --text-primary: #2C1810;
-  --text-secondary: #6B4423;
-  --text-muted: #A08060;
-  --text-light: #FFF8F0;
-  --text-gold: #C9A227;
-  --text-link: #8B4513;
-
-  /* === Borders === */
-  --border-color: #D4B896;
+  --border-color: #D4C4A8;
   --border-gold: #C9A227;
   --border-radius: 12px;
   --border-radius-sm: 8px;
-  --border-radius-lg: 16px;
+  --border-radius-lg: 24px;
 
-  /* === Shadows === */
-  --shadow-sm: 0 2px 8px rgba(44, 24, 16, 0.12);
-  --shadow-md: 0 4px 16px rgba(44, 24, 16, 0.16);
-  --shadow-lg: 0 8px 32px rgba(44, 24, 16, 0.20);
+  --shadow-sm: 0 2px 8px rgba(44, 24, 16, 0.08);
+  --shadow-md: 0 4px 16px rgba(44, 24, 16, 0.12);
+  --shadow-lg: 0 8px 32px rgba(44, 24, 16, 0.16);
   --shadow-gold: 0 0 20px rgba(201, 162, 39, 0.25);
 
-  /* === Spacing === */
   --space-xs: 4px;
   --space-sm: 8px;
   --space-md: 16px;
@@ -56,23 +51,215 @@
   --space-xl: 32px;
   --space-2xl: 48px;
 
-  /* === Typography === */
   --font-main: 'Noto Serif SC', 'Source Han Serif SC', 'SimSun', 'STSong', serif;
   --font-display: 'Noto Serif SC', 'KaiTi', 'STKaiti', serif;
   --font-mono: 'Fira Code', 'Consolas', monospace;
 
-  /* === Transitions === */
   --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* === Layout === */
   --sidebar-width: 260px;
   --header-height: 56px;
   --max-width: 1280px;
 }
 
-/* === Dark Theme (Game Runtime) === */
+/* === Theme: Ancient 古风墨境 (explicit override, same as root) === */
+body.theme-ancient {
+  --bg-body: #F5E6D3;
+  --bg-card: #FFF8F0;
+  --bg-parchment: #FAF0E6;
+  --bg-card-hover: #FFF0E0;
+  --bg-input: #FFF5E6;
+  --bg-sidebar: #E8D5C4;
+  --bg-overlay: rgba(44, 24, 16, 0.75);
+  --bg-dialog: rgba(44, 24, 16, 0.88);
+
+  --text-primary: #2C1810;
+  --text-secondary: #5C4033;
+  --text-muted: #A08060;
+  --text-light: #FFF8F0;
+  --text-gold: #C9A227;
+
+  --color-primary: #8B4513;
+  --color-primary-dark: #5D3A1A;
+  --color-primary-light: #A0522D;
+  --color-accent: #D4AF37;
+  --color-gold: #C9A227;
+
+  --border-color: #D4C4A8;
+  --border-gold: #C9A227;
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --border-radius-lg: 24px;
+
+  --shadow-sm: 0 2px 8px rgba(44, 24, 16, 0.08);
+  --shadow-md: 0 4px 16px rgba(44, 24, 16, 0.12);
+  --shadow-lg: 0 8px 32px rgba(44, 24, 16, 0.16);
+  --shadow-gold: 0 0 20px rgba(201, 162, 39, 0.25);
+
+  --font-main: 'Noto Serif SC', 'Source Han Serif SC', serif;
+  --font-display: 'Noto Serif SC', serif;
+}
+
+/* === Theme: Modern 现代简约 === */
+body.theme-modern {
+  --bg-body: #F7F8FA;
+  --bg-card: #FFFFFF;
+  --bg-parchment: #FFFFFF;
+  --bg-card-hover: #F2F4F6;
+  --bg-input: #FFFFFF;
+  --bg-sidebar: #F0F1F3;
+  --bg-overlay: rgba(26, 26, 46, 0.60);
+  --bg-dialog: rgba(26, 26, 46, 0.85);
+
+  --text-primary: #1A1A2E;
+  --text-secondary: #4A4A6A;
+  --text-muted: #8A8A9A;
+  --text-light: #FFFFFF;
+  --text-gold: #E8913A;
+
+  --color-primary: #4A90E2;
+  --color-primary-dark: #357ABD;
+  --color-primary-light: #6BA5E7;
+  --color-accent: #E8913A;
+  --color-gold: #E8913A;
+
+  --border-color: #E8E8EC;
+  --border-gold: #E8913A;
+  --border-radius: 12px;
+  --border-radius-sm: 6px;
+  --border-radius-lg: 20px;
+
+  --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.12);
+  --shadow-gold: 0 0 20px rgba(232, 145, 58, 0.25);
+
+  --font-main: 'Inter', 'PingFang SC', 'Helvetica Neue', sans-serif;
+  --font-display: 'Inter', sans-serif;
+}
+
+/* === Theme: SciFi 科幻未来 === */
+body.theme-scifi {
+  --bg-body: #0A0E1A;
+  --bg-card: #121830;
+  --bg-parchment: #0F1629;
+  --bg-card-hover: #1A2240;
+  --bg-input: #1A2240;
+  --bg-sidebar: #0D1320;
+  --bg-overlay: rgba(0, 0, 0, 0.70);
+  --bg-dialog: rgba(10, 14, 26, 0.92);
+
+  --text-primary: #E0E6F0;
+  --text-secondary: #8A94A8;
+  --text-muted: #5A6A80;
+  --text-light: #FFFFFF;
+  --text-gold: #FFD700;
+
+  --color-primary: #00D4FF;
+  --color-primary-dark: #00A8CC;
+  --color-primary-light: #33DDFF;
+  --color-accent: #FFD700;
+  --color-gold: #FFD700;
+
+  --border-color: #1E2A4A;
+  --border-gold: #FFD700;
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  --border-radius-lg: 16px;
+
+  --shadow-sm: 0 0 8px rgba(0, 212, 255, 0.20);
+  --shadow-md: 0 0 16px rgba(0, 212, 255, 0.30);
+  --shadow-lg: 0 0 32px rgba(0, 212, 255, 0.40);
+  --shadow-gold: 0 0 20px rgba(255, 215, 0, 0.35);
+
+  --font-main: 'Orbitron', 'Noto Sans SC', sans-serif;
+  --font-display: 'Orbitron', sans-serif;
+}
+
+/* === Theme: Campus 校园清新 === */
+body.theme-campus {
+  --bg-body: #F0F7F4;
+  --bg-card: #FFFFFF;
+  --bg-parchment: #F5FAF8;
+  --bg-card-hover: #E8F5EE;
+  --bg-input: #FFFFFF;
+  --bg-sidebar: #E0EDE6;
+  --bg-overlay: rgba(45, 74, 62, 0.50);
+  --bg-dialog: rgba(45, 74, 62, 0.85);
+
+  --text-primary: #2D4A3E;
+  --text-secondary: #5A7D6E;
+  --text-muted: #8BA89C;
+  --text-light: #FFFFFF;
+  --text-gold: #F0AD4E;
+
+  --color-primary: #5CB85C;
+  --color-primary-dark: #449D44;
+  --color-primary-light: #7BC77B;
+  --color-accent: #F0AD4E;
+  --color-gold: #F0AD4E;
+
+  --border-color: #D0E4D8;
+  --border-gold: #F0AD4E;
+  --border-radius: 20px;
+  --border-radius-sm: 12px;
+  --border-radius-lg: 32px;
+
+  --shadow-sm: 0 2px 8px rgba(92, 184, 92, 0.10);
+  --shadow-md: 0 4px 16px rgba(92, 184, 92, 0.15);
+  --shadow-lg: 0 8px 32px rgba(92, 184, 92, 0.20);
+  --shadow-gold: 0 0 20px rgba(240, 173, 78, 0.25);
+
+  --font-main: 'Nunito', 'Noto Sans SC', sans-serif;
+  --font-display: 'Nunito', sans-serif;
+}
+
+/* === Theme: Dark 暗黑深邃 === */
+body.theme-dark {
+  --bg-body: #0D0D0D;
+  --bg-card: #1A1A1A;
+  --bg-parchment: #141414;
+  --bg-card-hover: #252525;
+  --bg-input: #252525;
+  --bg-sidebar: #111111;
+  --bg-overlay: rgba(0, 0, 0, 0.80);
+  --bg-dialog: rgba(13, 13, 13, 0.92);
+
+  --text-primary: #E8E8E8;
+  --text-secondary: #8C8C8C;
+  --text-muted: #666666;
+  --text-light: #FFFFFF;
+  --text-gold: #03DAC6;
+
+  --color-primary: #BB86FC;
+  --color-primary-dark: #9B5CDB;
+  --color-primary-light: #C9A0F8;
+  --color-accent: #03DAC6;
+  --color-gold: #03DAC6;
+
+  --border-color: #2A2A2A;
+  --border-gold: #03DAC6;
+  --border-radius: 12px;
+  --border-radius-sm: 8px;
+  --border-radius-lg: 24px;
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.40);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.50);
+  --shadow-gold: 0 0 20px rgba(3, 218, 198, 0.30);
+
+  --font-main: 'Noto Sans SC', 'PingFang SC', sans-serif;
+  --font-display: 'Noto Sans SC', sans-serif;
+}
+
+/* === Smooth transition when theme changes === */
+body {
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+}
+
+/* === Dark Theme (legacy runtime override, kept for compatibility) === */
 [data-theme="dark"] {
   --bg-body: #1a1210;
   --bg-parchment: #251a15;
