@@ -27,9 +27,6 @@ const StatusBar = {
     if (!page) { console.warn('[v7] 元素 #page-status 未找到'); }
     if (!page) return;
     page.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-        <button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button>
-      </div>
       <h2 class="section-title" style="margin-bottom:var(--space-lg);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> 状态栏</h2>
       <div class="grid grid-2">
         <div class="ez-card"><div class="card-header"><h3>配置</h3></div><div class="card-body" id="statusConfigArea"></div></div>

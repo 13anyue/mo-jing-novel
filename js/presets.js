@@ -34,7 +34,6 @@ const PresetManager = {
     if (!page) { console.warn('[v7] 元素 #page-presets 未找到'); }
     if (!page) return;
     page.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
         <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> 预设管理 v7</h2>
         <div style="display:flex;gap:8px;">

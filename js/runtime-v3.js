@@ -76,9 +76,6 @@ const NovelRuntime = {
     page.innerHTML = `
       <!-- 顶部导航栏：更精致，圆角按钮、更好间距 -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
-        <button class="btn btn-sm btn-secondary" style="border-radius:20px;padding:6px 14px;" onclick="App.navigate('home')">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg>返回
-        </button>
         <button class="btn btn-sm btn-gold" style="border-radius:20px;padding:6px 14px;" onclick="NovelRuntime.toggleNovelMode()">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
           ${this._state.novelMode === 'visual' ? '文本模式' : '视觉模式'}

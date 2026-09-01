@@ -165,7 +165,7 @@ const NPCManager = {
     const page = document.getElementById('page-npc');
     if (!page) return;
     page.innerHTML = `
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+      <div style="padding:0;">
       <style id="npc-juncheng-style">
         /* 古风墨境风格额外样式 */
         .juncheng-container {
@@ -653,6 +653,7 @@ const NPCManager = {
           </div>
         </div>
       </div>
+    </div>
     `;
     this.renderList();
   },
