@@ -62,15 +62,98 @@ const MusicManager = {
   openUploader() {
     const body = document.getElementById('musicUploadBody');
     body.innerHTML = `
-      <div class="upload-zone" onclick="document.getElementById('musicFileInput').click()"><div class="upload-icon">🎵</div><p>点击上传音频</p><p style="font-size:12px;color:var(--text-muted);">MP3/WAV/OGG</p><input type="file" id="musicFileInput" accept="audio/*" style="display:none;" onchange="MusicManager.handleFile(event)"></div>
+      <!-- 批量上传模式切换 -->
+      <div style="display:flex;gap:8px;margin-bottom:var(--space-md);flex-wrap:wrap;">
+        <button class="btn btn-sm btn-gold" onclick="MusicManager.switchUploadMode('single')">单首</button>
+        <button class="btn btn-sm btn-secondary" onclick="MusicManager.switchUploadMode('album')">批量</button>
+      </div>
+      <div id="musicUploadModeArea">${this._renderSingleUploader()}</div>
+    `;
+    this._pending = null;
+    this._batchMusic = [];
+    App.openModal('musicUploadModal');
+  },
+
+  switchUploadMode(mode) {
+    const area = document.getElementById('musicUploadModeArea');
+    if (mode === 'single') area.innerHTML = this._renderSingleUploader();
+    else area.innerHTML = this._renderBatchUploader();
+  },
+
+  _renderSingleUploader() {
+    return `
+      <div class="upload-zone" onclick="document.getElementById('musicFileInput').click()">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <p>点击上传音频</p><p style="font-size:12px;color:var(--text-muted);">MP3/WAV/OGG</p>
+        <input type="file" id="musicFileInput" accept="audio/*" style="display:none;" onchange="MusicManager.handleFile(event)">
+      </div>
       <div id="musicPreview" style="margin-top:var(--space-md);"></div>
       <div class="form-group" style="margin-top:var(--space-md);"><label>名称</label><input type="text" id="musicName" placeholder="如：长安BGM"></div>
       <div class="form-group"><label>分类</label><select id="musicCategory">${this.CATS.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
       <div class="form-group"><label><select id="musicLoop"><option value="true">循环</option><option value="false">一次</option></select></label></div>
       <div style="display:flex;justify-content:flex-end;gap:8px;"><button class="btn btn-secondary" onclick="App.closeModal('musicUploadModal')">取消</button><button class="btn btn-primary" onclick="MusicManager.saveUpload()">保存</button></div>
     `;
-    this._pending = null;
-    App.openModal('musicUploadModal');
+  },
+
+  _renderBatchUploader() {
+    return `
+      <div style="border:2px dashed var(--border-gold);border-radius:var(--border-radius);padding:var(--space-lg);text-align:center;margin-bottom:var(--space-md);">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <p>选择多首音频批量上传</p>
+        <input type="file" id="musicBatchInput" accept="audio/*" multiple style="display:none;" onchange="MusicManager.handleBatchFiles(event)">
+        <button class="btn btn-primary" style="margin-top:8px;" onclick="document.getElementById('musicBatchInput').click()">选择文件</button>
+      </div>
+      <div id="musicBatchPreview" style="max-height:200px;overflow-y:auto;margin-bottom:var(--space-md);"></div>
+      <div class="form-group"><label>分类</label><select id="musicBatchCategory">${this.CATS.map(c => `<option value="${c.id}">${c.name}</option>`).join('')}</select></div>
+      <div class="form-group"><label><select id="musicBatchLoop"><option value="true">循环</option><option value="false">一次</option></select></label></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;">
+        <button class="btn btn-secondary" onclick="App.closeModal('musicUploadModal')">取消</button>
+        <button class="btn btn-primary" onclick="MusicManager.saveBatchUpload()">保存全部 (${this._batchMusic?.length || 0})</button>
+      </div>
+    `;
+  },
+
+  async handleBatchFiles(e) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    this._batchMusic = [];
+    const preview = document.getElementById('musicBatchPreview');
+    let html = '';
+    for (const f of files) {
+      try {
+        const data = await Storage.fileToDataUrl(f);
+        this._batchMusic.push({ data, name: f.name, size: f.size });
+        html += `<div style="display:flex;align-items:center;gap:8px;padding:8px;border:1px solid var(--border-color);border-radius:var(--border-radius-sm);margin-bottom:4px;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          <span style="flex:1;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</span>
+          <span style="font-size:11px;color:var(--text-muted);">${(f.size/1024/1024).toFixed(1)}MB</span>
+        </div>`;
+      } catch (err) { console.error(err); }
+    }
+    preview.innerHTML = html || '<p style="color:var(--text-muted);">无有效音频</p>';
+    const btn = document.querySelector('[onclick*="saveBatchUpload"]');
+    if (btn) btn.textContent = `保存全部 (${this._batchMusic.length})`;
+  },
+
+  async saveBatchUpload() {
+    if (!this._batchMusic?.length) { App.toast('请先选择音频文件', 'error'); return; }
+    const cat = document.getElementById('musicBatchCategory')?.value || 'bgm';
+    const loop = document.getElementById('musicBatchLoop')?.value === 'true';
+    let success = 0;
+    for (const item of this._batchMusic) {
+      try {
+        const id = 'audio_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        await Storage.saveAudio(id, cat, item.name, item.data);
+        const list = this.getMusicList();
+        list.push({ id, name: item.name.replace(/\.[^.]+$/, ''), category: cat, loop, size: item.size, createdAt: Date.now() });
+        this.saveMusicList(list);
+        success++;
+      } catch (e) { console.error('Batch music save error:', e); }
+    }
+    App.toast(`批量上传完成：${success}/${this._batchMusic.length}`, success > 0 ? 'success' : 'error');
+    this._batchMusic = [];
+    this.renderList();
+    App.closeModal('musicUploadModal');
   },
 
   async handleFile(e) {

@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * SystemBuilder v1 — 系统DIY生成器 / System DIY Generator
+ * SystemBuilder vv2 系统DIY生成器 / System DIY Generator
  *
  * 核心概念：用户描述想要什么游戏系统（如"修仙系统"、"武侠门派"），
  * 小助手生成一整套包含多个互相联动模块的代码，自动注册到系统。
@@ -40,7 +40,7 @@ const SystemBuilder = {
     xianxiu: {
       id: 'xianxiu',
       name: '修仙系统',
-      icon: '⚡',
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
       description: '境界突破 + 灵根检测 + 功法修炼 + 炼丹 + 法宝 + 渡劫',
       modules: [
         { name: '境界突破', id: 'cultivation', desc: '从炼气到渡劫的九重境界' },
@@ -71,7 +71,7 @@ const SystemBuilder = {
     wuxia: {
       id: 'wuxia',
       name: '武侠门派',
-      icon: '⚔️',
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>',
       description: '门派创建 + 武学招式 + 江湖历练 + 恩怨情仇 + 掌门竞争',
       modules: [
         { name: '门派创建', id: 'sect', desc: '创建或加入门派势力' },
@@ -200,7 +200,11 @@ const SystemBuilder = {
   /**
    * 初始化 SystemBuilder
    */
+    // 初始化模块入口
   init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
     this._loadInstalledSystems();
     this._loadActiveSystems();
     this._loadRules();
@@ -721,7 +725,9 @@ const SystemBuilder = {
   /**
    * 页面进入回调 — 渲染SystemBuilder界面
    */
+    // 页面进入时调用
   onEnter() {
+    // 页面进入时调用
     this._ensurePageContainer();
     const page = document.getElementById('page-system-builder');
     if (!page) return;
@@ -744,13 +750,13 @@ const SystemBuilder = {
           <h2 style="${styles.title}">🏗️ 系统DIY生成器</h2>
           <div class="sb-tabs" style="${styles.tabs}">
             <button class="sb-tab ${this.uiState.currentTab === 'market' ? 'active' : ''}" data-tab="market" style="${styles.tab}">
-              📦 模板市场
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> 模板市场
             </button>
             <button class="sb-tab ${this.uiState.currentTab === 'custom' ? 'active' : ''}" data-tab="custom" style="${styles.tab}">
-              ✨ 自定义生成
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> 自定义生成
             </button>
             <button class="sb-tab ${this.uiState.currentTab === 'my-systems' ? 'active' : ''}" data-tab="my-systems" style="${styles.tab}">
-              📁 我的系统
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg> 我的系统
             </button>
           </div>
         </div>
@@ -783,12 +789,12 @@ const SystemBuilder = {
               <h3 style="${styles.cardTitle}">${t.name}</h3>
               <p style="${styles.cardDesc}">${t.description}</p>
               <div class="sb-card-meta" style="${styles.cardMeta}">
-                <span>📦 ${t.moduleCount} 个模块</span>
+                <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> ${t.moduleCount} 个模块</span>
                 <span>🔗 ${t.ruleCount} 条规则</span>
               </div>
               <div class="sb-card-actions" style="${styles.cardActions}">
                 <button class="sb-btn-preview" data-template="${t.id}" style="${styles.btnSecondary}">👁️ 预览</button>
-                <button class="sb-btn-generate" data-template="${t.id}" style="${styles.btnPrimary}">⚡ 一键生成</button>
+                <button class="sb-btn-generate" data-template="${t.id}" style="${styles.btnPrimary}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 一键生成</button>
               </div>
             </div>
           `).join('')}
@@ -819,10 +825,10 @@ const SystemBuilder = {
             style="${styles.textarea}"
             rows="6"
           ></textarea>
-          <button id="sb-generate-btn" style="${styles.btnPrimary}">✨ AI生成系统</button>
+          <button id="sb-generate-btn" style="${styles.btnPrimary}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> AI生成系统</button>
         </div>
         <div class="sb-hints" style="${styles.hints}">
-          <p>💡 试试这些描述：</p>
+          <p><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-7 7c0 2.5 1.5 4.5 3 6v2h8v-2c1.5-1.5 3-3.5 3-6a7 7 0 00-7-7z"/></svg> 试试这些描述：</p>
           <ul style="${styles.hintList}">
             <li>"一个武侠门派系统，有武学招式和江湖历练"</li>
             <li>"宫廷宫斗系统，包含位分晋升和恩宠值"</li>
@@ -848,7 +854,7 @@ const SystemBuilder = {
         <h3 style="${styles.previewTitle}">📋 系统预览：${system.name}</h3>
 
         <div class="sb-preview-section" style="${styles.previewSection}">
-          <h4 style="${styles.previewSectionTitle}">📦 包含模块 (${system.modules.length})</h4>
+          <h4 style="${styles.previewSectionTitle}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> 包含模块 (${system.modules.length})</h4>
           <ul style="${styles.previewList}">
             ${system.modules.map(m => `
               <li style="${styles.previewItem}">
@@ -873,15 +879,15 @@ const SystemBuilder = {
         </div>
 
         <div class="sb-preview-section" style="${styles.previewSection}">
-          <h4 style="${styles.previewSectionTitle}">💾 存储信息</h4>
+          <h4 style="${styles.previewSectionTitle}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 存储信息</h4>
           <p style="${styles.previewInfo}">预估大小：${(size / 1024).toFixed(1)} KB</p>
           <p style="${styles.previewInfo}">数据隔离：system_${system.systemId}_*</p>
           ${system.dependencies.length > 0 ? `<p style="${styles.previewInfo}">依赖：${system.dependencies.join(', ')}</p>` : '<p style="${styles.previewInfo}">无外部依赖</p>'}
         </div>
 
         <div class="sb-preview-actions" style="${styles.previewActions}">
-          <button id="sb-confirm-install" style="${styles.btnPrimary}">✅ 安装此系统</button>
-          <button id="sb-cancel-install" style="${styles.btnSecondary}">❌ 取消</button>
+          <button id="sb-confirm-install" style="${styles.btnPrimary}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 安装此系统</button>
+          <button id="sb-cancel-install" style="${styles.btnSecondary}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 取消</button>
         </div>
       </div>
     `;
@@ -898,7 +904,7 @@ const SystemBuilder = {
     if (systems.length === 0) {
       return `
         <div class="sb-empty" style="${styles.empty}">
-          <div style="font-size:48px;margin-bottom:16px;">📭</div>
+          <div style="font-size:48px;margin-bottom:16px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
           <h3 style="${styles.emptyTitle}">暂无自定义系统</h3>
           <p style="${styles.emptyDesc}">从模板市场选择一套系统，或让AI小助手为你生成</p>
           <button onclick="SystemBuilder.switchTab('market')" style="${styles.btnPrimary}">前往模板市场</button>
@@ -916,13 +922,13 @@ const SystemBuilder = {
               <div class="sb-system-item" style="${styles.systemItem}">
                 <div class="sb-system-info" style="${styles.systemInfo}">
                   <div class="sb-system-name" style="${styles.systemName}">
-                    ${s.icon || '🔧'} ${s.name}
+                    ${s.icon || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>'} ${s.name}
                     <span class="sb-status-badge ${isActive ? 'active' : 'paused'}" style="${isActive ? styles.badgeActive : styles.badgePaused}">
-                      ${isActive ? '✅ 启用' : '⏸️ 暂停'}
+                      ${isActive ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 启用' : '⏸️ 暂停'}
                     </span>
                   </div>
                   <div class="sb-system-meta" style="${styles.systemMeta}">
-                    <span>📦 ${moduleCount} 个模块</span>
+                    <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> ${moduleCount} 个模块</span>
                     <span>📅 ${new Date(s.createdAt).toLocaleDateString()}</span>
                     <span>📂 ${s.source === 'template' ? '模板' : '自定义'}</span>
                   </div>
@@ -932,14 +938,14 @@ const SystemBuilder = {
                     ? `<button class="sb-btn-pause" data-system="${s.systemId}" style="${styles.btnSecondary}">⏸️ 暂停</button>`
                     : `<button class="sb-btn-enable" data-system="${s.systemId}" style="${styles.btnPrimary}">▶️ 启用</button>`
                   }
-                  <button class="sb-btn-uninstall" data-system="${s.systemId}" style="${styles.btnDanger}">🗑️ 卸载</button>
+                  <button class="sb-btn-uninstall" data-system="${s.systemId}" style="${styles.btnDanger}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 卸载</button>
                 </div>
               </div>
             `;
           }).join('')}
         </div>
         <div class="sb-backup-action" style="${styles.backupAction}">
-          <button id="sb-backup-btn" style="${styles.btnSecondary}">💾 备份当前系统</button>
+          <button id="sb-backup-btn" style="${styles.btnSecondary}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 备份当前系统</button>
         </div>
       </div>
     `;
@@ -1304,14 +1310,18 @@ const SystemBuilder = {
         modules: ${JSON.stringify(modules)},
         rules: ${JSON.stringify(rules)},
 
+          // 初始化模块入口
         init() {
+    // 初始化模块入口
           console.log('[${systemData.name}] 系统已初始化');
           this.active = true;
           this._loadData();
           this._bindEvents();
         },
 
+          // 页面进入时调用
         onEnter() {
+    // 页面进入时调用
           ${varName}UI.render();
         },
 
@@ -1354,7 +1364,7 @@ const SystemBuilder = {
   _generateUI(systemData, varName) {
     const modules = systemData.modules || [];
     const sysId = systemData.systemId;
-    const icon = systemData.icon || '🔧';
+    const icon = systemData.icon || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>';
     const name = systemData.name;
     const desc = systemData.description || '';
 
@@ -1435,7 +1445,9 @@ const SystemBuilder = {
         systemId: '${systemData.systemId}',
         schema: ${JSON.stringify(schema)},
 
+          // 初始化模块入口
         init() {
+    // 初始化模块入口
           // 初始化默认值
           const existing = SystemBuilder.getSystemData('${systemData.systemId}', 'data', null);
           if (!existing) {
@@ -1487,7 +1499,9 @@ const SystemBuilder = {
         systemId: '${systemData.systemId}',
         rules: ${JSON.stringify(rules)},
 
+          // 初始化模块入口
         init() {
+    // 初始化模块入口
           if (window.EventBridge) {
             EventBridge.on('global', (e) => {
               this._processEvent(e.type, e.data);
@@ -1685,7 +1699,7 @@ const SystemBuilder = {
     return {
       systemId,
       name: this._extractSystemName(description) || (template ? template.name : '自定义系统'),
-      icon: template ? template.icon : '🔧',
+      icon: template ? template.icon : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>',
       description: description,
       source: 'custom',
       modules,

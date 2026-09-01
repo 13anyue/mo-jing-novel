@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * NPCManager v9 — 君成录风格角色档案界面
+ * NPCManager v9 — 古风墨境风格角色档案界面
  * 布局：左侧立绘大图 | 中间信息主面板（标签页+属性网格） | 右侧竖排操作按钮
  * 底部：交游/灵台/记事/修改/上徽号/离开 等功能按钮区
  * 配色：古风墨境 — 背景 #F5E6D3，金色 #C9A227，墨色 #2C1810
@@ -160,14 +160,14 @@ const NPCManager = {
     Storage.set('npcDIYFields_v3', f);
   },
 
-  /* ========== 页面渲染：君成录风格 ========== */
+  /* ========== 页面渲染：古风墨境风格 ========== */
   renderPage() {
     const page = document.getElementById('page-npc');
     if (!page) return;
     page.innerHTML = `
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <style id="npc-juncheng-style">
-        /* 君成录风格额外样式 */
+        /* 古风墨境风格额外样式 */
         .juncheng-container {
           font-family: 'Noto Serif SC', serif;
           color: #2C1810;
@@ -602,13 +602,20 @@ const NPCManager = {
             <button class="btn-icon" onclick="App.closeModal('npcBatchPortraitModal')">✕</button>
           </div>
           <div class="modal-body" id="batchPortraitBody">
-            <p style="color:#8B7355;font-size:13px;">选择多张图片，系统会自动为角色匹配立绘。</p>
-            <input type="file" id="batchPortraitInput" accept="image/*" multiple onchange="NPCManager.handleBatchPortraitUpload(this)">
-            <div id="batchPortraitPreview" style="margin-top:12px;"></div>
+            <!-- 批量上传模式切换 -->
+            <div style="display:flex;gap:8px;margin-bottom:12px;">
+              <button class="btn btn-sm btn-gold" onclick="NPCManager.setBatchMode('album')">相册批量</button>
+              <button class="btn btn-sm btn-secondary" onclick="NPCManager.setBatchMode('url')">URL批量</button>
+            </div>
+            <div id="batchUploadArea">
+              <p style="color:#8B7355;font-size:13px;">选择多张图片，系统会自动为角色匹配立绘。</p>
+              <input type="file" id="batchPortraitInput" accept="image/*" multiple onchange="NPCManager.handleBatchPortraitUpload(this)">
+              <div id="batchPortraitPreview" style="margin-top:12px;"></div>
+            </div>
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" onclick="App.closeModal('npcBatchPortraitModal')">取消</button>
-            <button class="btn btn-primary" onclick="NPCManager.confirmBatchPortrait()">确认匹配</button>
+            <button class="btn btn-primary" id="batchConfirmBtn" onclick="NPCManager.confirmBatchPortrait()">确认匹配</button>
           </div>
         </div>
       </div>
@@ -709,7 +716,7 @@ const NPCManager = {
     `;
   },
 
-  /* ========== 君成录风格详情页渲染 ========== */
+  /* ========== 古风墨境风格详情页渲染 ========== */
   renderNPCDetail() {
     const c = document.getElementById('npcContent');
     if (!c) return;
@@ -1519,6 +1526,22 @@ const NPCManager = {
       data.portraitId = this._currentNPC.portraitId;
     }
 
+    // 保存表情差分
+    const expressionsInput = document.getElementById('npcExpressions');
+    if (expressionsInput) {
+      try {
+        const raw = expressionsInput.value.trim();
+        const parsed = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(parsed)) {
+          data.expressions = parsed;
+        }
+      } catch (e) {
+        console.warn('表情差分 JSON 解析失败:', e);
+      }
+    } else if (this._currentNPC && Array.isArray(this._currentNPC.expressions)) {
+      data.expressions = this._currentNPC.expressions;
+    }
+
     if (!data.name) { App.toast('姓名必填', 'error'); return; }
 
     if (this._currentNPC) {
@@ -1612,13 +1635,37 @@ const NPCManager = {
 
   /* ========== 批量立绘 ========== */
   openBatchPortraitModal() {
+    this._batchMode = 'album';
     App.showModal('npcBatchPortraitModal');
+    this.setBatchMode('album');
+  },
+
+  setBatchMode(mode) {
+    this._batchMode = mode;
+    const area = document.getElementById('batchUploadArea');
+    if (!area) return;
+    if (mode === 'album') {
+      area.innerHTML = `
+        <p style="color:#8B7355;font-size:13px;">选择多张图片，系统会自动为角色匹配立绘。</p>
+        <input type="file" id="batchPortraitInput" accept="image/*" multiple onchange="NPCManager.handleBatchPortraitUpload(this)">
+        <div id="batchPortraitPreview" style="margin-top:12px;"></div>
+      `;
+    } else {
+      area.innerHTML = `
+        <p style="color:#8B7355;font-size:13px;">每行输入一个图片URL，系统会自动下载并匹配角色。</p>
+        <textarea id="batchPortraitUrlList" rows="6" placeholder="https://example.com/npc1.png\nhttps://example.com/npc2.png"></textarea>
+        <div id="batchPortraitPreview" style="margin-top:12px;"></div>
+      `;
+    }
+    const btn = document.getElementById('batchConfirmBtn');
+    if (btn) btn.textContent = mode === 'album' ? '确认匹配' : '开始下载';
   },
 
   async handleBatchPortraitUpload(input) {
     const files = Array.from(input.files || []);
     if (files.length === 0) return;
     const preview = document.getElementById('batchPortraitPreview');
+    this._batchPendingFiles = files;
     if (preview) {
       preview.innerHTML = `<p style="color:#8B7355;font-size:13px;">已选择 ${files.length} 张图片，点击"确认匹配"为角色分配立绘。</p>`;
     }
@@ -1626,6 +1673,40 @@ const NPCManager = {
   },
 
   async confirmBatchPortrait() {
+    // URL 模式
+    if (this._batchMode === 'url') {
+      const textarea = document.getElementById('batchPortraitUrlList');
+      const urls = textarea.value.split('\n').map(u => u.trim()).filter(u => /^https?:\/\/.+/.test(u));
+      if (!urls.length) { App.toast('请输入有效的图片URL', 'warning'); return; }
+      const npcs = this.getNPCs();
+      const preview = document.getElementById('batchPortraitPreview');
+      let matched = 0, failed = 0;
+      preview.innerHTML = `<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div><p style="font-size:12px;color:#8B7355;">下载中 0/${urls.length}...</p>`;
+      for (let i = 0; i < urls.length; i++) {
+        try {
+          const response = await fetch(urls[i], { mode: 'cors' });
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+          const blob = await response.blob();
+          if (!blob.type.startsWith('image/')) throw new Error('Not image');
+          const ext = blob.type.split('/')[1] || 'png';
+          const file = new File([blob], `url_npc_${i}.${ext}`, { type: blob.type });
+          const data = await Storage.fileToDataUrl(file);
+          const imageId = await Storage.saveImage('npc_url_' + Date.now() + '_' + i, 'npc_portrait', null, file.name, data, { sourceUrl: urls[i] });
+          if (i < npcs.length) {
+            this.updateNPC(npcs[i].id, { portraitId: imageId });
+            matched++;
+          }
+        } catch (e) { failed++; console.error(`URL ${i} failed:`, e); }
+        const pct = Math.round(((i+1)/urls.length)*100);
+        preview.innerHTML = `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><p style="font-size:12px;color:#8B7355;">下载中 ${i+1}/${urls.length}... 成功 ${matched} 失败 ${failed}</p>`;
+      }
+      App.toast(`URL立绘下载完成：成功 ${matched}/${urls.length}`, matched > 0 ? 'success' : 'error');
+      App.closeModal('npcBatchPortraitModal');
+      this.renderList();
+      return;
+    }
+
+    // 相册模式
     const input = document.getElementById('batchPortraitInput');
     if (!input || !input.files || input.files.length === 0) {
       App.toast('请先选择图片', 'warning'); return;
@@ -1635,7 +1716,8 @@ const NPCManager = {
     let matched = 0;
     for (let i = 0; i < Math.min(files.length, npcs.length); i++) {
       try {
-        const imageId = await Storage.saveImage(files[i]);
+        const data = await Storage.fileToDataUrl(files[i]);
+        const imageId = await Storage.saveImage('npc_batch_' + Date.now() + '_' + i, 'npc_portrait', null, files[i].name, data);
         this.updateNPC(npcs[i].id, { portraitId: imageId });
         matched++;
       } catch (e) { console.error('批量立绘保存失败：', e); }

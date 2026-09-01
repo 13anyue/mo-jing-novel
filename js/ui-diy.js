@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * UI DIY System v2 — 全面可视化页面定制
+ * UI DIY System vv3 全面可视化页面定制
  * 功能：页面列表、布局/配色/字体/组件定制、可视化拖拽、
  *       实时预览、方案管理、AI 小助手一键美化
  * 存储键：ui_diy_v14
@@ -28,12 +28,12 @@ const UIDIY = {
 
   /** 默认按钮配置（保留 v3 原有功能） */
   DEFAULT_BUTTONS: [
-    { id: 'btn_send', label: '发送 ➤', icon: '➤', position: 'bottom-right', style: 'primary', action: 'send', visible: true },
-    { id: 'btn_choices', label: '选项', icon: '🎯', position: 'bottom-right', style: 'secondary', action: 'choices', visible: true },
-    { id: 'btn_auto', label: '⚡', icon: '⚡', position: 'bottom-left', style: 'icon', action: 'auto', visible: true },
-    { id: 'btn_history', label: '📜', icon: '📜', position: 'bottom-left', style: 'icon', action: 'history', visible: true },
-    { id: 'btn_save', label: '💾', icon: '💾', position: 'top-right', style: 'icon', action: 'save', visible: true },
-    { id: 'btn_load', label: '📂', icon: '📂', position: 'top-right', style: 'icon', action: 'load', visible: true }
+    { id: 'btn_send', label: '发送', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>', position: 'bottom-right', style: 'primary', action: 'send', visible: true },
+    { id: 'btn_choices', label: '选项', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>', position: 'bottom-right', style: 'secondary', action: 'choices', visible: true },
+    { id: 'btn_auto', label: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', position: 'bottom-left', style: 'icon', action: 'auto', visible: true },
+    { id: 'btn_history', label: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>', position: 'bottom-left', style: 'icon', action: 'history', visible: true },
+    { id: 'btn_save', label: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>', position: 'top-right', style: 'icon', action: 'save', visible: true },
+    { id: 'btn_load', label: '读档', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>', position: 'top-right', style: 'icon', action: 'load', visible: true }
   ],
 
   /** 默认布局（保留 v3 原有功能） */
@@ -132,10 +132,16 @@ const UIDIY = {
   /* ==================== 初始化入口 ==================== */
 
   /** 初始化 UI DIY 页面 */
-  init() { this.renderPage(); },
+    // 初始化模块入口
+  init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    this.renderPage(); },
 
   /** 进入页面时的回调（保留 v3 兼容） */
-  onEnter() { this.renderPage(); },
+    // 页面进入时调用
+  onEnter() {
+    this.renderPage(); },
 
   /* ==================== 数据存储（v2 统一接口） ==================== */
 
@@ -193,16 +199,18 @@ const UIDIY = {
   /* ==================== 页面渲染 ==================== */
 
   /** 渲染 UI DIY 主页面 */
+    // 渲染页面主结构
   renderPage() {
     const page = document.getElementById('page-ui-diy');
     if (!page) return;
     page.innerHTML = `
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
-        <h2 class="section-title">🎨 UI DIY v2 — 全面可视化页面定制</h2>
+        <h2 class="section-title"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg> UI DIY vv3 全面可视化页面定制</h2>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-gold" onclick="UIDIY.openSchemeManager()">📁 方案管理</button>
-          <button class="btn btn-primary" onclick="UIDIY.aiBeautify()">🤖 AI 一键美化</button>
+          <button class="btn btn-gold" onclick="UIDIY.openSchemeManager()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg> 方案管理</button>
+          <button class="btn btn-secondary" onclick="UIDIY.openThemeEditor()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg> 主题编辑器</button>
+          <button class="btn btn-primary" onclick="UIDIY.aiBeautify()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg> AI 一键美化</button>
         </div>
       </div>
       <div id="ui-diy-container" style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;">
@@ -215,7 +223,7 @@ const UIDIY = {
         <div id="ui-diy-right" style="flex:1.5;min-width:360px;max-width:640px;display:none;">
           <div class="card">
             <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
-              <h3>👁️ 实时预览</h3>
+              <h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 实时预览</h3>
               <div style="display:flex;gap:6px;">
                 <select id="previewPageSelect" onchange="UIDIY.switchPreviewPage(this.value)" style="width:auto;font-size:12px;">
                   <option value="">选择预览页面...</option>
@@ -240,7 +248,7 @@ const UIDIY = {
   _renderPageList() {
     return `
       <div class="card">
-        <div class="card-header"><h3>📄 可定制页面</h3></div>
+        <div class="card-header"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> 可定制页面</h3></div>
         <div class="card-body">
           <p style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-md);">
             点击页面卡片进入该页面的独立定制界面。
@@ -272,12 +280,12 @@ const UIDIY = {
                  color:${isActive ? '#fff' : 'var(--text)'};
                  border:1px solid ${isActive ? 'var(--color-gold)' : 'var(--border-color)'};
                  transition:all .2s;">
-          <span style="font-size:20px;">${item.icon || '📄'}</span>
+          <span style="font-size:20px;">${item.icon || '<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z\"/><polyline points=\"14 2 14 8 20 8\"/><line x1=\"16\" y1=\"13\" x2=\"8\" y2=\"13\"/><line x1=\"16\" y1=\"17\" x2=\"8\" y2=\"17\"/><polyline points=\"10 9 9 9 8 9\"/></svg>'}</span>
           <div style="flex:1;">
             <div style="font-weight:600;font-size:14px;">${item.label || pageId}</div>
             <div style="font-size:11px;opacity:0.8;">当前主题：${activeScheme}</div>
           </div>
-          <span style="font-size:12px;">➤</span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><polyline points="9 18 15 12 9 6"/></svg>
         </div>
       `;
     }).join('');
@@ -314,17 +322,17 @@ const UIDIY = {
     const cfg = this._currentConfig || this.DEFAULT_PAGE_CONFIG;
     editor.innerHTML = `
       <div class="tabs" style="margin-bottom:var(--space-md);">
-        <div class="tab active" onclick="UIDIY.switchEditorTab(event,'tab_layout')">📐 布局</div>
-        <div class="tab" onclick="UIDIY.switchEditorTab(event,'tab_colors')">🎨 配色</div>
-        <div class="tab" onclick="UIDIY.switchEditorTab(event,'tab_typo')">🔤 字体</div>
-        <div class="tab" onclick="UIDIY.switchEditorTab(event,'tab_components')">🧩 组件</div>
-        <div class="tab" onclick="UIDIY.switchEditorTab(event,'tab_drag')">🖱️ 拖拽</div>
+        <div class="tab active" onclick="UIDIY.switchEditorTab(event,'tab_layout')">布局</div>
+        <div class="tab" onclick="UIDIY.switchEditorTab(event,'tab_colors')">配色</div>
+        <div class="tab" onclick="UIDIY.switchEditorTab(event,'tab_typo')">字体</div>
+        <div class="tab" onclick="UIDIY.switchEditorTab(event,'tab_components')">组件</div>
+        <div class="tab" onclick="UIDIY.switchEditorTab(event,'tab_drag')">拖拽</div>
       </div>
 
       <!-- 布局定制 -->
       <div class="tab-content active" id="tab_layout">
         <div class="card" style="margin-bottom:var(--space-sm);">
-          <div class="card-header"><h4>📐 布局方向</h4></div>
+          <div class="card-header"><h4>布局方向</h4></div>
           <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;">
             ${['left','center','right','full'].map(v=>`
               <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;padding:4px 8px;border-radius:4px;background:${cfg.layout.direction===v?'var(--color-gold)':'var(--bg-sidebar)'};color:${cfg.layout.direction===v?'#fff':'var(--text)'};">
@@ -335,7 +343,7 @@ const UIDIY = {
           </div>
         </div>
         <div class="card" style="margin-bottom:var(--space-sm);">
-          <div class="card-header"><h4>🔀 组件排列</h4></div>
+          <div class="card-header"><h4>组件排列</h4></div>
           <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;">
             ${['horizontal','vertical','grid'].map(v=>`
               <label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;padding:4px 8px;border-radius:4px;background:${cfg.layout.arrangement===v?'var(--color-gold)':'var(--bg-sidebar)'};color:${cfg.layout.arrangement===v?'#fff':'var(--text)'};">
@@ -346,7 +354,7 @@ const UIDIY = {
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><h4>📏 间距微调</h4></div>
+          <div class="card-header"><h4>间距微调</h4></div>
           <div class="card-body">
             ${this._renderSlider('页面内边距', cfg.layout.padding, 0, 64, 'px', 'layout.padding')}
             ${this._renderSlider('组件间距', cfg.layout.gap, 0, 48, 'px', 'layout.gap')}
@@ -359,7 +367,7 @@ const UIDIY = {
       <div class="tab-content" id="tab_colors">
         <div class="card" style="margin-bottom:var(--space-sm);">
           <div class="card-header" style="display:flex;justify-content:space-between;">
-            <h4>🎨 预设方案</h4>
+            <h4>预设方案</h4>
             <button class="btn btn-sm btn-secondary" onclick="UIDIY.applyPresetToPage()">应用预设</button>
           </div>
           <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -372,7 +380,7 @@ const UIDIY = {
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><h4>🎨 自定义颜色</h4></div>
+          <div class="card-header"><h4>自定义颜色</h4></div>
           <div class="card-body">
             ${this._renderColorPicker('主色', cfg.colors.primary, 'colors.primary')}
             ${this._renderColorPicker('背景色', cfg.colors.background, 'colors.background')}
@@ -386,7 +394,7 @@ const UIDIY = {
       <!-- 字体定制 -->
       <div class="tab-content" id="tab_typo">
         <div class="card" style="margin-bottom:var(--space-sm);">
-          <div class="card-header"><h4>🔤 字体家族</h4></div>
+          <div class="card-header"><h4>字体家族</h4></div>
           <div class="card-body">
             <select onchange="UIDIY.updateConfig('typography.fontFamily',this.value)" style="width:100%;font-size:13px;">
               ${this.FONT_OPTIONS.map(f=>`<option value="${f.value}" ${cfg.typography.fontFamily===f.value?'selected':''}>${f.label}</option>`).join('')}
@@ -394,7 +402,7 @@ const UIDIY = {
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><h4>📐 字号与间距</h4></div>
+          <div class="card-header"><h4>字号与间距</h4></div>
           <div class="card-body">
             ${this._renderSlider('全局缩放', cfg.typography.globalScale, 0.8, 1.5, 'x', 'typography.globalScale', 0.05)}
             ${this._renderSlider('标题字号', cfg.typography.titleSize, 14, 36, 'px', 'typography.titleSize')}
@@ -416,7 +424,7 @@ const UIDIY = {
           </div>
         </div>
         <div class="card" style="margin-bottom:var(--space-sm);">
-          <div class="card-header"><h4>🔘 按钮样式</h4></div>
+          <div class="card-header"><h4>按钮样式</h4></div>
           <div class="card-body">
             ${this._renderSlider('圆角', cfg.components.buttonRadius, 0, 24, 'px', 'components.buttonRadius')}
             ${this._renderSlider('内边距', cfg.components.buttonPadding, 4, 24, 'px', 'components.buttonPadding')}
@@ -424,14 +432,14 @@ const UIDIY = {
           </div>
         </div>
         <div class="card" style="margin-bottom:var(--space-sm);">
-          <div class="card-header"><h4>📝 输入框样式</h4></div>
+          <div class="card-header"><h4>输入框样式</h4></div>
           <div class="card-body">
             ${this._renderColorPicker('边框颜色', cfg.components.inputBorder, 'components.inputBorder')}
             ${this._renderColorPicker('焦点颜色', cfg.components.inputFocus, 'components.inputFocus')}
           </div>
         </div>
         <div class="card">
-          <div class="card-header"><h4>🧭 导航栏样式</h4></div>
+          <div class="card-header"><h4>导航栏样式</h4></div>
           <div class="card-body">
             ${this._renderSlider('宽度', cfg.components.navWidth, 180, 360, 'px', 'components.navWidth')}
             ${this._renderSlider('背景透明度', cfg.components.navAlpha, 50, 100, '%', 'components.navAlpha')}
@@ -444,7 +452,7 @@ const UIDIY = {
       <div class="tab-content" id="tab_drag">
         <div class="card" style="margin-bottom:var(--space-sm);">
           <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;">
-            <h4>🖱️ 可视化拖拽布局</h4>
+            <h4>可视化拖拽布局</h4>
             <button class="btn btn-sm btn-secondary" onclick="UIDIY.resetStructure()">↺ 重置布局</button>
           </div>
           <div class="card-body">
@@ -459,8 +467,8 @@ const UIDIY = {
       </div>
 
       <div style="display:flex;gap:8px;margin-top:var(--space-md);">
-        <button class="btn btn-primary" onclick="UIDIY.saveCurrentPageConfig()">💾 保存当前页配置</button>
-        <button class="btn btn-gold" onclick="UIDIY.saveAsScheme()">💾 存为方案</button>
+        <button class="btn btn-primary" onclick="UIDIY.saveCurrentPageConfig()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 保存当前页配置</button>
+        <button class="btn btn-gold" onclick="UIDIY.saveAsScheme()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 存为方案</button>
       </div>
     `;
   },
@@ -517,7 +525,7 @@ const UIDIY = {
           <span style="color:var(--text-muted);font-size:14px;">⋮⋮</span>
           <span style="font-size:14px;font-weight:500;flex:1;">${labels[key] || key}</span>
           <button class="btn btn-sm btn-secondary" onclick="UIDIY.toggleStructVisible('${key}')" style="font-size:12px;padding:2px 6px;">
-            ${item.visible ? '👁️' : '🙈'}
+            ${item.visible ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'}
           </button>
         </div>
       `;
@@ -816,8 +824,8 @@ const UIDIY = {
     const content = `
       <div style="max-height:60vh;overflow-y:auto;">
         <div style="display:flex;gap:8px;margin-bottom:12px;">
-          <button class="btn btn-primary" onclick="UIDIY.saveAsScheme()">➕ 保存当前为方案</button>
-          <button class="btn btn-secondary" onclick="UIDIY.importScheme()">📥 导入 JSON</button>
+          <button class="btn btn-primary" onclick="UIDIY.saveAsScheme()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 保存当前为方案</button>
+          <button class="btn btn-secondary" onclick="UIDIY.importScheme()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导入 JSON</button>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;">
           ${Object.entries(schemes).map(([id, scheme]) => `
@@ -835,7 +843,7 @@ const UIDIY = {
         </div>
       </div>
     `;
-    App.modal({ title: '📁 方案管理', content, width: 520 });
+    App.modal({ title: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg> 方案管理', content, width: 520 });
   },
 
   /** 将当前配置保存为一个新方案 */
@@ -935,11 +943,430 @@ const UIDIY = {
     input.click();
   },
 
+  /* ==================== Theme Editor v3 ==================== */
+  /** 打开可视化主题编辑器 */
+  openThemeEditor() {
+    const content = this._renderThemeEditor();
+    App.modal({ title: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg> 可视化主题编辑器', content, width: 600 });
+    this._initThemeEditor();
+  },
+
+  _initThemeEditor() {
+    const el = document.getElementById('theme-editor-content');
+    if (!el) return;
+    this._themePreviewConfig = this._getDefaultThemeConfig();
+    this._injectThemePreviewCSS();
+  },
+
+  _getDefaultThemeConfig() {
+    const root = getComputedStyle(document.documentElement);
+    return {
+      colors: {
+        bgBody: root.getPropertyValue('--bg-body').trim() || '#F5E6D3',
+        bgCard: root.getPropertyValue('--bg-card').trim() || '#FFF8F0',
+        textPrimary: root.getPropertyValue('--text-primary').trim() || '#2C1810',
+        textSecondary: root.getPropertyValue('--text-secondary').trim() || '#5C4033',
+        primary: root.getPropertyValue('--color-primary').trim() || '#8B4513',
+        primaryDark: root.getPropertyValue('--color-primary-dark').trim() || '#5D3A1A',
+        gold: root.getPropertyValue('--color-gold').trim() || '#C9A227',
+        borderColor: root.getPropertyValue('--border-color').trim() || '#D4C4A8',
+        borderGold: root.getPropertyValue('--border-gold').trim() || '#C9A227'
+      },
+      radius: {
+        sm: parseInt(root.getPropertyValue('--border-radius-sm') || '8'),
+        md: parseInt(root.getPropertyValue('--border-radius') || '12'),
+        lg: parseInt(root.getPropertyValue('--border-radius-lg') || '24')
+      },
+      shadow: {
+        sm: 1,
+        md: 2,
+        lg: 3
+      }
+    };
+  },
+
+  _renderThemeEditor() {
+    const cfg = this._themePreviewConfig || this._getDefaultThemeConfig();
+    return `
+      <div id="theme-editor-content" style="display:flex;flex-direction:column;gap:16px;max-height:70vh;overflow-y:auto;">
+        <!-- 预设主题快捷选择 -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${Object.entries(BUILT_IN_THEMES || {}).map(([id, t]) => `
+            <button class="btn btn-sm btn-secondary" onclick="UIDIY.previewPresetTheme('${id}')" style="font-size:12px;">${t.name}</button>
+          `).join('')}
+        </div>
+
+        <!-- 调色板 -->
+        <div class="card">
+          <div class="card-header"><h4>调色板</h4></div>
+          <div class="card-body" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+            ${this._renderColorInput('页面背景', cfg.colors.bgBody, 'bgBody')}
+            ${this._renderColorInput('卡片背景', cfg.colors.bgCard, 'bgCard')}
+            ${this._renderColorInput('主文字', cfg.colors.textPrimary, 'textPrimary')}
+            ${this._renderColorInput('次文字', cfg.colors.textSecondary, 'textSecondary')}
+            ${this._renderColorInput('主色', cfg.colors.primary, 'primary')}
+            ${this._renderColorInput('深色', cfg.colors.primaryDark, 'primaryDark')}
+            ${this._renderColorInput('金色/强调', cfg.colors.gold, 'gold')}
+            ${this._renderColorInput('边框', cfg.colors.borderColor, 'borderColor')}
+            ${this._renderColorInput('金色边框', cfg.colors.borderGold, 'borderGold')}
+          </div>
+        </div>
+
+        <!-- 滑块控制 -->
+        <div class="card">
+          <div class="card-header"><h4>形状与阴影</h4></div>
+          <div class="card-body">
+            ${this._renderThemeSlider('圆角大小', cfg.radius.sm, 0, 32, 'px', 'radius.sm')}
+            ${this._renderThemeSlider('阴影强度', cfg.shadow.md, 0, 5, '级', 'shadow.md')}
+          </div>
+        </div>
+
+        <!-- 实时预览区 -->
+        <div class="card" id="theme-preview-card">
+          <div class="card-header"><h4><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 实时预览</h4></div>
+          <div class="card-body" id="theme-live-preview">
+            ${this._renderThemePreviewHTML()}
+          </div>
+        </div>
+
+        <!-- 操作按钮 -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <input type="text" id="custom-theme-name" placeholder="输入主题名称..." style="flex:1;min-width:120px;font-size:13px;padding:6px 10px;border:1px solid var(--border-color);border-radius:var(--border-radius-sm);background:var(--bg-input);color:var(--text-primary);">
+          <button class="btn btn-primary" onclick="UIDIY.saveCustomTheme()">保存主题</button>
+          <button class="btn btn-gold" onclick="UIDIY.applyPreviewTheme()">应用预览</button>
+          <button class="btn btn-secondary" onclick="UIDIY.exportCustomTheme()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出JSON</button>
+          <button class="btn btn-secondary" onclick="UIDIY.importCustomTheme()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>导入</button>
+        </div>
+
+        <!-- 已保存主题列表 -->
+        <div id="custom-theme-list" style="display:flex;flex-direction:column;gap:6px;">
+          ${this._renderCustomThemeList()}
+        </div>
+
+        <!-- 隐藏的文件导入input -->
+        <input type="file" id="theme-import-input" accept=".json" style="display:none;" onchange="UIDIY._handleThemeImport(this)">
+
+        <!-- 动态预览style -->
+        <style id="theme-preview-style"></style>
+      </div>
+    `;
+  },
+
+  _renderColorInput(label, value, key) {
+    const id = 'theme_color_' + key;
+    return `
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="color" id="${id}" value="${value}"
+          oninput="UIDIY.updateThemeColor('${key}', this.value)"
+          style="width:32px;height:28px;padding:0;border:none;cursor:pointer;background:none;flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:500;">${label}</div>
+          <div style="font-size:10px;color:var(--text-muted);font-family:monospace;">${value}</div>
+        </div>
+      </div>
+    `;
+  },
+
+  _renderThemeSlider(label, value, min, max, unit, path) {
+    const id = 'theme_slider_' + path.replace(/\./g, '_');
+    return `
+      <div style="margin-bottom:8px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:2px;">
+          <span>${label}</span>
+          <span id="${id}_val" style="color:var(--color-gold);font-weight:600;">${value}${unit}</span>
+        </div>
+        <input type="range" min="${min}" max="${max}" value="${value}"
+          oninput="UIDIY.handleThemeSlider('${path}', this.value, '${id}_val', '${unit}')"
+          style="width:100%;cursor:pointer;">
+      </div>
+    `;
+  },
+
+  _renderThemePreviewHTML() {
+    return `
+      <div id="theme-preview-box" style="padding:12px;border-radius:var(--preview-radius,12px);border:1px solid var(--preview-border,#D4C4A8);background:var(--preview-bg,#FFF8F0);">
+        <h5 style="margin:0 0 8px;color:var(--preview-primary,#2C1810);">标题预览</h5>
+        <p style="margin:0 0 6px;color:var(--preview-text,#5C4033);font-size:14px;">正文内容预览文字</p>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button style="padding:6px 14px;border:none;border-radius:var(--preview-radius,6px);background:var(--preview-accent,#8B4513);color:#fff;font-size:13px;cursor:pointer;">主按钮</button>
+          <button style="padding:6px 14px;border:none;border-radius:var(--preview-radius,6px);background:var(--preview-gold,#C9A227);color:#fff;font-size:13px;cursor:pointer;">金色按钮</button>
+        </div>
+      </div>
+    `;
+  },
+
+  _renderCustomThemeList() {
+    let customs = {};
+    try { customs = Storage.get('app_custom_themes_v1', {}); } catch(e) {}
+    const themes = { ...customs };
+    if (!Object.keys(themes).length) {
+      return '<p style="font-size:12px;color:var(--text-muted);text-align:center;">暂无自定义主题，请创建并保存</p>';
+    }
+    return Object.entries(themes).map(([id, t]) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--border-color);border-radius:var(--border-radius-sm);background:var(--bg-sidebar);">
+        <div style="width:16px;height:16px;border-radius:4px;background:${t.colors?.primary || '#888'};flex-shrink:0;"></div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;">${t.name || id}</div>
+          <div style="font-size:10px;color:var(--text-muted);">${new Date(t.createdAt || Date.now()).toLocaleDateString()}</div>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="UIDIY.applyCustomTheme('${id}')">应用</button>
+        <button class="btn btn-sm btn-secondary" onclick="UIDIY.exportOneCustomTheme('${id}')">导出</button>
+        <button class="btn btn-sm btn-danger" onclick="UIDIY.deleteCustomTheme('${id}')">删除</button>
+      </div>
+    `).join('');
+  },
+
+  /* --- 实时交互 --- */
+  updateThemeColor(key, value) {
+    if (!this._themePreviewConfig) this._themePreviewConfig = this._getDefaultThemeConfig();
+    if (!this._themePreviewConfig.colors) this._themePreviewConfig.colors = {};
+    this._themePreviewConfig.colors[key] = value;
+    this._injectThemePreviewCSS();
+  },
+
+  handleThemeSlider(path, value, valId, unit) {
+    if (!this._themePreviewConfig) this._themePreviewConfig = this._getDefaultThemeConfig();
+    const num = unit === 'x' || unit === '' ? parseFloat(value) : parseInt(value, 10);
+    const keys = path.split('.');
+    let target = this._themePreviewConfig;
+    for (let i = 0; i < keys.length - 1; i++) {
+      if (!target[keys[i]]) target[keys[i]] = {};
+      target = target[keys[i]];
+    }
+    target[keys[keys.length - 1]] = num;
+    const el = document.getElementById(valId);
+    if (el) el.textContent = num + unit;
+    this._injectThemePreviewCSS();
+  },
+
+  _injectThemePreviewCSS() {
+    const cfg = this._themePreviewConfig;
+    if (!cfg) return;
+    const c = cfg.colors || {};
+    const r = cfg.radius || {};
+    const s = cfg.shadow || {};
+    // 计算阴影
+    const shadowVal = (level) => {
+      const l = parseInt(level || 1);
+      if (l <= 0) return 'none';
+      return `0 ${l * 2}px ${l * 4}px rgba(0,0,0,${0.05 + l * 0.03})`;
+    };
+    const style = document.getElementById('theme-preview-style');
+    if (style) {
+      style.textContent = `
+        #theme-preview-box {
+          --preview-bg: ${c.bgBody || '#FFF8F0'};
+          --preview-card-bg: ${c.bgCard || '#FFF8F0'};
+          --preview-primary: ${c.primary || '#2C1810'};
+          --preview-text: ${c.textSecondary || '#5C4033'};
+          --preview-accent: ${c.primary || '#8B4513'};
+          --preview-gold: ${c.gold || '#C9A227'};
+          --preview-border: ${c.borderColor || '#D4C4A8'};
+          --preview-radius: ${r.sm || 8}px;
+          background: ${c.bgBody || '#FFF8F0'};
+          border-color: ${c.borderColor || '#D4C4A8'};
+          border-radius: ${r.sm || 8}px;
+          box-shadow: ${shadowVal(s.md)};
+        }
+        #theme-preview-box h5 { color: ${c.textPrimary || '#2C1810'}; }
+        #theme-preview-box p { color: ${c.textSecondary || '#5C4033'}; }
+        #theme-preview-box button:nth-child(1) { background: ${c.primary || '#8B4513'}; }
+        #theme-preview-box button:nth-child(2) { background: ${c.gold || '#C9A227'}; }
+      `;
+    }
+  },
+
+  /* --- 预设主题预览 --- */
+  previewPresetTheme(themeId) {
+    const theme = (typeof BUILT_IN_THEMES !== 'undefined' && BUILT_IN_THEMES[themeId]) || {};
+    if (!theme.colors) return;
+    this._themePreviewConfig = {
+      colors: { ...theme.colors },
+      radius: { ...theme.radius },
+      shadow: { sm: 1, md: 2, lg: 3 }
+    };
+    // 重新渲染编辑器内容
+    const container = document.getElementById('theme-editor-content');
+    if (container) {
+      // 仅更新 preview 区域和 CSS
+      const previewCard = document.getElementById('theme-live-preview');
+      if (previewCard) previewCard.innerHTML = this._renderThemePreviewHTML();
+      // 更新调色板显示值
+      Object.entries(theme.colors || {}).forEach(([key, val]) => {
+        const id = 'theme_color_' + key;
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+      });
+      this._injectThemePreviewCSS();
+    }
+    App.toast(`已加载「${theme.name || themeId}」到预览`, 'info');
+  },
+
+  /* --- 保存自定义主题 --- */
+  saveCustomTheme() {
+    const nameInput = document.getElementById('custom-theme-name');
+    const name = (nameInput?.value || '').trim();
+    if (!name) { App.toast('请输入主题名称', 'error'); return; }
+    if (!this._themePreviewConfig) { App.toast('请调整预览后保存', 'error'); return; }
+    let customs = {};
+    try { customs = Storage.get('app_custom_themes_v1', {}); } catch(e) {}
+    const id = 'custom_' + Date.now();
+    customs[id] = {
+      name,
+      colors: { ...this._themePreviewConfig.colors },
+      radius: { ...this._themePreviewConfig.radius },
+      shadows: {
+        sm: `0 2px ${this._themePreviewConfig.radius.sm || 8}px rgba(0,0,0,0.08)`,
+        md: `0 4px ${(this._themePreviewConfig.radius.sm || 8) * 2}px rgba(0,0,0,0.12)`,
+        lg: `0 8px ${(this._themePreviewConfig.radius.sm || 8) * 4}px rgba(0,0,0,0.16)`
+      },
+      createdAt: new Date().toISOString()
+    };
+    try { Storage.set('app_custom_themes_v1', customs); } catch(e) {
+      App.toast('保存失败: ' + e.message, 'error'); return;
+    }
+    // 注册到 App.themes
+    if (typeof App !== 'undefined' && App.registerTheme) {
+      App.registerTheme(id, customs[id]);
+    }
+    // 刷新列表
+    const listEl = document.getElementById('custom-theme-list');
+    if (listEl) listEl.innerHTML = this._renderCustomThemeList();
+    if (nameInput) nameInput.value = '';
+    App.toast(`主题「${name}」已保存`, 'success');
+  },
+
+  /* --- 删除自定义主题 --- */
+  deleteCustomTheme(id) {
+    if (!confirm('确定删除该自定义主题吗？')) return;
+    let customs = {};
+    try { customs = Storage.get('app_custom_themes_v1', {}); } catch(e) {}
+    if (customs[id]) {
+      delete customs[id];
+      try { Storage.set('app_custom_themes_v1', customs); } catch(e) {}
+    }
+    // 从 App.themes 移除
+    if (typeof App !== 'undefined' && App.themes && App.themes[id]) {
+      delete App.themes[id];
+    }
+    const listEl = document.getElementById('custom-theme-list');
+    if (listEl) listEl.innerHTML = this._renderCustomThemeList();
+    App.toast('主题已删除', 'info');
+  },
+
+  /* --- 应用自定义主题 --- */
+  applyCustomTheme(id) {
+    let customs = {};
+    try { customs = Storage.get('app_custom_themes_v1', {}); } catch(e) {}
+    const theme = customs[id];
+    if (!theme) { App.toast('主题不存在', 'error'); return; }
+    if (typeof App !== 'undefined' && App.applyTheme) {
+      App.applyTheme(id);
+    } else {
+      App.toast('主题系统未就绪', 'error');
+    }
+  },
+
+  /* --- 应用预览主题（即时生效） --- */
+  applyPreviewTheme() {
+    if (!this._themePreviewConfig) { App.toast('请先调整预览', 'error'); return; }
+    const cfg = this._themePreviewConfig;
+    const root = document.documentElement;
+    const c = cfg.colors || {};
+    const r = cfg.radius || {};
+    if (c.bgBody) root.style.setProperty('--bg-body', c.bgBody);
+    if (c.bgCard) root.style.setProperty('--bg-card', c.bgCard);
+    if (c.textPrimary) root.style.setProperty('--text-primary', c.textPrimary);
+    if (c.textSecondary) root.style.setProperty('--text-secondary', c.textSecondary);
+    if (c.primary) root.style.setProperty('--color-primary', c.primary);
+    if (c.primaryDark) root.style.setProperty('--color-primary-dark', c.primaryDark);
+    if (c.gold) root.style.setProperty('--color-gold', c.gold);
+    if (c.borderColor) root.style.setProperty('--border-color', c.borderColor);
+    if (c.borderGold) root.style.setProperty('--border-gold', c.borderGold);
+    if (r.sm) {
+      root.style.setProperty('--border-radius-sm', r.sm + 'px');
+      root.style.setProperty('--border-radius', (r.sm + 4) + 'px');
+      root.style.setProperty('--border-radius-lg', (r.sm * 3) + 'px');
+    }
+    App.toast('预览主题已临时应用（刷新后恢复）', 'success');
+  },
+
+  /* --- 导出自定义主题 --- */
+  exportCustomTheme() {
+    if (!this._themePreviewConfig) { App.toast('无可导出内容', 'error'); return; }
+    const blob = new Blob([JSON.stringify(this._themePreviewConfig, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `theme-preview-${Date.now()}.json`;
+    a.click();
+    App.toast('主题已导出为JSON', 'success');
+  },
+
+  exportOneCustomTheme(id) {
+    let customs = {};
+    try { customs = Storage.get('app_custom_themes_v1', {}); } catch(e) {}
+    const theme = customs[id];
+    if (!theme) { App.toast('主题不存在', 'error'); return; }
+    const blob = new Blob([JSON.stringify(theme, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `theme-${theme.name || id}.json`;
+    a.click();
+    App.toast('主题已导出', 'success');
+  },
+
+  /* --- 导入自定义主题 --- */
+  importCustomTheme() {
+    const input = document.getElementById('theme-import-input');
+    if (input) input.click();
+  },
+
+  _handleThemeImport(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        // 校验格式
+        if (!data.colors) { App.toast('无效的主题文件（缺少colors）', 'error'); return; }
+        this._themePreviewConfig = {
+          colors: data.colors || {},
+          radius: data.radius || { sm: 8, md: 12, lg: 24 },
+          shadow: data.shadow || { sm: 1, md: 2, lg: 3 }
+        };
+        // 如果文件包含name，询问是否直接保存
+        const container = document.getElementById('theme-editor-content');
+        if (container) {
+          container.innerHTML = this._renderThemeEditor();
+          this._injectThemePreviewCSS();
+        }
+        if (data.name && confirm(`主题「${data.name}」已导入，是否保存到列表？`)) {
+          let customs = {};
+          try { customs = Storage.get('app_custom_themes_v1', {}); } catch(e) {}
+          const id = 'import_' + Date.now();
+          customs[id] = { ...data, createdAt: new Date().toISOString() };
+          try { Storage.set('app_custom_themes_v1', customs); } catch(e) {}
+          if (typeof App !== 'undefined' && App.registerTheme) App.registerTheme(id, customs[id]);
+          const listEl = document.getElementById('custom-theme-list');
+          if (listEl) listEl.innerHTML = this._renderCustomThemeList();
+          App.toast(`主题「${data.name}」已保存`, 'success');
+        } else {
+          App.toast('主题已加载到预览', 'info');
+        }
+      } catch (err) {
+        App.toast('导入失败: ' + err.message, 'error');
+      }
+    };
+    reader.readAsText(file);
+    input.value = '';
+  },
+
   /* ==================== AI 小助手一键美化 ==================== */
 
   /** 打开 AI 一键美化对话框 */
   aiBeautify() {
-    const desc = prompt('🤖 描述你想要的美化效果：', '更古风一些，加重金色元素，字体更优雅');
+    const desc = prompt('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"/><rect x="9" y="9" width="6" height="6"/><line x1="9" y1="1" x2="9" y2="4"/><line x1="15" y1="1" x2="15" y2="4"/><line x1="9" y1="20" x2="9" y2="23"/><line x1="15" y1="20" x2="15" y2="23"/><line x1="20" y1="9" x2="23" y2="9"/><line x1="20" y1="14" x2="23" y2="14"/><line x1="1" y1="9" x2="4" y2="9"/><line x1="1" y1="14" x2="4" y2="14"/></svg> 描述你想要的美化效果：', '更古风一些，加重金色元素，字体更优雅');
     if (!desc) return;
     App.toast('AI 正在分析并生成美化方案...', 'info');
     // 模拟 AI 分析（实际接入 AI 接口）
@@ -1072,7 +1499,7 @@ const UIDIY = {
           <option value="choices" ${val.action==='choices'?'selected':''}>选项</option>
           <option value="menu" ${val.action==='menu'?'selected':''}>菜单</option>
         </select>
-        <button class="btn btn-sm btn-danger" onclick="UIDIY.removeKey('${key}')">✕</button>
+        <button class="btn btn-sm btn-danger" onclick="UIDIY.removeKey('${key}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
     `).join('');
   },
@@ -1139,7 +1566,7 @@ const UIDIY = {
           <option value="top-left" ${btn.position==='top-left'?'selected':''}>左上</option>
         </select>
         <label style="display:flex;align-items:center;gap:4px;font-size:12px;"><input type="checkbox" ${btn.visible?'checked':''} onchange="UIDIY.updateButton(${i},'visible',this.checked)" style="width:auto;"> 显示</label>
-        <button class="btn btn-sm btn-danger" onclick="UIDIY.removeButton(${i})">✕</button>
+        <button class="btn btn-sm btn-danger" onclick="UIDIY.removeButton(${i})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
       </div>
     `).join('');
   },
@@ -1180,7 +1607,7 @@ const UIDIY = {
   addCustomButton() {
     const label = prompt('按钮名称：'); if (!label) return;
     const buttons = this.getButtons();
-    buttons.push({ id: 'btn_custom_' + Date.now(), label, icon: '🔧', position: 'bottom-right', style: 'secondary', action: 'custom', visible: true });
+    buttons.push({ id: 'btn_custom_' + Date.now(), label, icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>', position: 'bottom-right', style: 'secondary', action: 'custom', visible: true });
     this.saveButtons(buttons);
     this.renderButtonList();
   },

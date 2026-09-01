@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * AllianceSystem v2 — 联盟系统 v2（势力/家族/个人联盟关系）
+ * AllianceSystem vv3 联盟系统 v2（势力/家族/个人联盟关系）
  * 模块名：AllianceSystem
  * 功能：
  *   1. 联盟类型自定义（国家/家族/门派/朋友圈/商帮/任意）
@@ -126,7 +126,9 @@ const AllianceSystem = {
   /**
    * 初始化联盟系统
    */
+    // 初始化模块入口
   init() {
+    // 初始化模块入口
     this.load();
     this.bindKeyboardShortcuts();
     this.listenToEventBridge();
@@ -136,7 +138,9 @@ const AllianceSystem = {
   /**
    * 进入联盟页面时调用
    */
+    // 页面进入时调用
   onEnter() {
+    // 页面进入时调用
     this.load();
     this.renderPage();
   },
@@ -1558,7 +1562,9 @@ const AllianceSystem = {
   /**
    * 渲染完整页面
    */
+    // 渲染页面主结构
   renderPage() {
+    // 渲染页面主结构
     const page = document.getElementById('page-alliance');
     if (!page) return;
 
@@ -1589,13 +1595,13 @@ const AllianceSystem = {
     return `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid ${C.gold};background:${C.parchmentLight};">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:20px;">⚔️</span>
+          <span style="font-size:20px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg></span>
           <span style="font-size:18px;font-weight:bold;color:${C.ink};">联盟系统</span>
         </div>
         <div style="display:flex;gap:10px;">
           <button class="btn btn-primary" onclick="AllianceSystem.openCreateModal()"
             style="background:${C.gold};color:${C.ink};border:1px solid ${C.goldDark};padding:6px 14px;border-radius:6px;cursor:pointer;font-weight:500;">
-            ➕ 创建联盟
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 创建联盟
           </button>
           <button class="btn btn-secondary" onclick="AllianceSystem.resetCanvasView()"
             style="background:${C.parchmentDark};color:${C.ink};border:1px solid ${C.gold};padding:6px 14px;border-radius:6px;cursor:pointer;">
@@ -1638,8 +1644,8 @@ const AllianceSystem = {
             <span style="font-size:11px;padding:2px 6px;border-radius:10px;background:${C.gold}22;color:${C.goldDark};">${scaleLv.name}</span>
           </div>
           <div style="font-size:12px;color:${C.inkMuted};display:flex;gap:10px;">
-            <span>👥 ${(a.members || []).length} 人</span>
-            <span>⭐ ${prestige}</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg> ${(a.members || []).length} 人</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> ${prestige}</span>
           </div>
           <div style="font-size:11px;color:${C.inkMuted};margin-top:4px;">${a.type}</div>
         </div>
@@ -1665,7 +1671,7 @@ const AllianceSystem = {
       return `
         <div style="flex:1;padding:24px;background:${C.parchment};">
           <div style="text-align:center;padding:60px 20px;color:${C.inkMuted};">
-            <div style="font-size:48px;margin-bottom:12px;">📜</div>
+            <div style="font-size:48px;margin-bottom:12px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
             <p style="font-size:16px;">请在左侧选择一个联盟查看详情</p>
           </div>
         </div>
@@ -1679,7 +1685,7 @@ const AllianceSystem = {
     const membersHtml = (alliance.members || []).map(m => `
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-bottom:1px solid ${C.gold}22;">
         <div style="display:flex;align-items:center;gap:8px;">
-          <span style="font-size:14px;">👤</span>
+          <span style="font-size:14px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
           <div>
             <div style="font-size:14px;font-weight:500;color:${C.ink};">${m.name}</div>
             <div style="font-size:11px;color:${C.inkMuted};">贡献: ${m.contribution || 0}</div>
@@ -1803,7 +1809,7 @@ const AllianceSystem = {
           </button>
           <button onclick="AllianceSystem.openAllianceDiplomacy('hostile')"
             style="padding:8px 12px;border-radius:6px;border:1px solid ${C.crimson};background:${C.crimson}10;color:${C.crimson};cursor:pointer;font-size:13px;text-align:left;">
-            ⚔️ 宣布敌对
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg> 宣布敌对
           </button>
           <button onclick="AllianceSystem.openBreakAllianceModal()"
             style="padding:8px 12px;border-radius:6px;border:1px solid ${C.amber};background:${C.amber}10;color:${C.amber};cursor:pointer;font-size:13px;text-align:left;">
@@ -1815,7 +1821,7 @@ const AllianceSystem = {
           </button>
           <button onclick="AllianceSystem.generateEventNow()"
             style="padding:8px 12px;border-radius:6px;border:1px solid ${C.inkLight};background:${C.inkLight}10;color:${C.inkLight};cursor:pointer;font-size:13px;text-align:left;">
-            🔔 生成事件
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg> 生成事件
           </button>
           <button onclick="AllianceSystem.leaveCurrentAlliance()"
             style="padding:8px 12px;border-radius:6px;border:1px solid ${C.crimson};background:${C.crimson}10;color:${C.crimson};cursor:pointer;font-size:13px;text-align:left;margin-top:8px;">

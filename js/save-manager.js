@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * SaveManager v6 — 增强存档管理
+ * SaveManager vv7 增强存档管理
  * 模块名：SaveManager
  * 功能：无限存档、存档备注、搜索过滤、分类管理、导入导出
  * 支持：手动存档 / 自动存档 / 章节存档
@@ -12,9 +12,9 @@ const SaveManager = {
    * 存档分类定义
    */
   CATEGORIES: [
-    { id: 'manual', name: '手动存档', icon: '💾', color: '#4A90C2', desc: '玩家手动保存的进度' },
-    { id: 'auto', name: '自动存档', icon: '🔄', color: '#6B8E23', desc: '系统自动保存的关键节点' },
-    { id: 'chapter', name: '章节存档', icon: '📖', color: '#C9A227', desc: '章节完成时的自动存档' }
+    { id: 'manual', name: '手动存档', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>', color: '#4A90C2', desc: '玩家手动保存的进度' },
+    { id: 'auto', name: '自动存档', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>', color: '#6B8E23', desc: '系统自动保存的关键节点' },
+    { id: 'chapter', name: '章节存档', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>', color: '#C9A227', desc: '章节完成时的自动存档' }
   ],
 
   /**
@@ -30,14 +30,20 @@ const SaveManager = {
   /**
    * 初始化模块
    */
+    // 初始化模块入口
   init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
     this.renderPage();
   },
 
   /**
    * 进入页面时刷新
    */
+    // 页面进入时调用
   onEnter() {
+    // 页面进入时调用
     this._currentPage = 1;
     this.renderSaveList();
     this.renderStats();
@@ -60,7 +66,7 @@ const SaveManager = {
    * 保存存档数据到Storage
    */
   _saveData(data) {
-    Storage.set('saves_v7', data);
+    try { Storage.set('saves_v7', data); } catch(e) { console.warn('[v7] Storage.set失败:', e); }
   },
 
   /**
@@ -202,7 +208,7 @@ const SaveManager = {
     if (snapshot.events) Storage.set('events_v7', snapshot.events);
     if (snapshot.memories) Storage.set('memories_v2', snapshot.memories);
 
-    App.toast(`✅ 已加载存档：${save.note}`, 'success', 4000);
+    App.toast(`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 已加载存档：${save.note}`, 'success', 4000);
 
     // 通知其他模块刷新
     if (window.EventBridge) {
@@ -350,19 +356,21 @@ const SaveManager = {
   /**
    * 渲染页面主结构
    */
+    // 渲染页面主结构
   renderPage() {
+    // 渲染页面主结构
     const page = document.getElementById('page-save-manager');
     if (!page) return;
     page.innerHTML = `
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="padding:var(--space-lg);">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
-          <h2 class="section-title">💾 存档管理</h2>
+          <h2 class="section-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 存档管理</h2>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="SaveManager.showCreateModal('manual')">➕ 手动存档</button>
-            <button class="btn btn-secondary" onclick="SaveManager.createSave('auto', '自动存档')">🔄 立即自动存档</button>
-            <button class="btn btn-sm btn-secondary" onclick="SaveManager.importSave()">📥 导入</button>
-            <button class="btn btn-sm btn-secondary" onclick="SaveManager.showSettings()">⚙️ 设置</button>
+            <button class="btn btn-primary" onclick="SaveManager.showCreateModal('manual')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 手动存档</button>
+            <button class="btn btn-secondary" onclick="SaveManager.createSave('auto', '自动存档')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> 立即自动存档</button>
+            <button class="btn btn-sm btn-secondary" onclick="SaveManager.importSave()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导入</button>
+            <button class="btn btn-sm btn-secondary" onclick="SaveManager.showSettings()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg> 设置</button>
           </div>
         </div>
 
@@ -380,7 +388,7 @@ const SaveManager = {
             <option value="playtime">游戏时长</option>
           </select>
           <input type="text" id="saveSearch" placeholder="搜索存档备注..." oninput="SaveManager.search(this.value)" style="padding:4px 8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);font-size:13px;flex:1;min-width:120px;">
-          <button class="btn btn-sm btn-danger" onclick="SaveManager.deleteSavesByCategory('auto')">🗑️ 清理自动</button>
+          <button class="btn btn-sm btn-danger" onclick="SaveManager.deleteSavesByCategory('auto')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 清理自动</button>
         </div>
 
         <!-- 统计 -->
@@ -413,7 +421,7 @@ const SaveManager = {
     container.innerHTML = `
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <div style="padding:8px 14px;background:var(--bg-sidebar);border-radius:8px;font-size:13px;">
-          📦 总计：<strong>${stats.total}</strong>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> 总计：<strong>${stats.total}</strong>
         </div>
         ${this.CATEGORIES.map(c => `
           <div style="padding:8px 14px;background:${c.color}11;border:1px solid ${c.color}33;border-radius:8px;font-size:13px;">
@@ -485,16 +493,16 @@ const SaveManager = {
                 <div class="card-body">
                   <div style="font-size:14px;font-weight:600;margin-bottom:6px;word-break:break-all;">${s.note || '无备注'}</div>
                   <div style="font-size:12px;color:var(--text-muted);display:flex;flex-direction:column;gap:2px;">
-                    ${s.chapterTitle ? `<span>📖 ${s.chapterTitle}</span>` : ''}
+                    ${s.chapterTitle ? `<span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> ${s.chapterTitle}</span>` : ''}
                     ${s.location ? `<span>📍 ${s.location}</span>` : ''}
-                    ${s.npcName ? `<span>👤 ${s.npcName}</span>` : ''}
+                    ${s.npcName ? `<span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${s.npcName}</span>` : ''}
                     <span>⏱️ 游戏时长：${playTimeMin} 分钟</span>
                   </div>
                   <div style="display:flex;gap:4px;margin-top:10px;flex-wrap:wrap;">
                     <button class="btn btn-sm btn-primary" style="flex:1;" onclick="SaveManager.loadSave('${s.id}')">📂 读取</button>
-                    <button class="btn btn-sm btn-secondary" onclick="SaveManager.showEditModal('${s.id}')">✏️</button>
-                    <button class="btn btn-sm btn-secondary" onclick="SaveManager.exportSave('${s.id}')">📤</button>
-                    <button class="btn btn-sm btn-danger" onclick="SaveManager.deleteSave('${s.id}')">🗑️</button>
+                    <button class="btn btn-sm btn-secondary" onclick="SaveManager.showEditModal('${s.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>
+                    <button class="btn btn-sm btn-secondary" onclick="SaveManager.exportSave('${s.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></button>
+                    <button class="btn btn-sm btn-danger" onclick="SaveManager.deleteSave('${s.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
                   </div>
                 </div>
               </div>
@@ -525,10 +533,10 @@ const SaveManager = {
         <div style="font-size:12px;color:var(--text-muted);">
           分类：${this.CATEGORIES.find(c => c.id === category)?.name || '手动存档'}
         </div>
-        <button class="btn btn-primary" onclick="SaveManager.confirmCreate('${category}')">💾 确认存档</button>
+        <button class="btn btn-primary" onclick="SaveManager.confirmCreate('${category}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 确认存档</button>
       </div>
     `;
-    App.showModal('💾 创建存档', content);
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 创建存档', content);
   },
 
   confirmCreate(category) {
@@ -546,10 +554,10 @@ const SaveManager = {
     const content = `
       <div style="display:flex;flex-direction:column;gap:12px;">
         <input type="text" id="editNoteInput" value="${(save.note || '').replace(/"/g, '&quot;')}" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);">
-        <button class="btn btn-primary" onclick="SaveManager.confirmEdit('${saveId}')">💾 保存备注</button>
+        <button class="btn btn-primary" onclick="SaveManager.confirmEdit('${saveId}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 保存备注</button>
       </div>
     `;
-    App.showModal('✏️ 编辑备注', content);
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 编辑备注', content);
   },
 
   confirmEdit(saveId) {
@@ -581,10 +589,10 @@ const SaveManager = {
           <label style="display:block;font-size:13px;margin-bottom:4px;">自动存档间隔（秒）</label>
           <input type="number" id="autoSaveInterval" value="${data.settings?.autoSaveInterval || 300}" min="60" max="3600" style="padding:6px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);width:100%;">
         </div>
-        <button class="btn btn-primary" onclick="SaveManager.saveSettings()">💾 保存设置</button>
+        <button class="btn btn-primary" onclick="SaveManager.saveSettings()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 保存设置</button>
       </div>
     `;
-    App.showModal('⚙️ 存档设置', content);
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg> 存档设置', content);
   },
 
   saveSettings() {

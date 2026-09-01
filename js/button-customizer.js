@@ -72,30 +72,30 @@
     /** 系统默认按钮配置（按页面分组） */
     const DEFAULT_BUTTONS = {
         'index': [
-            { id: 'btn-start', label: '开始故事', icon: '📖', tooltip: '开始阅读视觉小说', position: 'center', order: 1, style: 'primary', shortcut: 'Enter', visible: true, action: { type: 'navigate', params: { target: 'story' } } },
+            { id: 'btn-start', label: '开始故事', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>', tooltip: '开始阅读视觉小说', position: 'center', order: 1, style: 'primary', shortcut: 'Enter', visible: true, action: { type: 'navigate', params: { target: 'story' } } },
             { id: 'btn-continue', label: '继续阅读', icon: '▶️', tooltip: '从上次进度继续', position: 'center', order: 2, style: 'primary', shortcut: 'C', visible: true, action: { type: 'navigate', params: { target: 'story', continue: true } } },
-            { id: 'btn-gallery', label: '画廊', icon: '🖼️', tooltip: '查看CG画廊', position: 'center', order: 3, style: 'secondary', shortcut: 'G', visible: true, action: { type: 'navigate', params: { target: 'gallery' } } },
-            { id: 'btn-settings', label: '设置', icon: '⚙️', tooltip: '系统设置', position: 'top-right', order: 1, style: 'icon', shortcut: 'S', visible: true, action: { type: 'popup', params: { target: 'settings' } } },
-            { id: 'btn-achievements', label: '成就', icon: '🏆', tooltip: '成就系统', position: 'top-right', order: 2, style: 'icon', shortcut: 'A', visible: true, action: { type: 'navigate', params: { target: 'achievements' } } }
+            { id: 'btn-gallery', label: '画廊', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', tooltip: '查看CG画廊', position: 'center', order: 3, style: 'secondary', shortcut: 'G', visible: true, action: { type: 'navigate', params: { target: 'gallery' } } },
+            { id: 'btn-settings', label: '设置', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>', tooltip: '系统设置', position: 'top-right', order: 1, style: 'icon', shortcut: 'S', visible: true, action: { type: 'popup', params: { target: 'settings' } } },
+            { id: 'btn-achievements', label: '成就', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/></svg>', tooltip: '成就系统', position: 'top-right', order: 2, style: 'icon', shortcut: 'A', visible: true, action: { type: 'navigate', params: { target: 'achievements' } } }
         ],
         'story': [
             { id: 'btn-menu', label: '菜单', icon: '☰', tooltip: '打开菜单', position: 'top-left', order: 1, style: 'icon', shortcut: 'Esc', visible: true, action: { type: 'popup', params: { target: 'menu' } } },
             { id: 'btn-auto', label: '自动', icon: '▶️', tooltip: '自动播放模式', position: 'bottom-right', order: 1, style: 'secondary', shortcut: 'A', visible: true, action: { type: 'script', params: { script: 'toggleAutoPlay()' } } },
             { id: 'btn-skip', label: '跳过', icon: '⏭️', tooltip: '快速跳过已读内容', position: 'bottom-right', order: 2, style: 'secondary', shortcut: 'Ctrl+S', visible: true, action: { type: 'script', params: { script: 'toggleSkip()' } } },
-            { id: 'btn-log', label: '历史', icon: '📜', tooltip: '查看对话历史', position: 'bottom-right', order: 3, style: 'secondary', shortcut: 'L', visible: true, action: { type: 'popup', params: { target: 'log' } } },
-            { id: 'btn-save', label: '保存', icon: '💾', tooltip: '快速保存', position: 'top-right', order: 1, style: 'icon', shortcut: 'Ctrl+Q', visible: true, action: { type: 'api', params: { endpoint: '/api/quick-save', method: 'POST' } } },
+            { id: 'btn-log', label: '历史', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>', tooltip: '查看对话历史', position: 'bottom-right', order: 3, style: 'secondary', shortcut: 'L', visible: true, action: { type: 'popup', params: { target: 'log' } } },
+            { id: 'btn-save', label: '保存', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>', tooltip: '快速保存', position: 'top-right', order: 1, style: 'icon', shortcut: 'Ctrl+Q', visible: true, action: { type: 'api', params: { endpoint: '/api/quick-save', method: 'POST' } } },
             { id: 'btn-load', label: '读取', icon: '📂', tooltip: '快速读取', position: 'top-right', order: 2, style: 'icon', shortcut: 'Ctrl+L', visible: true, action: { type: 'popup', params: { target: 'save-load' } } },
             { id: 'btn-hide-ui', label: '隐藏UI', icon: '👁️', tooltip: '隐藏/显示UI', position: 'top-right', order: 3, style: 'icon', shortcut: 'H', visible: true, action: { type: 'script', params: { script: 'toggleUI()' } } }
         ],
         'gallery': [
             { id: 'btn-back', label: '返回', icon: '←', tooltip: '返回主菜单', position: 'top-left', order: 1, style: 'secondary', shortcut: 'Esc', visible: true, action: { type: 'navigate', params: { target: 'index' } } },
-            { id: 'btn-cg', label: 'CG', icon: '🖼️', tooltip: 'CG图集', position: 'top-center', order: 1, style: 'primary', shortcut: '1', visible: true, action: { type: 'script', params: { script: 'switchGalleryTab("cg")' } } },
-            { id: 'btn-bg', label: '背景', icon: '🏞️', tooltip: '背景图集', position: 'top-center', order: 2, style: 'secondary', shortcut: '2', visible: true, action: { type: 'script', params: { script: 'switchGalleryTab("bg")' } } },
+            { id: 'btn-cg', label: 'CG', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', tooltip: 'CG图集', position: 'top-center', order: 1, style: 'primary', shortcut: '1', visible: true, action: { type: 'script', params: { script: 'switchGalleryTab("cg")' } } },
+            { id: 'btn-bg', label: '背景', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M12 3l-8 8h16l-8-8z"/></svg>', tooltip: '背景图集', position: 'top-center', order: 2, style: 'secondary', shortcut: '2', visible: true, action: { type: 'script', params: { script: 'switchGalleryTab("bg")' } } },
             { id: 'btn-music', label: '音乐', icon: '🎵', tooltip: '音乐鉴赏', position: 'top-center', order: 3, style: 'secondary', shortcut: '3', visible: true, action: { type: 'script', params: { script: 'switchGalleryTab("music")' } } }
         ],
         'settings': [
             { id: 'btn-back', label: '返回', icon: '←', tooltip: '返回', position: 'top-left', order: 1, style: 'secondary', shortcut: 'Esc', visible: true, action: { type: 'navigate', params: { target: 'back' } } },
-            { id: 'btn-reset', label: '重置', icon: '🔄', tooltip: '恢复默认设置', position: 'bottom-right', order: 1, style: 'warning', shortcut: 'R', visible: true, action: { type: 'script', params: { script: 'resetSettings()' } } },
+            { id: 'btn-reset', label: '重置', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>', tooltip: '恢复默认设置', position: 'bottom-right', order: 1, style: 'warning', shortcut: 'R', visible: true, action: { type: 'script', params: { script: 'resetSettings()' } } },
             { id: 'btn-apply', label: '应用', icon: '✓', tooltip: '保存设置', position: 'bottom-right', order: 2, style: 'success', shortcut: 'Ctrl+S', visible: true, action: { type: 'api', params: { endpoint: '/api/save-settings', method: 'POST' } } }
         ],
         'characters': [
@@ -107,13 +107,13 @@
             { id: 'btn-back', label: '返回', icon: '←', tooltip: '返回主菜单', position: 'top-left', order: 1, style: 'secondary', shortcut: 'Esc', visible: true, action: { type: 'navigate', params: { target: 'index' } } },
             { id: 'btn-all', label: '全部', icon: '📋', tooltip: '显示全部成就', position: 'top-center', order: 1, style: 'primary', shortcut: '1', visible: true, action: { type: 'script', params: { script: 'filterAchievements("all")' } } },
             { id: 'btn-unlock', label: '已解锁', icon: '🔓', tooltip: '显示已解锁成就', position: 'top-center', order: 2, style: 'secondary', shortcut: '2', visible: true, action: { type: 'script', params: { script: 'filterAchievements("unlocked")' } } },
-            { id: 'btn-lock', label: '未解锁', icon: '🔒', tooltip: '显示未解锁成就', position: 'top-center', order: 3, style: 'secondary', shortcut: '3', visible: true, action: { type: 'script', params: { script: 'filterAchievements("locked")' } } }
+            { id: 'btn-lock', label: '未解锁', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>', tooltip: '显示未解锁成就', position: 'top-center', order: 3, style: 'secondary', shortcut: '3', visible: true, action: { type: 'script', params: { script: 'filterAchievements("locked")' } } }
         ],
         'save-load': [
             { id: 'btn-back', label: '返回', icon: '←', tooltip: '返回', position: 'top-left', order: 1, style: 'secondary', shortcut: 'Esc', visible: true, action: { type: 'navigate', params: { target: 'back' } } },
-            { id: 'btn-save-mode', label: '保存模式', icon: '💾', tooltip: '切换到保存模式', position: 'top-center', order: 1, style: 'primary', shortcut: '1', visible: true, action: { type: 'script', params: { script: 'setSaveLoadMode("save")' } } },
+            { id: 'btn-save-mode', label: '保存模式', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>', tooltip: '切换到保存模式', position: 'top-center', order: 1, style: 'primary', shortcut: '1', visible: true, action: { type: 'script', params: { script: 'setSaveLoadMode("save")' } } },
             { id: 'btn-load-mode', label: '读取模式', icon: '📂', tooltip: '切换到读取模式', position: 'top-center', order: 2, style: 'secondary', shortcut: '2', visible: true, action: { type: 'script', params: { script: 'setSaveLoadMode("load")' } } },
-            { id: 'btn-delete', label: '删除', icon: '🗑️', tooltip: '删除存档', position: 'bottom-right', order: 1, style: 'danger', shortcut: 'Del', visible: true, action: { type: 'script', params: { script: 'deleteSaveSlot()' } } }
+            { id: 'btn-delete', label: '删除', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>', tooltip: '删除存档', position: 'bottom-right', order: 1, style: 'danger', shortcut: 'Del', visible: true, action: { type: 'script', params: { script: 'deleteSaveSlot()' } } }
         ],
         'credits': [
             { id: 'btn-back', label: '返回', icon: '←', tooltip: '返回主菜单', position: 'top-left', order: 1, style: 'secondary', shortcut: 'Esc', visible: true, action: { type: 'navigate', params: { target: 'index' } } },
@@ -173,8 +173,8 @@
             // 为 story 页面添加更多按钮
             if (pageId === 'story') {
                 full[pageId].push(
-                    { id: 'btn-history', label: '回顾', icon: '📖', tooltip: '章节回顾', position: 'bottom-left', order: 4, style: 'secondary', shortcut: 'Ctrl+H', visible: true, action: { type: 'popup', params: { target: 'history' } } },
-                    { id: 'btn-tips', label: '提示', icon: '💡', tooltip: '游戏提示', position: 'bottom-left', order: 5, style: 'secondary', shortcut: 'T', visible: true, action: { type: 'popup', params: { target: 'tips' } } },
+                    { id: 'btn-history', label: '回顾', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>', tooltip: '章节回顾', position: 'bottom-left', order: 4, style: 'secondary', shortcut: 'Ctrl+H', visible: true, action: { type: 'popup', params: { target: 'history' } } },
+                    { id: 'btn-tips', label: '提示', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-7 7c0 2.5 1.5 4.5 3 6v2h8v-2c1.5-1.5 3-3.5 3-6a7 7 0 00-7-7z"/></svg>', tooltip: '游戏提示', position: 'bottom-left', order: 5, style: 'secondary', shortcut: 'T', visible: true, action: { type: 'popup', params: { target: 'tips' } } },
                     { id: 'btn-screenshot', label: '截图', icon: '📷', tooltip: '保存截图', position: 'top-right', order: 4, style: 'icon', shortcut: 'PrtSc', visible: true, action: { type: 'script', params: { script: 'takeScreenshot()' } } },
                     { id: 'btn-fullscreen', label: '全屏', icon: '⛶', tooltip: '切换全屏', position: 'top-right', order: 5, style: 'icon', shortcut: 'F11', visible: true, action: { type: 'script', params: { script: 'toggleFullscreen()' } } }
                 );
@@ -257,7 +257,11 @@
          * 初始化系统
          * 从本地存储加载配置，若无则使用默认配置
          */
+          // 初始化模块入口
         init() {
+          // v7: 外部模块依赖检查
+          if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
             if (this.initialized) return this;
             this.loadFromStorage();
             this.rebuildShortcutMap();
@@ -937,9 +941,9 @@
                     <div style="display:flex;gap:8px;align-items:center;">
                         <span style="font-size:12px;opacity:0.7;">页面:</span>
                         <select id="bc-page-selector" style="${this.getSelectStyle()}"></select>
-                        <button id="bc-btn-save-scheme" style="${this.getSmallBtnStyle('secondary')}">💾 保存方案</button>
+                        <button id="bc-btn-save-scheme" style="${this.getSmallBtnStyle('secondary')}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 保存方案</button>
                         <button id="bc-btn-load-scheme" style="${this.getSmallBtnStyle('secondary')}">📂 加载方案</button>
-                        <button id="bc-btn-ai-design" style="${this.getSmallBtnStyle('primary')}">✨ AI设计</button>
+                        <button id="bc-btn-ai-design" style="${this.getSmallBtnStyle('primary')}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> AI设计</button>
                         <button id="bc-btn-close" style="${this.getSmallBtnStyle('icon')}" title="关闭">✕</button>
                     </div>
                 </div>
@@ -950,7 +954,7 @@
                         <button id="bc-btn-add-button" style="${this.getAddBtnStyle()}">+ 添加新按钮</button>
                     </div>
                     <div id="bc-button-editor" style="${this.getEditorPanelStyle()}">
-                        <div style="${this.getPanelTitleStyle()}">✏️ 按钮编辑器</div>
+                        <div style="${this.getPanelTitleStyle()}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 按钮编辑器</div>
                         <div id="bc-editor-form" style="${this.getFormStyle()}">
                             <div style="text-align:center;padding:40px 20px;opacity:0.5;">
                                 点击左侧按钮进行编辑
@@ -965,7 +969,7 @@
                 <div id="bc-editor-footer" style="${this.getFooterStyle()}">
                     <span id="bc-status-text" style="font-size:12px;opacity:0.7;">就绪</span>
                     <div style="display:flex;gap:8px;">
-                        <button id="bc-btn-reset-page" style="${this.getSmallBtnStyle('warning')}">🔄 重置本页</button>
+                        <button id="bc-btn-reset-page" style="${this.getSmallBtnStyle('warning')}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> 重置本页</button>
                         <button id="bc-btn-save" style="${this.getSmallBtnStyle('success')}">✓ 保存配置</button>
                     </div>
                 </div>
@@ -1063,13 +1067,13 @@
         getPageDisplayName(pageId) {
             const names = {
                 'index': '🏠 首页',
-                'story': '📖 故事',
-                'gallery': '🖼️ 画廊',
-                'settings': '⚙️ 设置',
-                'characters': '👤 角色',
-                'achievements': '🏆 成就',
-                'save-load': '💾 存读档',
-                'credits': '🎬 制作名单'
+                'story': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> 故事',
+                'gallery': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 画廊',
+                'settings': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg> 设置',
+                'characters': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> 角色',
+                'achievements': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/></svg> 成就',
+                'save-load': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 存读档',
+                'credits': '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg> 制作名单'
             };
             return names[pageId] || pageId;
         }
@@ -1095,7 +1099,7 @@
                     <span style="flex:1;font-size:14px;${!btn.visible ? 'opacity:0.4;text-decoration:line-through;' : ''}">${btn.label}</span>
                     <span style="font-size:11px;opacity:0.5;margin-right:8px;">${btn.position}</span>
                     ${btn.shortcut ? `<span style="font-size:10px;background:${THEME.gold};color:${THEME.ink};padding:2px 6px;border-radius:4px;margin-right:4px;">${btn.shortcut}</span>` : ''}
-                    <button class="bc-btn-delete" data-id="${btn.id}" style="${this.getDeleteBtnStyle()}">🗑️</button>
+                    <button class="bc-btn-delete" data-id="${btn.id}" style="${this.getDeleteBtnStyle()}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
                 `;
                 // 点击选择
                 item.addEventListener('click', (e) => {
@@ -1204,7 +1208,7 @@
                             <span style="font-size:12px;opacity:0.6;">支持Emoji或SVG代码</span>
                         </div>
                         <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;">
-                            ${['📖','▶️','🖼️','⚙️','🏆','☰','💾','📂','←','✓','🔄','🗑️','💡','📷','⛶','🔓','🔒','📋'].map(e =>
+                            ${['<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>','▶️','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/></svg>','☰','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>','📂','←','✓','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 00-7 7c0 2.5 1.5 4.5 3 6v2h8v-2c1.5-1.5 3-3.5 3-6a7 7 0 00-7-7z"/></svg>','📷','⛶','🔓','<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>','📋'].map(e =>
                                 `<span class="bc-emoji-pick" data-emoji="${e}" style="cursor:pointer;font-size:20px;padding:4px;border-radius:4px;border:1px solid ${THEME.border};background:${THEME.parchment};">${e}</span>`
                             ).join('')}
                         </div>

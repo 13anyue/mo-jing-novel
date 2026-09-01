@@ -7,24 +7,31 @@
  * =========================================================
  */
 const CustomCreator = {
-  init() { this.renderPage(); },
-  onEnter() { this.renderUserModules(); },
+    // 初始化模块入口
+  init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    this.renderPage(); },
+    // 页面进入时调用
+  onEnter() {
+    this.renderUserModules(); },
 
   getUserModules() { return Storage.get('userCustomModules', []); },
   saveUserModules(list) { Storage.set('userCustomModules', list); },
 
+    // 渲染页面主结构
   renderPage() {
     const page = document.getElementById('page-custom-creator');
     if (!page) return;
     page.innerHTML = `
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
-        <h2 class="section-title">🛠️ 功能创建器</h2>
-        <button class="btn btn-secondary" onclick="CustomCreator.showHelp()">❓ 使用说明</button>
+        <h2 class="section-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg> 功能创建器</h2>
+        <button class="btn btn-secondary" onclick="CustomCreator.showHelp()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 使用说明</button>
       </div>
 
       <div class="card" style="margin-bottom:var(--space-lg);">
-        <div class="card-header"><h3>✨ AI辅助创建</h3></div>
+        <div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> AI辅助创建</h3></div>
         <div class="card-body">
           <p style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-md);">
             描述你想要的功能，AI将为你生成完整的HTML和JavaScript代码。
@@ -57,13 +64,13 @@ const CustomCreator = {
           <div class="form-group"><label>JavaScript代码</label><textarea id="manualJS" rows="6" placeholder="const MyModule = { init() { ... } };"></textarea></div>
           <div class="hint">代码将在沙箱中运行。可以使用Storage对象存储数据，使用App.toast()显示提示。</div>
           <div style="display:flex;gap:8px;margin-top:var(--space-md);">
-            <button class="btn btn-primary" onclick="CustomCreator.manualCreate()">💾 创建功能</button>
+            <button class="btn btn-primary" onclick="CustomCreator.manualCreate()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 创建功能</button>
             <button class="btn btn-secondary" onclick="CustomCreator.testCode()">🧪 测试代码</button>
           </div>
         </div>
       </div>
 
-      <h3 style="font-size:16px;margin-bottom:var(--space-sm);">📦 我的功能</h3>
+      <h3 style="font-size:16px;margin-bottom:var(--space-sm);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> 我的功能</h3>
       <div id="userModuleList"></div>
     `;
     this.renderUserModules();
@@ -108,7 +115,7 @@ const CustomCreator = {
       const code = jsonMatch ? JSON.parse(jsonMatch[0]) : { html: '', js: '', css: '' };
 
       // Show preview for editing
-      App.showModal(`✨ AI生成：${name}`, `
+      App.showModal(`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> AI生成：${name}`, `
         <div style="max-height:60vh;overflow-y:auto;">
           ${code.css ? `<h4 style="color:var(--color-gold);margin:8px 0;">CSS</h4><div class="code-block">${this.escape(code.css)}</div>` : ''}
           ${code.html ? `<h4 style="color:var(--color-gold);margin:8px 0;">HTML</h4><div class="code-block">${this.escape(code.html)}</div>` : ''}
@@ -184,7 +191,7 @@ const CustomCreator = {
     const c = document.getElementById('userModuleList');
     if (!c) return;
     const modules = this.getUserModules();
-    if (modules.length === 0) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">🛠️</div><p>还没有创建任何功能</p></div>'; return; }
+    if (modules.length === 0) { c.innerHTML = '<div class="empty-state"><div class="empty-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div><p>还没有创建任何功能</p></div>'; return; }
     c.innerHTML = modules.map(m => `
       <div class="list-item">
         <span style="font-size:20px;">${m.source === 'ai' ? '🤖' : '📝'}</span>
@@ -194,7 +201,7 @@ const CustomCreator = {
         </div>
         <button class="btn btn-sm btn-secondary" onclick="CustomCreator.viewModule('${m.id}')">👁️</button>
         <button class="btn btn-sm btn-primary" onclick="CustomCreator.runModule('${m.id}')">▶️ 运行</button>
-        <button class="btn btn-sm btn-danger" onclick="CustomCreator.deleteModule('${m.id}')">🗑️</button>
+        <button class="btn btn-sm btn-danger" onclick="CustomCreator.deleteModule('${m.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
       </div>
     `).join('');
   },
@@ -248,7 +255,7 @@ const CustomCreator = {
   },
 
   showHelp() {
-    App.showModal('❓ 功能创建器说明', `
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 功能创建器说明', `
       <div style="line-height:1.8;">
         <p><strong>AI辅助创建：</strong>描述你想要的功能，AI会自动生成HTML和JavaScript代码。</p>
         <p><strong>手动编写：</strong>直接输入HTML和JS代码创建功能。</p>

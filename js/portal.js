@@ -459,9 +459,36 @@ const PortalSystem = {
         <!-- 天气特效层 -->
         <div class="portal-immersive-weather ${weather.className}" id="immersiveWeather"></div>
 
-        <!-- 顶部信息栏 -->
+        <!-- 右侧操作面板 -->
+        <div class="portal-immersive-sidebar">
+          <div class="portal-immersive-sidebar-btn" onclick="PortalSystem.backToList()">
+            <svg width="18" height="18"><use href="#icon-import"/></svg>
+            <span>返回列表</span>
+          </div>
+          <div class="portal-immersive-sidebar-btn" onclick="PortalSystem.toggleBGM()">
+            <svg width="18" height="18"><use href="#icon-music"/></svg>
+            <span>BGM</span>
+          </div>
+          <div class="portal-immersive-sidebar-btn" onclick="PortalSystem.openEditDialog('${scene.id}')">
+            <svg width="18" height="18"><use href="#icon-skills"/></svg>
+            <span>编辑场景</span>
+          </div>
+          <div class="portal-immersive-sidebar-btn" onclick="PortalSystem.viewMap()">
+            <svg width="18" height="18"><use href="#icon-map"/></svg>
+            <span>查看地图</span>
+          </div>
+          <div class="portal-immersive-sidebar-btn" onclick="PortalSystem.toggleWeather()">
+            <svg width="18" height="18"><use href="#icon-baike"/></svg>
+            <span>${this._isWeatherActive ? '关闭特效' : '天气特效'}</span>
+          </div>
+        </div>
+
+        <!-- 顶部状态条 -->
         <div class="portal-immersive-header">
-          <button class="btn btn-sm btn-secondary" onclick="PortalSystem.backToList()">← 返回列表</button>
+          <button class="back-btn" onclick="PortalSystem.backToList()">
+            <svg width="16" height="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"><use href="#icon-import"/></svg>
+            返回
+          </button>
           <div class="portal-immersive-title">
             <h2>${scene.name}</h2>
             <span class="portal-immersive-subtitle">
@@ -469,43 +496,31 @@ const PortalSystem = {
             </span>
           </div>
           <div class="portal-immersive-header-actions">
-            <button class="btn btn-sm btn-gold" onclick="PortalSystem.toggleBGM()" id="bgmToggleBtn">🎵 BGM</button>
-            <button class="btn btn-sm btn-secondary" onclick="PortalSystem.openEditDialog('${scene.id}')">✏️ 编辑</button>
+            <button onclick="PortalSystem.toggleBGM()" id="bgmToggleBtn">
+              <svg width="16" height="16" style="display:inline-block;vertical-align:middle;margin-right:4px;"><use href="#icon-music"/></svg>
+              BGM
+            </button>
           </div>
         </div>
 
-        <!-- 场景内容层 -->
-        <div class="portal-immersive-content">
-          <!-- 左侧/上方：氛围描述 -->
-          <div class="portal-immersive-ambiance" id="ambianceText"></div>
-
-          <!-- NPC层 -->
-          <div class="portal-immersive-npcs" id="immersiveNPCs">
-            ${this._renderNPCAvatars(npcs, scene)}
-          </div>
-
-          <!-- 物品层 -->
-          <div class="portal-immersive-objects" id="immersiveObjects">
-            ${this._renderSceneObjects(scene.objects || [])}
-          </div>
+        <!-- 场景内容层：氛围 + NPC -->
+        <div class="portal-immersive-ambiance" id="ambianceText"></div>
+        <div class="portal-immersive-npcs" id="immersiveNPCs">
+          ${this._renderNPCAvatars(npcs, scene)}
         </div>
 
         <!-- 底部操作栏 -->
         <div class="portal-immersive-footer">
-          <button class="btn btn-primary portal-action-btn" onclick="PortalSystem.enterDialog()">
-            <span class="portal-action-icon">💬</span>
+          <button class="portal-action-btn primary" onclick="PortalSystem.enterDialog()">
+            <svg width="18" height="18" style="display:inline-block;vertical-align:middle;margin-right:6px;"><use href="#icon-memory"/></svg>
             <span>进入对话</span>
           </button>
-          <button class="btn btn-gold portal-action-btn" onclick="PortalSystem.startGroupChat()">
-            <span class="portal-action-icon">👥</span>
+          <button class="portal-action-btn primary" onclick="PortalSystem.startGroupChat()">
+            <svg width="18" height="18" style="display:inline-block;vertical-align:middle;margin-right:6px;"><use href="#icon-npc"/></svg>
             <span>群像对话</span>
           </button>
-          <button class="btn btn-secondary portal-action-btn" onclick="PortalSystem.viewMap()">
-            <span class="portal-action-icon">🗺️</span>
-            <span>查看地图</span>
-          </button>
-          <button class="btn btn-secondary portal-action-btn" onclick="PortalSystem.toggleWeather()">
-            <span class="portal-action-icon">🌦️</span>
+          <button class="portal-action-btn secondary" onclick="PortalSystem.toggleWeather()">
+            <svg width="18" height="18" style="display:inline-block;vertical-align:middle;margin-right:6px;"><use href="#icon-baike"/></svg>
             <span>${this._isWeatherActive ? '关闭特效' : '开启特效'}</span>
           </button>
         </div>

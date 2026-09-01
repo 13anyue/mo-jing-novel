@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * LetterSystem v12 — 书信/飞鸽传书系统
+ * LetterSystem vv13 书信/飞鸽传书系统
  * 模块名：LetterSystem
  * 功能：信件管理、NPC主动发信、收件箱、写信、飞鸽动画
  * 存储键：letter_system_v12
@@ -10,13 +10,13 @@
 const LetterSystem = {
   /* ========== 默认信件类型（用户可增删改） ========== */
   DEFAULT_TYPES: [
-    { id: 'private',  name: '私信',   icon: '✉️',  color: '#4A90C2', desc: '私人往来信件' },
-    { id: 'official', name: '公文',   icon: '📜',  color: '#8B4513', desc: '公务文书' },
-    { id: 'love',     name: '情书',   icon: '💌',  color: '#E91E63', desc: '情意绵绵' },
-    { id: 'challenge',name: '挑战书', icon: '⚔️',  color: '#B22222', desc: '战书邀约' },
-    { id: 'invite',   name: '邀请函', icon: '🎴',  color: '#6B8E23', desc: '宴请邀约' },
-    { id: 'sos',      name: '求救信', icon: '🆘',  color: '#DC143C', desc: '十万火急' },
-    { id: 'thanks',   name: '感谢信', icon: '🙏',  color: '#C9A227', desc: '感恩致谢' }
+    { id: 'private',  name: '私信',   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',  color: '#4A90C2', desc: '私人往来信件' },
+    { id: 'official', name: '公文',   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',  color: '#8B4513', desc: '公务文书' },
+    { id: 'love',     name: '情书',   icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>',  color: '#E91E63', desc: '情意绵绵' },
+    { id: 'challenge',name: '挑战书', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 17.5L3 6V3h3l11.5 11.5"/><path d="M13 19l6-6"/><path d="M16 16l4 4"/><path d="M19 21l2-2"/></svg>',  color: '#B22222', desc: '战书邀约' },
+    { id: 'invite',   name: '邀请函', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>',  color: '#6B8E23', desc: '宴请邀约' },
+    { id: 'sos',      name: '求救信', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>',  color: '#DC143C', desc: '十万火急' },
+    { id: 'thanks',   name: '感谢信', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 11v4a2 2 0 002 2h6a2 2 0 002-2v-4"/><path d="M12 7v13"/><path d="M9 7a2 2 0 012-2h2a2 2 0 012 2"/><path d="M7 11h10"/></svg>',  color: '#C9A227', desc: '感恩致谢' }
   ],
 
   /* ========== 紧急程度定义 ========== */
@@ -37,8 +37,14 @@ const LetterSystem = {
   _composeReplyTo: null,       // 回复哪封信
 
   /* ========== 初始化 ========== */
-  init() { this.renderPage(); },
-  onEnter() { this.renderLetterInterface(); },
+    // 初始化模块入口
+  init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    this.renderPage(); },
+    // 页面进入时调用
+  onEnter() {
+    this.renderLetterInterface(); },
 
   /* ========== 数据存取核心方法 ========== */
   /**
@@ -58,7 +64,7 @@ const LetterSystem = {
           enableSound: true        // 是否启用提示音
         }
       };
-      Storage.set('letter_system_v12', initial);
+      try { Storage.set('letter_system_v12', initial); } catch(e) { console.warn('[v7] Storage.set失败:', e); }
       return initial;
     }
     // 确保字段完整
@@ -70,7 +76,7 @@ const LetterSystem = {
 
   /** 保存完整数据 */
   saveData(data) {
-    Storage.set('letter_system_v12', data);
+    try { Storage.set('letter_system_v12', data); } catch(e) { console.warn('[v7] Storage.set失败:', e); }
   },
 
   /** 获取信件列表 */
@@ -884,6 +890,7 @@ const LetterSystem = {
   /* ========== 界面渲染 ========== */
 
   /** 渲染页面容器 */
+    // 渲染页面主结构
   renderPage() {
     const page = document.getElementById('page-letter');
     if (!page) return;
@@ -933,9 +940,9 @@ const LetterSystem = {
     if (!c) return;
 
     const folders = [
-      { id: 'inbox', name: '📥 收件箱', icon: '📥' },
-      { id: 'sent', name: '📤 发件箱', icon: '📤' },
-      { id: 'trash', name: '🗑️ 已删除', icon: '🗑️' }
+      { id: 'inbox', name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 收件箱', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' },
+      { id: 'sent', name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 发件箱', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>' },
+      { id: 'trash', name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 已删除', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>' }
     ];
 
     const unreadCount = this.getLetters().filter(l => l.folder === 'inbox' && !l.isRead).length;
@@ -1021,7 +1028,7 @@ const LetterSystem = {
     if (letters.length === 0) {
       c.innerHTML = `
         <div style="padding:40px 20px;text-align:center;color:#A08B6D;">
-          <div style="font-size:48px;margin-bottom:12px;opacity:0.6;">📭</div>
+          <div style="font-size:48px;margin-bottom:12px;opacity:0.6;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
           <p style="font-size:14px;">此处空空如也</p>
           <p style="font-size:12px;color:#B8A88A;margin-top:4px;">暂无符合条件的信件</p>
         </div>
@@ -1082,7 +1089,7 @@ const LetterSystem = {
     if (!letterId) {
       c.innerHTML = `
         <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:#A08B6D;">
-          <div style="font-size:64px;margin-bottom:16px;opacity:0.4;">📜</div>
+          <div style="font-size:64px;margin-bottom:16px;opacity:0.4;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
           <p style="font-size:16px;">请选择一封信件阅读</p>
           <p style="font-size:12px;color:#B8A88A;margin-top:8px;">或是提笔写一封新信</p>
         </div>
@@ -1160,7 +1167,7 @@ const LetterSystem = {
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 ${letter.attachments.map(a => `
                   <div style="display:flex;align-items:center;gap:4px;background:rgba(201,162,39,0.08);padding:4px 10px;border-radius:4px;border:1px solid #D4C4A8;">
-                    <span>${a.icon || '📦'}</span>
+                    <span>${a.icon || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>'}</span>
                     <span style="font-size:12px;color:#2C1810;">${this.escapeHtml(a.name)} ×${a.quantity || 1}</span>
                   </div>
                 `).join('')}
@@ -1183,7 +1190,7 @@ const LetterSystem = {
           <button class="btn btn-primary" onclick="LetterSystem.replyToLetter('${letter.id}')">✍️ 回信</button>
         ` : ''}
         <button class="btn btn-sm btn-secondary" onclick="LetterSystem.markAsRead('${letter.id}', ${!letter.isRead})">${letter.isRead ? '🔘 标记未读' : '🔵 标记已读'}</button>
-        <button class="btn btn-sm btn-danger" onclick="LetterSystem.deleteLetter('${letter.id}')">🗑️ 删除</button>
+        <button class="btn btn-sm btn-danger" onclick="LetterSystem.deleteLetter('${letter.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 删除</button>
       </div>
     `;
   },
@@ -1370,7 +1377,7 @@ const LetterSystem = {
       App.toast('背包中没有物品', 'warning');
       return;
     }
-    const itemList = items.map((i, idx) => `${idx + 1}. ${i.icon || '📦'} ${i.name} ×${i.quantity || 1}`).join('\n');
+    const itemList = items.map((i, idx) => `${idx + 1}. ${i.icon || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>'} ${i.name} ×${i.quantity || 1}`).join('\n');
     const choice = prompt(`选择要附带的物品（输入序号）：\n\n${itemList}\n\n0. 取消`);
     if (!choice || choice === '0') return;
     const idx = parseInt(choice) - 1;
@@ -1387,7 +1394,7 @@ const LetterSystem = {
     const div = document.createElement('div');
     div.style.cssText = 'display:flex;align-items:center;gap:4px;background:rgba(201,162,39,0.08);padding:4px 10px;border-radius:4px;border:1px solid #D4C4A8;font-size:12px;';
     div.innerHTML = `
-      <span>${item.icon || '📦'}</span>
+      <span>${item.icon || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>'}</span>
       <span>${this.escapeHtml(item.name)}</span>
       <span style="cursor:pointer;color:#DC143C;margin-left:4px;" onclick="this.parentNode.remove()">✕</span>
     `;
@@ -1410,7 +1417,7 @@ const LetterSystem = {
       <div style="display:flex;flex-direction:column;height:100%;">
         <div style="padding:16px 20px;border-bottom:1px solid #D4C4A8;background:rgba(201,162,39,0.06);display:flex;justify-content:space-between;align-items:center;">
           <h3 style="font-size:16px;font-weight:600;color:#2C1810;margin:0;">🤖 NPC发信规则</h3>
-          <button class="btn btn-primary" onclick="LetterSystem.showAddRuleModal()">➕ 添加规则</button>
+          <button class="btn btn-primary" onclick="LetterSystem.showAddRuleModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加规则</button>
         </div>
         <div style="flex:1;overflow-y:auto;padding:20px;">
           ${rules.length === 0 ? `
@@ -1579,7 +1586,7 @@ const LetterSystem = {
     c.innerHTML = `
       <div style="display:flex;flex-direction:column;height:100%;">
         <div style="padding:16px 20px;border-bottom:1px solid #D4C4A8;background:rgba(201,162,39,0.06);">
-          <h3 style="font-size:16px;font-weight:600;color:#2C1810;margin:0;">⚙️ 飞鸽传书设置</h3>
+          <h3 style="font-size:16px;font-weight:600;color:#2C1810;margin:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg> 飞鸽传书设置</h3>
         </div>
         <div style="flex:1;overflow-y:auto;padding:20px;">
           <div style="display:flex;flex-direction:column;gap:16px;max-width:500px;">
@@ -1622,7 +1629,7 @@ const LetterSystem = {
             <div style="padding:12px;background:rgba(255,255,255,0.4);border-radius:6px;border:1px solid #D4C4A8;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
                 <div style="font-size:14px;color:#2C1810;font-weight:500;">信件类型管理</div>
-                <button class="btn btn-sm btn-primary" onclick="LetterSystem.showAddTypeModal()">➕ 添加</button>
+                <button class="btn btn-sm btn-primary" onclick="LetterSystem.showAddTypeModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加</button>
               </div>
               <div id="typeManagerList" style="display:flex;flex-direction:column;gap:6px;"></div>
             </div>
@@ -1632,7 +1639,7 @@ const LetterSystem = {
               <div style="font-size:14px;color:#2C1810;font-weight:500;margin-bottom:10px;">管理入口</div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;">
                 <button class="btn btn-secondary" onclick="LetterSystem.renderRuleManager()">🤖 NPC发信规则</button>
-                <button class="btn btn-secondary" onclick="LetterSystem.forceCheckTriggers()">🔍 手动检查触发</button>
+                <button class="btn btn-secondary" onclick="LetterSystem.forceCheckTriggers()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 手动检查触发</button>
               </div>
             </div>
           </div>

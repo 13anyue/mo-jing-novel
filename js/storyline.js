@@ -1,7 +1,7 @@
 /**
  * =========================================================
- * Storyline System v6 — 主线/支线/章节管理
- * 君成录风格剧情树：主线剧情 + 个人支线 + 隐藏线
+ * Storyline System vv7 主线/支线/章节管理
+ * 古风墨境风格剧情树：主线剧情 + 个人支线 + 隐藏线
  * 章节推进、条件解锁、分支追踪
  * =========================================================
  */
@@ -13,22 +13,29 @@ const StorylineSystem = {
     { id: 'side', name: '番外', color: '#6B8E23', desc: '额外故事' }
   ],
 
-  init() { this.renderPage(); },
-  onEnter() { this.renderTree(); },
+    // 初始化模块入口
+  init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    this.renderPage(); },
+    // 页面进入时调用
+  onEnter() {
+    this.renderTree(); },
 
   getStories() { return Storage.get('storylines_v6', []); },
   saveStories(list) { Storage.set('storylines_v6', list); },
 
+    // 渲染页面主结构
   renderPage() {
     const page = document.getElementById('page-storyline');
     if (!page) return;
     page.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
-        <h2 class="section-title">📖 故事线</h2>
+        <h2 class="section-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> 故事线</h2>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="StorylineSystem.createStory()">➕ 新建故事线</button>
-          <button class="btn btn-gold" onclick="StorylineSystem.aiGenerateStory()">✨ AI生成</button>
+          <button class="btn btn-primary" onclick="StorylineSystem.createStory()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 新建故事线</button>
+          <button class="btn btn-gold" onclick="StorylineSystem.aiGenerateStory()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> AI生成</button>
         </div>
       </div>
       <div id="storyTree"></div>
@@ -78,7 +85,7 @@ const StorylineSystem = {
                   ${i+1}. ${ch.title}${ch.completed ? ' ✓' : ''}
                 </div>
               `).join('')}
-              <button class="btn btn-sm btn-secondary" style="font-size:12px;" onclick="StorylineSystem.addChapter('${s.id}')">➕ 章节</button>
+              <button class="btn btn-sm btn-secondary" style="font-size:12px;" onclick="StorylineSystem.addChapter('${s.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 章节</button>
             </div>
           </div>
         </div>

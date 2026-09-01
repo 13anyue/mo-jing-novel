@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * CG Gallery v5 — 君成录风格场景CG系统
+ * CG Gallery vv6 古风墨境风格场景CG系统
  * Worldview-driven CG generation. User writes or AI generates
  * scene illustrations tied to story progress.
  * =========================================================
@@ -28,23 +28,30 @@ const CGGallery = {
   _currentType: 'all',
   _currentTier: 'all',
 
-  init() { this.renderPage(); },
-  onEnter() { this.renderGallery(); },
+    // 初始化模块入口
+  init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    this.renderPage(); },
+    // 页面进入时调用
+  onEnter() {
+    this.renderGallery(); },
 
   getCGs() { return Storage.get('cgGallery_v5', []); },
   saveCGs(list) { Storage.set('cgGallery_v5', list); },
 
+    // 渲染页面主结构
   renderPage() {
     const page = document.getElementById('page-cg-gallery');
     if (!page) return;
     page.innerHTML = `
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
-        <h2 class="section-title">🖼️ CG画廊</h2>
+        <h2 class="section-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> CG画廊</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-gold" onclick="CGGallery.aiGenerateCG()">✨ AI生成CG</button>
-          <button class="btn btn-primary" onclick="CGGallery.openUploader()">➕ 添加CG</button>
-          <button class="btn btn-secondary" onclick="CGGallery.showHelp()">❓ 说明</button>
+          <button class="btn btn-gold" onclick="CGGallery.aiGenerateCG()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> AI生成CG</button>
+          <button class="btn btn-primary" onclick="CGGallery.openUploader()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加CG</button>
+          <button class="btn btn-secondary" onclick="CGGallery.showHelp()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 说明</button>
         </div>
       </div>
 
@@ -161,6 +168,28 @@ const CGGallery = {
   openUploader() {
     const body = document.getElementById('cgUploadBody');
     body.innerHTML = `
+      <!-- 批量上传模式切换 -->
+      <div style="display:flex;gap:8px;margin-bottom:var(--space-md);flex-wrap:wrap;">
+        <button class="btn btn-sm btn-gold" onclick="CGGallery.switchUploadMode('single')">单张</button>
+        <button class="btn btn-sm btn-secondary" onclick="CGGallery.switchUploadMode('album')">相册批量</button>
+        <button class="btn btn-sm btn-secondary" onclick="CGGallery.switchUploadMode('url')">URL批量</button>
+      </div>
+      <div id="cgUploadModeArea">${this._renderSingleUploader()}</div>
+    `;
+    this._pendingCG = null;
+    this._batchCGs = [];
+    App.openModal('cgUploadModal');
+  },
+
+  switchUploadMode(mode) {
+    const area = document.getElementById('cgUploadModeArea');
+    if (mode === 'single') area.innerHTML = this._renderSingleUploader();
+    else if (mode === 'album') area.innerHTML = this._renderAlbumUploader();
+    else if (mode === 'url') area.innerHTML = this._renderUrlUploader();
+  },
+
+  _renderSingleUploader() {
+    return `
       <div class="upload-zone" onclick="document.getElementById('cgFileInput').click()">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/></svg>
         <p>点击或拖拽上传CG图片</p>
@@ -181,8 +210,112 @@ const CGGallery = {
         <button class="btn btn-primary" onclick="CGGallery.saveCG()">保存CG</button>
       </div>
     `;
-    this._pendingCG = null;
-    App.openModal('cgUploadModal');
+  },
+
+  _renderAlbumUploader() {
+    return `
+      <div style="border:2px dashed var(--border-gold);border-radius:var(--border-radius);padding:var(--space-lg);text-align:center;margin-bottom:var(--space-md);">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <p>选择多张CG图片批量上传</p>
+        <input type="file" id="cgBatchInput" accept="image/*" multiple style="display:none;" onchange="CGGallery.handleBatchFiles(event)">
+        <button class="btn btn-primary" style="margin-top:8px;" onclick="document.getElementById('cgBatchInput').click()">选择相册</button>
+      </div>
+      <div id="cgBatchPreview" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:var(--space-md);max-height:200px;overflow-y:auto;"></div>
+      <div class="form-row">
+        <div class="form-group"><label>类型</label><select id="cgBatchType">${this.CG_TYPES.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select></div>
+        <div class="form-group"><label>稀有度</label><select id="cgBatchTier">${this.TIERS.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:var(--space-md);">
+        <button class="btn btn-secondary" onclick="App.closeModal('cgUploadModal')">取消</button>
+        <button class="btn btn-primary" onclick="CGGallery.saveBatchCG()">保存全部 (${this._batchCGs?.length || 0})</button>
+      </div>
+    `;
+  },
+
+  _renderUrlUploader() {
+    return `
+      <div class="form-group"><label>图片URL（每行一个）</label><textarea id="cgUrlList" rows="6" placeholder="https://example.com/cg1.jpg\nhttps://example.com/cg2.png"></textarea></div>
+      <div class="form-row">
+        <div class="form-group"><label>类型</label><select id="cgUrlType">${this.CG_TYPES.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select></div>
+        <div class="form-group"><label>稀有度</label><select id="cgUrlTier">${this.TIERS.map(t => `<option value="${t.id}">${t.name}</option>`).join('')}</select></div>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:var(--space-md);">
+        <button class="btn btn-secondary" onclick="App.closeModal('cgUploadModal')">取消</button>
+        <button class="btn btn-primary" onclick="CGGallery.saveUrlBatch()">开始下载</button>
+      </div>
+      <div id="cgUrlProgress" style="margin-top:8px;"></div>
+    `;
+  },
+
+  async handleBatchFiles(e) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    this._batchCGs = [];
+    const preview = document.getElementById('cgBatchPreview');
+    let html = '';
+    for (const f of files) {
+      try {
+        const data = await Storage.fileToDataUrl(f);
+        this._batchCGs.push({ data, name: f.name });
+        html += `<div style="border-radius:var(--border-radius-sm);overflow:hidden;border:1px solid var(--border-color);"><img src="${data}" style="width:100%;height:80px;object-fit:cover;"><div style="background:rgba(0,0,0,0.5);color:#fff;font-size:10px;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</div></div>`;
+      } catch (err) { console.error(err); }
+    }
+    preview.innerHTML = html || '<p style="color:var(--text-muted);">无有效图片</p>';
+    const btn = document.querySelector('[onclick*="saveBatchCG"]');
+    if (btn) btn.textContent = `保存全部 (${this._batchCGs.length})`;
+  },
+
+  async saveBatchCG() {
+    if (!this._batchCGs?.length) { App.toast('请先选择图片', 'error'); return; }
+    const type = document.getElementById('cgBatchType')?.value || 'story';
+    const tier = document.getElementById('cgBatchTier')?.value || 'common';
+    let success = 0;
+    for (const item of this._batchCGs) {
+      try {
+        const id = 'cg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        await Storage.saveImage(id, 'cg', null, item.name, item.data, { type, tier });
+        const cgs = this.getCGs();
+        cgs.push({ id, imageId: id, title: item.name.replace(/\.[^.]+$/, ''), description: '', scene: '', type, tier, unlockCondition: '', unlockedAt: Date.now(), createdAt: Date.now() });
+        this.saveCGs(cgs);
+        success++;
+      } catch (e) { console.error('Batch CG save error:', e); }
+    }
+    App.toast(`批量CG上传完成：${success}/${this._batchCGs.length}`, success > 0 ? 'success' : 'error');
+    this._batchCGs = [];
+    this.renderStats(); this.renderGallery();
+    App.closeModal('cgUploadModal');
+  },
+
+  async saveUrlBatch() {
+    const urls = document.getElementById('cgUrlList').value.split('\n').map(u => u.trim()).filter(u => /^https?:\/\/.+/.test(u));
+    if (!urls.length) { App.toast('请输入有效的图片URL', 'error'); return; }
+    const type = document.getElementById('cgUrlType')?.value || 'story';
+    const tier = document.getElementById('cgUrlTier')?.value || 'common';
+    const progress = document.getElementById('cgUrlProgress');
+    progress.innerHTML = `<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div><p style="font-size:12px;color:var(--text-muted);margin-top:4px;">下载中 0/${urls.length}...</p>`;
+    let success = 0;
+    for (let i = 0; i < urls.length; i++) {
+      try {
+        const response = await fetch(urls[i], { mode: 'cors' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const blob = await response.blob();
+        if (!blob.type.startsWith('image/')) throw new Error('Not image');
+        const ext = blob.type.split('/')[1] || 'jpg';
+        const file = new File([blob], `url_cg_${i}.${ext}`, { type: blob.type });
+        const data = await Storage.fileToDataUrl(file);
+        const id = 'cg_url_' + Date.now() + '_' + i;
+        await Storage.saveImage(id, 'cg', null, file.name, data, { type, tier, sourceUrl: urls[i] });
+        const cgs = this.getCGs();
+        cgs.push({ id, imageId: id, title: `URL_${i+1}`, description: '', scene: '', type, tier, unlockCondition: '', unlockedAt: Date.now(), createdAt: Date.now(), sourceUrl: urls[i] });
+        this.saveCGs(cgs);
+        success++;
+      } catch (e) { console.error(`CG URL ${i} failed:`, e); }
+      const pct = Math.round(((i+1)/urls.length)*100);
+      progress.innerHTML = `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><p style="font-size:12px;color:var(--text-muted);margin-top:4px;">下载中 ${i+1}/${urls.length}... 成功 ${success} 个</p>`;
+    }
+    App.toast(`URL下载完成：${success}/${urls.length}`, success > 0 ? 'success' : 'error');
+    this.renderStats(); this.renderGallery();
+    if (success === urls.length) App.closeModal('cgUploadModal');
   },
 
   async handleFile(e) {
@@ -241,8 +374,8 @@ const CGGallery = {
         <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">解锁于 ${new Date(cg.unlockedAt).toLocaleString()}</p>
       </div>
       <div style="display:flex;gap:8px;justify-content:center;margin-top:var(--space-md);">
-        <button class="btn btn-secondary" onclick="CGGallery.setAsBackground('${cg.id}')">🖼️ 设为背景</button>
-        <button class="btn btn-danger" onclick="CGGallery.deleteCG('${cg.id}')">🗑️ 删除</button>
+        <button class="btn btn-secondary" onclick="CGGallery.setAsBackground('${cg.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 设为背景</button>
+        <button class="btn btn-danger" onclick="CGGallery.deleteCG('${cg.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 删除</button>
       </div>
     `;
     App.openModal('cgViewerModal');
@@ -282,7 +415,7 @@ ${prompt ? '用户要求：' + prompt : ''}
       if (!cg) { App.toast('AI未返回有效数据', 'error'); return; }
 
       // Show preview for user confirmation
-      App.showModal('✨ AI生成的CG建议', `
+      App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> AI生成的CG建议', `
         <div style="text-align:center;padding:var(--space-lg);">
           <h3 style="color:var(--color-gold);font-size:20px;margin-bottom:var(--space-md);">${cg.title}</h3>
           <p style="font-size:14px;color:var(--text-secondary);line-height:1.8;margin-bottom:var(--space-md);">${cg.description}</p>
@@ -294,7 +427,7 @@ ${prompt ? '用户要求：' + prompt : ''}
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:var(--space-md);">
           <button class="btn btn-secondary" onclick="App.closeModal()">取消</button>
-          <button class="btn btn-primary" onclick="CGGallery.saveAiCG('${cg.title.replace(/'/g,"\\'")}','${cg.description.replace(/'/g,"\\'")}','${cg.scene?.replace(/'/g,"\\'") || ''}','${cg.type}','${cg.tier}')">📥 保存到画廊</button>
+          <button class="btn btn-primary" onclick="CGGallery.saveAiCG('${cg.title.replace(/'/g,"\\'")}','${cg.description.replace(/'/g,"\\'")}','${cg.scene?.replace(/'/g,"\\'") || ''}','${cg.type}','${cg.tier}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 保存到画廊</button>
         </div>
       `);
     } catch (e) { App.toast('生成失败: ' + e.message, 'error'); }
@@ -338,7 +471,7 @@ ${prompt ? '用户要求：' + prompt : ''}
   },
 
   showHelp() {
-    App.showModal('❓ CG画廊说明', `
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> CG画廊说明', `
       <div style="line-height:1.8;">
         <p><strong>什么是CG？</strong></p>
         <p>CG（Computer Graphics）是视觉小说中的插画。在墨境中，CG根据你的世界观和剧情自动生成或手动添加。</p>
@@ -358,7 +491,7 @@ ${prompt ? '用户要求：' + prompt : ''}
           <li><strong style="color:#9C27B0;">史诗</strong> - 关键剧情CG</li>
           <li><strong style="color:#C9A227;">传说</strong> - 结局/限定CG</li>
         </ul>
-        <p style="margin-top:12px;"><strong>君成录风格：</strong>CG与剧情进度挂钩，解锁特定CG需要满足条件（如完成某章节、达到某好感度）。</p>
+        <p style="margin-top:12px;"><strong>古风墨境风格：</strong>CG与剧情进度挂钩，解锁特定CG需要满足条件（如完成某章节、达到某好感度）。</p>
       </div>
     `);
   }

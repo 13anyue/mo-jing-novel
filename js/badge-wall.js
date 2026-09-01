@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * BadgeWall v12 — 成就徽章墙系统
+ * BadgeWall vv13 成就徽章墙系统
  * 模块名：BadgeWall
  * 功能：用户自定义成就/徽章/稀有度/解锁条件，含瀑布流展示、解锁动画、管理面板
  * 配色：古风墨境 — 暖羊皮纸底色 #F5E6D3 + 金色 #C9A227 + 墨色 #2C1810
@@ -22,13 +22,13 @@ const BadgeWall = {
   // === 默认条件类型（用户可扩展） ===
   DEFAULT_CONDITION_TYPES: [
     { id: 'reach_level',       name: '达到等级',      icon: '📈', desc: '角色达到指定等级' },
-    { id: 'complete_tasks',  name: '完成任务',      icon: '✅', desc: '完成指定数量的任务' },
+    { id: 'complete_tasks',  name: '完成任务',      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>', desc: '完成指定数量的任务' },
     { id: 'talk_npc',        name: 'NPC对话',       icon: '🗣️', desc: '与指定数量的NPC对话' },
-    { id: 'collect_items',   name: '收集物品',      icon: '🎒', desc: '收集指定数量的物品' },
+    { id: 'collect_items',   name: '收集物品',      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>', desc: '收集指定数量的物品' },
     { id: 'visit_locations', name: '到达地点',      icon: '📍', desc: '访问指定数量的地点' },
     { id: 'playtime_hours',  name: '游戏时长',      icon: '⏱️', desc: '累计游戏时长达到指定小时数' },
     { id: 'login_streak',    name: '连续登录',      icon: '🔥', desc: '连续登录指定天数' },
-    { id: 'custom_event',    name: '自定义事件',     icon: '⚡', desc: '触发指定的自定义事件' }
+    { id: 'custom_event',    name: '自定义事件',     icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', desc: '触发指定的自定义事件' }
   ],
 
   // === 内部状态 ===
@@ -44,13 +44,19 @@ const BadgeWall = {
   // =========================================================
   // 初始化
   // =========================================================
+    // 初始化模块入口
   init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
     this._loadData();
     this._injectStyles();
     this.renderPage();
   },
 
+    // 页面进入时调用
   onEnter() {
+    // 页面进入时调用
     this.renderBadgeGrid();
     this.renderStatsPanel();
   },
@@ -680,7 +686,9 @@ const BadgeWall = {
   // =========================================================
   // 页面渲染
   // =========================================================
+    // 渲染页面主结构
   renderPage() {
+    // 渲染页面主结构
     const page = document.getElementById('page-badge-wall');
     if (!page) return;
     page.innerHTML = `
@@ -691,7 +699,7 @@ const BadgeWall = {
           <h2 class="section-title">🏅 成就徽章墙</h2>
           <div style="display:flex;gap:8px;">
             <button class="btn btn-sm btn-secondary" onclick="BadgeWall.toggleLayout()">📐 切换布局</button>
-            <button class="btn btn-sm btn-primary" onclick="BadgeWall.openManager()">➕ 管理成就</button>
+            <button class="btn btn-sm btn-primary" onclick="BadgeWall.openManager()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 管理成就</button>
           </div>
         </div>
 
@@ -787,7 +795,7 @@ const BadgeWall = {
         <div class="badge-completion-track">
           <div class="badge-completion-fill" style="width:${completionRate}%;"></div>
         </div>
-        <div class="badge-completion-text">完成率：${completionRate}%${completionRate === 100 ? ' — 恭喜达成全成就！🎉' : ''}</div>
+        <div class="badge-completion-text">完成率：${completionRate}%${completionRate === 100 ? ' — 恭喜达成全成就！<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>' : ''}</div>
       </div>
     `;
   },
@@ -895,7 +903,7 @@ const BadgeWall = {
            class="badge-card rarity-${achievement.rarity} ${isUnlocked ? '' : 'locked'}"
            style="${customStyle}"
            onclick="BadgeWall.showBadgeDetail('${achievement.id}')">
-        <div class="badge-icon-wrap">${isUnlocked ? achievement.icon : '🔒'}</div>
+        <div class="badge-icon-wrap">${isUnlocked ? achievement.icon : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>'}</div>
         <div class="badge-name">${achievement.name}</div>
         <div class="badge-desc">${achievement.description}</div>
         <div>
@@ -905,8 +913,8 @@ const BadgeWall = {
           <span class="badge-rarity-tag rarity-${achievement.rarity}">${rarityInfo.name}</span>
         </div>
         ${isUnlocked && achievement.unlockedAt ?
-          `<div class="badge-unlock-date">✨ ${new Date(achievement.unlockedAt).toLocaleDateString('zh-CN')} 解锁</div>` : ''}
-        ${!isUnlocked ? `<div class="badge-locked-mask">🔒</div>` : ''}
+          `<div class="badge-unlock-date"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> ${new Date(achievement.unlockedAt).toLocaleDateString('zh-CN')} 解锁</div>` : ''}
+        ${!isUnlocked ? `<div class="badge-locked-mask"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>` : ''}
       </div>
     `;
   },
@@ -928,7 +936,7 @@ const BadgeWall = {
           <div style="text-align:center;margin-bottom:var(--space-lg);">
             <div class="badge-icon-wrap" style="width:96px;height:96px;font-size:48px;margin-bottom:var(--space-md);
               ${isUnlocked ? '' : 'filter:grayscale(1);opacity:0.6;'}">
-              ${isUnlocked ? a.icon : '🔒'}
+              ${isUnlocked ? a.icon : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>'}
             </div>
             <h3 style="font-family:var(--font-display);font-size:22px;color:var(--text-primary);">${a.name}</h3>
             <p style="color:var(--text-muted);font-size:14px;margin-top:4px;">${a.description}</p>
@@ -945,11 +953,11 @@ const BadgeWall = {
 
           ${isUnlocked ? `
             <div style="text-align:center;color:var(--color-gold);font-size:14px;">
-              ✨ 已于 ${new Date(a.unlockedAt).toLocaleString('zh-CN')} 解锁
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> 已于 ${new Date(a.unlockedAt).toLocaleString('zh-CN')} 解锁
             </div>
           ` : `
             <div style="text-align:center;color:var(--text-muted);font-size:14px;">
-              🔒 尚未解锁 — 达成条件后自动解锁
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg> 尚未解锁 — 达成条件后自动解锁
             </div>
           `}
 
@@ -1006,7 +1014,7 @@ const BadgeWall = {
     const panelHtml = `
       <div class="badge-manager-panel" id="badgeManagerPanel" onclick="if(event.target===this)BadgeWall.closeManager()">
         <div class="badge-manager-content">
-          <h3 class="badge-manager-title">${isEdit ? '✏️ 编辑成就' : '➕ 创建新成就'}</h3>
+          <h3 class="badge-manager-title">${isEdit ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 编辑成就' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 创建新成就'}</h3>
 
           <div class="badge-form-row">
             <label class="badge-form-label">成就名称 *</label>
@@ -1032,7 +1040,7 @@ const BadgeWall = {
           <div class="badge-form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);">
             <div>
               <label class="badge-form-label">图标 (Emoji)</label>
-              <input type="text" id="badgeFormIcon" class="badge-form-input" value="${a ? a.icon : '🏅'}" placeholder="例如：🏆">
+              <input type="text" id="badgeFormIcon" class="badge-form-input" value="${a ? a.icon : '🏅'}" placeholder="例如：<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/></svg>">
             </div>
             <div>
               <label class="badge-form-label">隐藏成就</label>
@@ -1066,10 +1074,10 @@ const BadgeWall = {
           </div>
 
           <div class="badge-io-panel">
-            <h4 style="font-size:14px;color:var(--text-secondary);margin-bottom:var(--space-sm);">📦 批量操作</h4>
+            <h4 style="font-size:14px;color:var(--text-secondary);margin-bottom:var(--space-sm);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> 批量操作</h4>
             <div style="display:flex;gap:var(--space-sm);margin-bottom:var(--space-sm);flex-wrap:wrap;">
-              <button class="badge-btn badge-btn-secondary" onclick="BadgeWall.exportBadges()">📤 导出成就列表</button>
-              <button class="badge-btn badge-btn-secondary" onclick="BadgeWall.showImportPanel()">📥 导入成就列表</button>
+              <button class="badge-btn badge-btn-secondary" onclick="BadgeWall.exportBadges()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导出成就列表</button>
+              <button class="badge-btn badge-btn-secondary" onclick="BadgeWall.showImportPanel()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导入成就列表</button>
               <button class="badge-btn badge-btn-secondary" onclick="BadgeWall.generateAiSuggestions()">🤖 AI生成建议</button>
             </div>
             <div id="badgeIoArea" style="display:none;">
@@ -1117,7 +1125,7 @@ const BadgeWall = {
           <label><input type="radio" name="condConnector" value="and" ${conn === 'and' ? 'checked' : ''}> 且（全部满足）</label>
           <label><input type="radio" name="condConnector" value="or" ${conn === 'or' ? 'checked' : ''}> 或（任一满足）</label>
         </div>
-        <button class="badge-btn badge-btn-secondary" style="width:100%;margin-top:var(--space-sm);" onclick="BadgeWall.addConditionRow()">➕ 添加条件</button>
+        <button class="badge-btn badge-btn-secondary" style="width:100%;margin-top:var(--space-sm);" onclick="BadgeWall.addConditionRow()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加条件</button>
       `;
     }
 
@@ -1140,7 +1148,7 @@ const BadgeWall = {
         <label><input type="radio" name="condConnector" value="and" checked> 且（全部满足）</label>
         <label><input type="radio" name="condConnector" value="or"> 或（任一满足）</label>
       </div>
-      <button class="badge-btn badge-btn-secondary" style="width:100%;margin-top:var(--space-sm);" onclick="BadgeWall.addConditionRow()">➕ 添加条件</button>
+      <button class="badge-btn badge-btn-secondary" style="width:100%;margin-top:var(--space-sm);" onclick="BadgeWall.addConditionRow()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加条件</button>
     `;
   },
 
@@ -1253,13 +1261,13 @@ const BadgeWall = {
     const suggestions = [
       { name: '初次邂逅', desc: '与第一个NPC建立联系', icon: '👋', category: '社交', rarity: 'bronze', condition: { type: 'talk_npc', value: 1 } },
       { name: '收藏家', desc: '收集10个珍贵物品', icon: '💎', category: '收集', rarity: 'silver', condition: { type: 'collect_items', value: 10 } },
-      { name: '世界旅人', desc: '访问所有已解锁地点', icon: '🌍', category: '探索', rarity: 'gold', condition: { type: 'visit_locations', value: 5 } },
-      { name: '速读达人', desc: '一天内完成5章剧情', icon: '⚡', category: '挑战', rarity: 'silver', condition: { type: 'custom_event', value: 5 } },
+      { name: '世界旅人', desc: '访问所有已解锁地点', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>', category: '探索', rarity: 'gold', condition: { type: 'visit_locations', value: 5 } },
+      { name: '速读达人', desc: '一天内完成5章剧情', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', category: '挑战', rarity: 'silver', condition: { type: 'custom_event', value: 5 } },
       { name: '完美主义者', desc: '达成所有完美结局', icon: '💯', category: '剧情', rarity: 'legendary', condition: { type: 'custom_event', value: 1 } },
       { name: '坚持不懈', desc: '连续登录7天', icon: '🔥', category: '挑战', rarity: 'bronze', condition: { type: 'login_streak', value: 7 } },
       { name: '社交达人', desc: '与20个NPC对话', icon: '🦋', category: '社交', rarity: 'gold', condition: { type: 'talk_npc', value: 20 } },
       { name: '时间管理大师', desc: '累计游戏时长超过24小时', icon: '⏳', category: '挑战', rarity: 'silver', condition: { type: 'playtime_hours', value: 24 } },
-      { name: '隐藏剧情发现者', desc: '触发隐藏剧情线', icon: '🔍', category: '探索', rarity: 'gold', condition: { type: 'custom_event', value: 1 } },
+      { name: '隐藏剧情发现者', desc: '触发隐藏剧情线', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>', category: '探索', rarity: 'gold', condition: { type: 'custom_event', value: 1 } },
       { name: '传说级冒险家', desc: '完成所有类型成就各一个', icon: '👑', category: '挑战', rarity: 'legendary', condition: { type: 'custom_event', value: 1 } }
     ];
 
@@ -1433,7 +1441,7 @@ const BadgeWall = {
   addCustomConditionType(id, name, icon, desc) {
     if (!id || !name) { App.toast('请提供条件ID和名称', 'error'); return; }
     if (this._conditionTypes.some(c => c.id === id)) { App.toast('该条件类型已存在', 'error'); return; }
-    this._conditionTypes.push({ id, name: name, icon: icon || '⚡', desc: desc || '' });
+    this._conditionTypes.push({ id, name: name, icon: icon || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', desc: desc || '' });
     this._saveData();
     App.toast(`已添加条件类型：${name}`, 'success');
   },
@@ -1528,7 +1536,7 @@ const BadgeWall = {
         <div class="badge-unlock-name">${achievement.name}</div>
         <div class="badge-unlock-desc">${achievement.description}</div>
         ${achievement.rarity === 'gold' || achievement.rarity === 'legendary' ?
-          `<div class="badge-unlock-rare-label">✨ 稀有成就！</div>` : ''}
+          `<div class="badge-unlock-rare-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> 稀有成就！</div>` : ''}
         <button class="badge-unlock-close" onclick="BadgeWall._closeUnlockAnimation()">太棒了！</button>
       </div>
     `;

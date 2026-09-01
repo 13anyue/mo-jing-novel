@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * Dual API System - APISettings v2
+ * Dual API System - APISettings v7
  * Main API + Auxiliary API
  * Every generation feature can choose which API to use
  * =========================================================
@@ -11,7 +11,7 @@ const APISettings = {
       models: ['gpt-4o','gpt-4o-mini','gpt-4-turbo','gpt-3.5-turbo'], embModel: 'text-embedding-3-small', authHeader: 'Authorization', authPrefix: 'Bearer ' },
     { id: 'claude', name: 'Anthropic (Claude)', baseUrl: 'https://api.anthropic.com', chatEndpoint: '/v1/messages', embEndpoint: null,
       models: ['claude-sonnet-4-20250514','claude-3-5-haiku-20241022'], authHeader: 'x-api-key', authPrefix: '' },
-    { id: 'ernie', name: '百度文心一言', baseUrl: 'https://qianfan.baidubce.com/v2', chatEndpoint: '/chat/completions', embEndpoint: '/embeddings',
+    { id: 'ernie', name: '百度文心一言', baseUrl: 'https://qianfan.baidubce.com/v7', chatEndpoint: '/chat/completions', embEndpoint: '/embeddings',
       models: ['ernie-4.0-8k','ernie-3.5-8k','ernie-speed-128k'], embModel: 'embedding-v1', authHeader: 'Authorization', authPrefix: 'Bearer ' },
     { id: 'deepseek', name: 'DeepSeek', baseUrl: 'https://api.deepseek.com', chatEndpoint: '/v1/chat/completions', embEndpoint: null,
       models: ['deepseek-chat','deepseek-reasoner'], authHeader: 'Authorization', authPrefix: 'Bearer ' },
@@ -39,14 +39,15 @@ const APISettings = {
 
   renderPage() {
     const page = document.getElementById('page-api');
+    if (!page) { console.warn('[v7] 元素 #page-api 未找到'); }
     if (!page) return;
     const c = this.getConfig();
 
     page.innerHTML = `
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
-        <button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button>
+        <button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button>
       </div>
-      <div class="card" style="margin-bottom: var(--space-lg);">
+      <div class="ez-card" style="margin-bottom: var(--space-lg);">
         <div class="card-header"><h3>主 API</h3><span class="tag tag-gold">对话生成</span></div>
         <div class="card-body">
           <div class="form-group"><label>服务商</label><select id="ap_provider" onchange="APISettings.onProviderChange(this.value,'main')">${this.API_PRESETS.map(p=>`<option value="${p.id}" ${p.id===c.provider?'selected':''}>${p.name}</option>`).join('')}</select></div>
@@ -65,7 +66,7 @@ const APISettings = {
         </div>
       </div>
 
-      <div class="card" style="margin-bottom: var(--space-lg);">
+      <div class="ez-card" style="margin-bottom: var(--space-lg);">
         <div class="card-header"><h3>辅助 API</h3><span class="tag tag-secondary">辅助生成 / 备用</span></div>
         <div class="card-body">
           <div class="form-group"><label>辅助服务商</label><select id="ap_auxProvider" onchange="APISettings.onProviderChange(this.value,'aux')">${this.API_PRESETS.map(p=>`<option value="${p.id}" ${p.id===c.auxProvider?'selected':''}>${p.name}</option>`).join('')}</select></div>
@@ -80,7 +81,7 @@ const APISettings = {
         </div>
       </div>
 
-      <div class="card" style="margin-bottom: var(--space-lg);">
+      <div class="ez-card" style="margin-bottom: var(--space-lg);">
         <div class="card-header"><h3>Embedding API</h3><div class="switch ${c.embEnabled?'on':''}" id="ap_embSwitch" onclick="this.classList.toggle('on')"></div></div>
         <div class="card-body">
           <div class="form-group"><label>Embedding API 地址</label><input type="text" id="ap_embBaseUrl" value="${c.embBaseUrl}" placeholder="https://api.openai.com/v1"></div>
@@ -90,10 +91,10 @@ const APISettings = {
       </div>
 
       <div style="display:flex;gap:var(--space-sm);flex-wrap:wrap;">
-        <button class="btn btn-primary" onclick="APISettings.saveSettings()">保存设置</button>
-        <button class="btn btn-secondary" onclick="APISettings.testConnection('main')">测试主API</button>
-        <button class="btn btn-secondary" onclick="APISettings.testConnection('aux')">测试辅助API</button>
-        <button class="btn btn-secondary" onclick="APISettings.reset()">恢复默认</button>
+        <button class="ez-btn btn btn-primary" onclick="APISettings.saveSettings()">保存设置</button>
+        <button class="ez-btn btn btn-secondary" onclick="APISettings.testConnection('main')">测试主API</button>
+        <button class="ez-btn btn btn-secondary" onclick="APISettings.testConnection('aux')">测试辅助API</button>
+        <button class="ez-btn btn btn-secondary" onclick="APISettings.reset()">恢复默认</button>
       </div>
       <div id="ap_testResult" style="margin-top:var(--space-lg);"></div>
     `;
@@ -156,14 +157,15 @@ const APISettings = {
   async testConnection(target) {
     this.saveSettings();
     const el = document.getElementById('ap_testResult');
+    if (!el) { console.warn('[v7] 元素 #ap_testResult 未找到'); }
     const isAux = target === 'aux';
     el.innerHTML = `<div class="list-item"><div class="list-info"><p>正在测试${isAux?'辅助':'主'}API连接...</p></div></div>`;
     try {
       await this.chat(isAux ? '辅助API测试' : '你好', [{role:'system',content:'你是一个测试助手。'}], {useAux: isAux});
-      el.innerHTML = `<div class="card" style="border-left:4px solid var(--color-gold);"><div class="card-body"><h4 style="color:var(--color-gold);">✓ ${isAux?'辅助':'主'}API连接成功</h4></div></div>`;
+      el.innerHTML = `<div class="ez-card" style="border-left:4px solid var(--color-gold);"><div class="card-body"><h4 style="color:var(--color-gold);">✓ ${isAux?'辅助':'主'}API连接成功</h4></div></div>`;
       App.toast('连接成功！', 'success');
     } catch (e) {
-      el.innerHTML = `<div class="card" style="border-left:4px solid var(--color-danger);"><div class="card-body"><h4 style="color:var(--color-danger);">✗ ${isAux?'辅助':'主'}API连接失败</h4><p style="font-size:13px;">${e.message}</p></div></div>`;
+      el.innerHTML = `<div class="ez-card" style="border-left:4px solid var(--color-danger);"><div class="card-body"><h4 style="color:var(--color-danger);">✗ ${isAux?'辅助':'主'}API连接失败</h4><p style="font-size:13px;">${e.message}</p></div></div>`;
       App.toast('连接失败', 'error');
     }
   },

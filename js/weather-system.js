@@ -20,33 +20,33 @@ const WeatherSystem = (function() {
 
   /** 十二时辰定义（每个时辰2小时） */
   const SHICHEN = [
-    { name: '子', hourStart: 23, hourEnd: 1,  label: '子时', desc: '夜半', icon: '🌙' },
-    { name: '丑', hourStart: 1,  hourEnd: 3,  label: '丑时', desc: '鸡鸣', icon: '🐔' },
-    { name: '寅', hourStart: 3,  hourEnd: 5,  label: '寅时', desc: '平旦', icon: '🌅' },
-    { name: '卯', hourStart: 5,  hourEnd: 7,  label: '卯时', desc: '日出', icon: '☀️' },
-    { name: '辰', hourStart: 7,  hourEnd: 9,  label: '辰时', desc: '食时', icon: '🍚' },
-    { name: '巳', hourStart: 9,  hourEnd: 11, label: '巳时', desc: '隅中', icon: '☀️' },
-    { name: '午', hourStart: 11, hourEnd: 13, label: '午时', desc: '日中', icon: '☀️' },
-    { name: '未', hourStart: 13, hourEnd: 15, label: '未时', desc: '日昳', icon: '🌤️' },
-    { name: '申', hourStart: 15, hourEnd: 17, label: '申时', desc: '晡时', icon: '🌤️' },
-    { name: '酉', hourStart: 17, hourEnd: 19, label: '酉时', desc: '日入', icon: '🌇' },
-    { name: '戌', hourStart: 19, hourEnd: 21, label: '戌时', desc: '黄昏', icon: '🌆' },
-    { name: '亥', hourStart: 21, hourEnd: 23, label: '亥时', desc: '人定', icon: '🌙' }
+    { name: '子', hourStart: 23, hourEnd: 1,  label: '子时', desc: '夜半', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>' },
+    { name: '丑', hourStart: 1,  hourEnd: 3,  label: '丑时', desc: '鸡鸣', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a4 4 0 00-4 4c0 1.5.5 2.5 1.5 3.5"/><path d="M12 3a4 4 0 014 4c0 1.5-.5 2.5-1.5 3.5"/><path d="M12 7v14"/><path d="M8 15h8"/></svg>' },
+    { name: '寅', hourStart: 3,  hourEnd: 5,  label: '寅时', desc: '平旦', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a5 5 0 00-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/></svg>' },
+    { name: '卯', hourStart: 5,  hourEnd: 7,  label: '卯时', desc: '日出', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>' },
+    { name: '辰', hourStart: 7,  hourEnd: 9,  label: '辰时', desc: '食时', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/></svg>' },
+    { name: '巳', hourStart: 9,  hourEnd: 11, label: '巳时', desc: '隅中', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>' },
+    { name: '午', hourStart: 11, hourEnd: 13, label: '午时', desc: '日中', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>' },
+    { name: '未', hourStart: 13, hourEnd: 15, label: '未时', desc: '日昳', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a5 5 0 00-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/></svg>' },
+    { name: '申', hourStart: 15, hourEnd: 17, label: '申时', desc: '晡时', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a5 5 0 00-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/></svg>' },
+    { name: '酉', hourStart: 17, hourEnd: 19, label: '酉时', desc: '日入', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 18a5 5 0 00-10 0"/><line x1="12" y1="2" x2="12" y2="9"/><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"/><line x1="1" y1="18" x2="3" y2="18"/><line x1="21" y1="18" x2="23" y2="18"/><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"/><line x1="23" y1="22" x2="1" y2="22"/></svg>' },
+    { name: '戌', hourStart: 19, hourEnd: 21, label: '戌时', desc: '黄昏', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l8-4 8 4v14"/><path d="M9 21v-6h6v6"/></svg>' },
+    { name: '亥', hourStart: 21, hourEnd: 23, label: '亥时', desc: '人定', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>' }
   ];
 
   /** 四季定义 */
   const SEASONS = [
-    { name: '春', months: [2, 3, 4],  label: '春季', icon: '🌸', color: '#8FBC8F' },
-    { name: '夏', months: [5, 6, 7],  label: '夏季', icon: '☀️', color: '#CD5C5C' },
-    { name: '秋', months: [8, 9, 10], label: '秋季', icon: '🍂', color: '#DAA520' },
-    { name: '冬', months: [11, 12, 1], label: '冬季', icon: '❄️', color: '#4682B4' }
+    { name: '春', months: [2, 3, 4],  label: '春季', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 7.5a4.5 4.5 0 10-4.5 4.5"/><path d="M12 7.5a4.5 4.5 0 014.5 4.5"/><path d="M12 7.5V3"/><path d="M7.5 12H3"/><path d="M16.5 12H21"/><path d="M12 16.5V21"/><circle cx="12" cy="12" r="9"/></svg>', color: '#8FBC8F' },
+    { name: '夏', months: [5, 6, 7],  label: '夏季', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>', color: '#CD5C5C' },
+    { name: '秋', months: [8, 9, 10], label: '秋季', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l-3 4"/><path d="M12 2l3 4"/><path d="M12 22V10"/><path d="M12 10l-5 3"/><path d="M12 10l5 3"/><path d="M7 13l-5 2"/><path d="M17 13l5 2"/><path d="M2 15l5-2"/><path d="M22 15l-5-2"/></svg>', color: '#DAA520' },
+    { name: '冬', months: [11, 12, 1], label: '冬季', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/></svg>', color: '#4682B4' }
   ];
 
   /** 默认天气类型（用户可自由修改） */
   const DEFAULT_WEATHER_TYPES = [
     {
       name: '晴',
-      icon: '☀️',
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>',
       color: '#FFD700',
       probabilities: { spring: 30, summer: 40, autumn: 35, winter: 25 },
       eventTypes: [],
@@ -78,7 +78,7 @@ const WeatherSystem = (function() {
     },
     {
       name: '雪',
-      icon: '❄️',
+      icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/><line x1="19.07" y1="4.93" x2="4.93" y2="19.07"/></svg>',
       color: '#B0E0E6',
       probabilities: { spring: 2, summer: 0, autumn: 5, winter: 20 },
       eventTypes: [],
@@ -742,7 +742,11 @@ const WeatherSystem = (function() {
     /**
      * 初始化天气系统
      */
+      // 初始化模块入口
     init() {
+      // v7: 外部模块依赖检查
+      if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
       this.load();
       _updateWeather();
       _startTimer();
@@ -883,7 +887,7 @@ const WeatherSystem = (function() {
 
       const newWeather = {
         name: weather.name,
-        icon: weather.icon || '❓',
+        icon: weather.icon || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
         color: weather.color || '#888888',
         probabilities: {
           spring: weather.probabilities?.spring || 10,

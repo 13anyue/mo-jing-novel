@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * Backup Manager v3
+ * Backup Manager v7
  * Full system backup: exports all localStorage + IndexedDB data
  * JSON format with Base64 resources. Multi-version backup history.
  * =========================================================
@@ -14,19 +14,20 @@ const BackupManager = {
 
   renderPage() {
     const page = document.getElementById('page-backup');
+    if (!page) { console.warn('[v7] 元素 #page-backup 未找到'); }
     if (!page) return;
     page.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
-        <h2 class="section-title">💾 备份管理</h2>
+        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 备份管理</h2>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="BackupManager.createBackup()">📦 创建备份</button>
-          <button class="btn btn-secondary" onclick="BackupManager.importBackup()">📥 导入备份</button>
+          <button class="ez-btn btn btn-primary" onclick="BackupManager.createBackup()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> 创建备份</button>
+          <button class="ez-btn btn btn-secondary" onclick="BackupManager.importBackup()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导入备份</button>
         </div>
       </div>
 
-      <div class="card" style="margin-bottom:var(--space-lg);">
-        <div class="card-header"><h3>📦 创建完整备份</h3></div>
+      <div class="ez-card" style="margin-bottom:var(--space-lg);">
+        <div class="card-header"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> 创建完整备份</h3></div>
         <div class="card-body">
           <p style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-md);">
             备份将包含所有角色、世界书、记忆、设置、背景、音乐、地图、插件等数据，以及IndexedDB中的图片和音频资源。
@@ -34,13 +35,13 @@ const BackupManager = {
           <div class="form-group"><label>备份名称</label><input type="text" id="backupName" placeholder="如：修仙篇-第一章完成"></div>
           <div class="form-group"><label>备注</label><textarea id="backupNote" rows="2" placeholder="备份描述..."></textarea></div>
           <div style="display:flex;gap:8px;align-items:center;">
-            <button class="btn btn-primary" onclick="BackupManager.createBackup()">💾 立即备份</button>
+            <button class="ez-btn btn btn-primary" onclick="BackupManager.createBackup()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 立即备份</button>
             <label style="display:flex;align-items:center;gap:4px;font-size:13px;color:var(--text-secondary);"><input type="checkbox" id="backupIncludeMedia" checked style="width:auto;"> 包含图片/音频（文件较大）</label>
           </div>
         </div>
       </div>
 
-      <h3 style="font-size:16px;margin-bottom:var(--space-sm);">📜 备份历史</h3>
+      <h3 style="font-size:16px;margin-bottom:var(--space-sm);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 备份历史</h3>
       <div id="backupList"></div>
     `;
     this.renderList();
@@ -182,19 +183,20 @@ const BackupManager = {
 
   renderList() {
     const c = document.getElementById('backupList');
+    if (!c) { console.warn('[v7] 元素 #backupList 未找到'); }
     if (!c) return;
     const list = this.getBackups();
-    if (list.length === 0) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">💾</div><p>暂无备份</p></div>'; return; }
+    if (list.length === 0) { c.innerHTML = '<div class="ez-empty"><div class="ez-empty-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></div><p>暂无备份</p></div>'; return; }
     c.innerHTML = list.map(b => `
       <div class="list-item">
-        <span style="font-size:20px;">📦</span>
+        <span style="font-size:20px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
         <div class="list-info">
           <h4>${b.name}</h4>
           <p>${b.note || '无备注'} · ${b.size}KB · ${new Date(b.createdAt).toLocaleString()}</p>
         </div>
-        <button class="btn btn-sm btn-primary" onclick="BackupManager.restoreFromHistory('${b.id}')">恢复</button>
-        <button class="btn btn-sm btn-secondary" onclick="BackupManager.downloadBackup('${b.id}')">📥</button>
-        <button class="btn btn-sm btn-danger" onclick="BackupManager.deleteBackup('${b.id}')">🗑️</button>
+        <button class="ez-btn btn btn-sm btn-primary" onclick="BackupManager.restoreFromHistory('${b.id}')">恢复</button>
+        <button class="ez-btn btn btn-sm btn-secondary" onclick="BackupManager.downloadBackup('${b.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></button>
+        <button class="ez-btn btn btn-sm btn-danger" onclick="BackupManager.deleteBackup('${b.id}')">🗑️</button>
       </div>
     `).join('');
   }

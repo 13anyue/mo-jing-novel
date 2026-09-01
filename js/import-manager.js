@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * ImportManager v2 — 万能导入 · 智能自动分类
+ * ImportManager v7 — 万能导入 · 智能自动分类
  * 支持 JSON / TXT / MD / CSV / DOCX / 图片 / ZIP
  * 自动扫描内容 → 识别类型 → 分类到对应模块 → 预览确认 → 导入
  * 存储键: import_manager_v16
@@ -29,7 +29,7 @@ const ImportManager = {
     {
       type: 'npc',
       label: '人物志',
-      icon: '👤',
+      icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
       targetModule: 'NPCManager',
       storageKey: 'npcs_v2',
       fields: ['name', 'age', 'gender', 'personality', 'description', 'background'],
@@ -38,7 +38,7 @@ const ImportManager = {
     {
       type: 'novel',
       label: '文本小说',
-      icon: '📖',
+      icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
       targetModule: 'NovelManager',
       storageKey: 'novel_chapters_v1',
       fields: ['title', 'content', 'chapter', 'text', 'paragraph'],
@@ -73,7 +73,7 @@ const ImportManager = {
     {
       type: 'task',
       label: '任务委托',
-      icon: '📜',
+      icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
       targetModule: 'TaskManager',
       storageKey: 'tasks_v2',
       fields: ['task', 'reward', 'deadline', 'quest', 'mission', 'requirement'],
@@ -82,7 +82,7 @@ const ImportManager = {
     {
       type: 'achievement',
       label: '徽章墙',
-      icon: '🏅',
+      icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>',
       targetModule: 'AchievementManager',
       storageKey: 'achievements_v2',
       fields: ['name', 'rarity', 'icon', 'achievement', 'badge', 'condition'],
@@ -100,7 +100,7 @@ const ImportManager = {
     {
       type: 'worldbook',
       label: '世界书',
-      icon: '🌍',
+      icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>',
       targetModule: 'WorldBook',
       storageKey: 'worldBook',
       fields: ['world', 'setting', 'entries', 'lore', 'history', 'rule'],
@@ -116,7 +116,7 @@ const ImportManager = {
     {
       type: 'relation',
       label: '关系网',
-      icon: '🔗',
+      icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>',
       targetModule: 'RelationManager',
       storageKey: 'relations_v2',
       fields: ['source', 'target', 'relation', 'type', 'bond', 'affinity'],
@@ -185,27 +185,28 @@ const ImportManager = {
   /** 渲染导入页面 */
   renderPage() {
     const page = document.getElementById('page-import');
+    if (!page) { console.warn('[v7] 元素 #page-import 未找到'); }
     if (!page) return;
     page.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:var(--space-md);">
-        <h2 class="section-title" style="color:${this.COLORS.ink};">📥 万能导入</h2>
+        <h2 class="section-title" style="color:${this.COLORS.ink};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 万能导入</h2>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-secondary" onclick="ImportManager.showHelp()">❓ 格式说明</button>
-          <button class="btn btn-gold" onclick="ImportManager.showImportHistory()">📜 导入历史</button>
+          <button class="ez-btn btn btn-secondary" onclick="ImportManager.showHelp()">❓ 格式说明</button>
+          <button class="ez-btn btn btn-gold" onclick="ImportManager.showImportHistory()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 导入历史</button>
         </div>
       </div>
 
       <!-- 顶部操作栏 -->
       <div style="display:flex;gap:12px;justify-content:center;margin-bottom:var(--space-lg);flex-wrap:wrap;">
-        <button class="btn btn-primary" id="btnSelectFile" onclick="document.getElementById('v2FileInput').click()">
-          📁 导入文件
+        <button class="ez-btn btn btn-primary" id="btnSelectFile" onclick="document.getElementById('v2FileInput').click()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> 导入文件
         </button>
-        <button class="btn btn-primary" id="btnBatchImport" onclick="document.getElementById('v2BatchInput').click()">
-          📂 批量导入
+        <button class="ez-btn btn btn-primary" id="btnBatchImport" onclick="document.getElementById('v2BatchInput').click()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> 批量导入
         </button>
-        <button class="btn btn-gold" onclick="ImportManager.triggerAIAnalysis()">
-          🤖 AI分析
+        <button class="ez-btn btn btn-gold" onclick="ImportManager.triggerAIAnalysis()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> AI分析
         </button>
         <input type="file" id="v2FileInput" style="display:none;" onchange="ImportManager.handleFiles(event,'single')">
         <input type="file" id="v2BatchInput" multiple style="display:none;" onchange="ImportManager.handleFiles(event,'batch')">
@@ -238,9 +239,9 @@ const ImportManager = {
 
       <!-- 底部操作按钮 -->
       <div id="actionBar" style="display:none;position:sticky;bottom:0;background:linear-gradient(to top, ${this.COLORS.paper} 80%, transparent);padding:var(--space-md) 0;display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn btn-success" onclick="ImportManager.importSelected()">✅ 导入选中</button>
-        <button class="btn btn-secondary" onclick="ImportManager.cancelImport()">❌ 取消</button>
-        <button class="btn btn-gold" onclick="ImportManager.triggerAIAnalysis()">🤖 AI分析</button>
+        <button class="ez-btn btn btn-success" onclick="ImportManager.importSelected()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 导入选中</button>
+        <button class="ez-btn btn btn-secondary" onclick="ImportManager.cancelImport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 取消</button>
+        <button class="ez-btn btn btn-gold" onclick="ImportManager.triggerAIAnalysis()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> AI分析</button>
       </div>
     `;
     this.renderImportHistory();
@@ -286,7 +287,7 @@ const ImportManager = {
                   padding:60px 40px;text-align:center;background:${this.COLORS.paperLight};
                   transition:all 0.3s;cursor:pointer;"
            onclick="document.getElementById('v2BatchInput').click()">
-        <div style="font-size:56px;margin-bottom:var(--space-md);opacity:0.6;">📥</div>
+        <div style="font-size:56px;margin-bottom:var(--space-md);opacity:0.6;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
         <h3 style="color:${this.COLORS.ink};margin-bottom:8px;font-size:18px;">拖放文件到此处</h3>
         <p style="color:${this.COLORS.textMuted};font-size:14px;margin-bottom:4px;">或点击选择文件</p>
         <p style="color:${this.COLORS.textMuted};font-size:12px;">支持 JSON · TXT · MD · CSV · DOCX · 图片 · ZIP</p>
@@ -360,6 +361,7 @@ const ImportManager = {
     document.getElementById('scanProgressArea').style.display = 'block';
 
     const workArea = document.getElementById('importWorkArea');
+    if (!workArea) { console.warn('[v7] 元素 #importWorkArea 未找到'); }
     workArea.innerHTML = this.renderFileList(files);
 
     // 逐个解析文件
@@ -389,7 +391,9 @@ const ImportManager = {
   /** 更新扫描进度条 */
   updateScanProgress(percent, text) {
     const bar = document.getElementById('scanProgressBar');
+    if (!bar) { console.warn('[v7] 元素 #scanProgressBar 未找到'); }
     const txt = document.getElementById('scanProgressText');
+    if (!txt) { console.warn('[v7] 元素 #scanProgressText 未找到'); }
     if (bar) bar.style.width = percent + '%';
     if (txt) txt.textContent = text;
   },
@@ -398,7 +402,7 @@ const ImportManager = {
   renderFileList(files) {
     return `
       <div style="margin-bottom:var(--space-md);">
-        <h4 style="color:${this.COLORS.ink};margin-bottom:12px;font-size:16px;">📂 待处理文件 (${files.length})</h4>
+        <h4 style="color:${this.COLORS.ink};margin-bottom:12px;font-size:16px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> 待处理文件 (${files.length})</h4>
         ${files.map(f => `
           <div class="import-file-card">
             <span style="font-size:24px;">${this.getFileIcon(f.name)}</span>
@@ -417,11 +421,11 @@ const ImportManager = {
   getFileIcon(filename) {
     const ext = filename.split('.').pop().toLowerCase();
     const map = {
-      json: '📋', txt: '📄', md: '📝', csv: '📊',
-      doc: '📘', docx: '📘', zip: '📦',
-      png: '🖼️', jpg: '🖼️', jpeg: '🖼️', gif: '🖼️', webp: '🖼️', bmp: '🖼️'
+      json: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>', txt: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>', md: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>', csv: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>',
+      doc: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', docx: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', zip: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
+      png: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', jpg: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', jpeg: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', gif: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', webp: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', bmp: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>'
     };
-    return map[ext] || '📄';
+    return map[ext] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
   },
 
   /** 格式化文件大小 */
@@ -605,7 +609,7 @@ const ImportManager = {
         type: 'image',
         confidence: 100,
         label: '图片素材',
-        icon: '🖼️',
+        icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
         summary: `${parsed._category === 'avatar' ? '头像' : parsed._category === 'background' ? '背景' : parsed._category === 'character' ? '立绘' : '图片'} · ${parsed._fileName}`,
         data: parsed,
         count: 1
@@ -621,14 +625,14 @@ const ImportManager = {
           type: 'zip',
           confidence: 100,
           label: '批量压缩包',
-          icon: '📦',
+          icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>',
           summary: `包含 ${parsed._entries.length} 个文件`,
           data: parsed,
           innerResults,
           count: parsed._entries.length
         };
       }
-      return { type: 'zip', confidence: 50, label: 'ZIP文件', icon: '📦', summary: '需要解压处理', data: parsed, count: 0 };
+      return { type: 'zip', confidence: 50, label: 'ZIP文件', icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>', summary: '需要解压处理', data: parsed, count: 0 };
     }
 
     // 若解析失败
@@ -714,7 +718,9 @@ const ImportManager = {
   /** 显示扫描后的预览面板 */
   showPreviewPanel() {
     const panel = document.getElementById('previewPanel');
+    if (!panel) { console.warn('[v7] 元素 #previewPanel 未找到'); }
     const actionBar = document.getElementById('actionBar');
+    if (!actionBar) { console.warn('[v7] 元素 #actionBar 未找到'); }
     if (!panel) return;
 
     // 汇总所有识别结果
@@ -724,7 +730,7 @@ const ImportManager = {
     let html = `
       <div style="background:${this.COLORS.paperLight};border:2px solid ${this.COLORS.border};border-radius:16px;padding:var(--space-lg);">
         <h3 style="color:${this.COLORS.ink};margin-bottom:16px;font-size:18px;">
-          🔍 检测到可能的内容类型
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> 检测到可能的内容类型
         </h3>
     `;
 
@@ -763,7 +769,7 @@ const ImportManager = {
         if (isLowConfidence) {
           html += `
             <div style="margin-left:28px;margin-top:8px;">
-              <span style="font-size:12px;color:${this.COLORS.danger};">⚠️ 不确定，请手动选择：</span>
+              <span style="font-size:12px;color:${this.COLORS.danger};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 不确定，请手动选择：</span>
               <select onchange="ImportManager.manualSetType('${group.type}', this.value)" style="font-size:12px;padding:2px 6px;border-radius:4px;border:1px solid ${this.COLORS.border};">
                 <option value="">— 选择类型 —</option>
                 ${this.TYPE_RULES.map(r => `<option value="${r.type}">${r.icon} ${r.label}</option>`).join('')}
@@ -780,9 +786,9 @@ const ImportManager = {
 
     html += `
         <div style="display:flex;gap:10px;justify-content:center;margin-top:var(--space-lg);flex-wrap:wrap;">
-          <button class="btn btn-success" onclick="ImportManager.importSelected()">✅ 全部导入</button>
-          <button class="btn btn-secondary" onclick="ImportManager.cancelImport()">❌ 取消</button>
-          <button class="btn btn-gold" onclick="ImportManager.triggerAIAnalysis()">🤖 AI分析</button>
+          <button class="ez-btn btn btn-success" onclick="ImportManager.importSelected()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 全部导入</button>
+          <button class="ez-btn btn btn-secondary" onclick="ImportManager.cancelImport()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 取消</button>
+          <button class="ez-btn btn btn-gold" onclick="ImportManager.triggerAIAnalysis()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> AI分析</button>
         </div>
       </div>
     `;
@@ -806,7 +812,7 @@ const ImportManager = {
         map[r.type] = {
           type: r.type,
           label: r.label || r.type,
-          icon: r.icon || '📄',
+          icon: r.icon || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
           confidence: r.confidence,
           totalCount: 0,
           fileCount: 0,
@@ -897,6 +903,7 @@ const ImportManager = {
   /** 显示冲突处理面板 */
   showConflictPanel(conflicts) {
     const panel = document.getElementById('conflictPanel');
+    if (!panel) { console.warn('[v7] 元素 #conflictPanel 未找到'); }
     if (!panel) return;
     if (conflicts.length === 0) {
       panel.style.display = 'none';
@@ -905,7 +912,7 @@ const ImportManager = {
 
     let html = `
       <div style="background:#fff;border:2px solid ${this.COLORS.danger};border-radius:16px;padding:var(--space-lg);">
-        <h3 style="color:${this.COLORS.danger};margin-bottom:12px;font-size:16px;">⚠️ 检测到 ${conflicts.length} 个同名冲突</h3>
+        <h3 style="color:${this.COLORS.danger};margin-bottom:12px;font-size:16px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 检测到 ${conflicts.length} 个同名冲突</h3>
         <div style="max-height:300px;overflow-y:auto;">
     `;
 
@@ -937,8 +944,8 @@ const ImportManager = {
     html += `
         </div>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:var(--space-md);">
-          <button class="btn btn-primary" onclick="ImportManager.resolveConflicts()">确认处理</button>
-          <button class="btn btn-secondary" onclick="ImportManager.skipAllConflicts()">全部跳过</button>
+          <button class="ez-btn btn btn-primary" onclick="ImportManager.resolveConflicts()">确认处理</button>
+          <button class="ez-btn btn btn-secondary" onclick="ImportManager.skipAllConflicts()">全部跳过</button>
         </div>
       </div>
     `;
@@ -1175,7 +1182,7 @@ const ImportManager = {
   showImportHistory() {
     const logs = this.getLogs();
     if (logs.length === 0) {
-      App.showModal('📜 导入历史', '<div style="text-align:center;padding:40px;color:' + this.COLORS.textMuted + ';">暂无导入记录</div>');
+      App.showModal('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 导入历史', '<div style="text-align:center;padding:40px;color:' + this.COLORS.textMuted + ';">暂无导入记录</div>');
       return;
     }
 
@@ -1190,35 +1197,36 @@ const ImportManager = {
           </div>
           <div style="font-size:13px;color:${this.COLORS.textMuted};word-break:break-all;">${fileList}</div>
           <div style="margin-top:6px;">
-            <button class="btn btn-sm btn-secondary" onclick="ImportManager.undoImport('${l.id}')">↩️ 撤销</button>
+            <button class="ez-btn btn btn-sm btn-secondary" onclick="ImportManager.undoImport('${l.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6"/><circle cx="21" cy="12" r="9"/><path d="M3 13a9 9 0 0 1 9-9"/></svg> 撤销</button>
           </div>
         </div>
       `;
     }).join('');
 
-    App.showModal('📜 导入历史', `<div style="max-height:400px;overflow-y:auto;">${content}</div>`);
+    App.showModal('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 导入历史', `<div style="max-height:400px;overflow-y:auto;">${content}</div>`);
   },
 
   /** 渲染导入历史（用于标签页） */
   renderImportHistory() {
     const c = document.getElementById('importHistoryList');
+    if (!c) { console.warn('[v7] 元素 #importHistoryList 未找到'); }
     if (!c) return;
     const logs = this.getLogs();
     if (logs.length === 0) {
-      c.innerHTML = `<div class="empty-state"><div class="empty-icon">📜</div><p>暂无导入记录</p></div>`;
+      c.innerHTML = `<div class="ez-empty"><div class="ez-empty-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><p>暂无导入记录</p></div>`;
       return;
     }
     c.innerHTML = logs.slice(0, 10).map(l => {
-      const icons = { npc: '👤', novel: '📖', location: '🗺️', event: '⚡', task: '📜', achievement: '🏅', preset: '⚙️', worldbook: '🌍', relation: '🔗', image: '🖼️', unknown: '❓' };
-      const typeIcons = (l.files || []).map(f => icons[f.type] || '📥').join(' ');
+      const icons = { npc: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>', novel: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', location: '🗺️', event: '⚡', task: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>', achievement: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>', preset: '⚙️', worldbook: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>', relation: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>', image: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>', unknown: '❓' };
+      const typeIcons = (l.files || []).map(f => icons[f.type] || '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>').join(' ');
       return `
         <div class="list-item" style="align-items:flex-start;">
-          <span style="font-size:20px;">📥</span>
+          <span style="font-size:20px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></span>
           <div class="list-info" style="flex:1;">
             <h4>${l.total} 条数据 · ${typeIcons}</h4>
             <p style="font-size:12px;color:${this.COLORS.textMuted};">${new Date(l.time).toLocaleString()}</p>
           </div>
-          <button class="btn btn-sm btn-secondary" onclick="ImportManager.undoImport('${l.id}')">撤销</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="ImportManager.undoImport('${l.id}')">撤销</button>
         </div>
       `;
     }).join('');
@@ -1291,15 +1299,15 @@ ${summaries}`;
       // 模拟 AI 分析：根据现有置信度给出增强建议
       const mockResult = this.state.pendingFiles.map(pf => {
         const s = pf.scanned;
-        return `📄 ${pf.file.name}\n  → 建议：${s.label || '未知'} (${Math.min(100, s.confidence + 10)}%)\n  → 理由：根据字段匹配判定`;
+        return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> ${pf.file.name}\n  → 建议：${s.label || '未知'} (${Math.min(100, s.confidence + 10)}%)\n  → 理由：根据字段匹配判定`;
       }).join('\n\n');
-      this.showAIResult('🤖 AI 分析结果：\n\n' + mockResult + '\n\n💡 建议：高置信度项目可直接导入，低置信度项目请核对样本内容。');
+      this.showAIResult('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> AI 分析结果：\n\n' + mockResult + '\n\n<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 建议：高置信度项目可直接导入，低置信度项目请核对样本内容。');
     }
   },
 
   /** 显示 AI 分析结果 */
   showAIResult(text) {
-    App.showModal('🤖 AI 分析建议', `<div style="white-space:pre-wrap;line-height:1.8;font-size:14px;color:${this.COLORS.ink};">${this.escapeHtml(text)}</div>`);
+    App.showModal('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> AI 分析建议', `<div style="white-space:pre-wrap;line-height:1.8;font-size:14px;color:${this.COLORS.ink};">${this.escapeHtml(text)}</div>`);
   },
 
   // =========================================================
@@ -1310,7 +1318,7 @@ ${summaries}`;
   showHelp() {
     App.showModal('❓ 导入格式说明', `
       <div style="line-height:1.8;color:${this.COLORS.ink};">
-        <h4 style="color:${this.COLORS.gold};margin-bottom:8px;">📋 JSON 格式</h4>
+        <h4 style="color:${this.COLORS.gold};margin-bottom:8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> JSON 格式</h4>
         <p>对象数组或单个对象，字段名称决定分类：</p>
         <ul style="margin-left:20px;font-size:13px;color:${this.COLORS.textMuted};">
           <li><strong>人物志：</strong>name, age, gender, personality</li>
@@ -1324,22 +1332,22 @@ ${summaries}`;
           <li><strong>关系网：</strong>source, target, relation</li>
         </ul>
 
-        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;">📄 TXT / MD 格式</h4>
+        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> TXT / MD 格式</h4>
         <p>纯文本内容，AI 会尝试按段落结构分析。</p>
 
-        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;">📊 CSV 格式</h4>
+        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> CSV 格式</h4>
         <p>首行为字段名，后续行为数据，字段名匹配分类规则。</p>
 
-        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;">📘 DOCX 格式</h4>
+        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> DOCX 格式</h4>
         <p>浏览器无法直接解析，建议打开后复制内容粘贴到文本框。</p>
 
-        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;">🖼️ 图片格式</h4>
+        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 图片格式</h4>
         <p>PNG / JPG / GIF / WEBP / BMP，自动存入素材库（头像/背景/立绘）。</p>
 
-        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;">📦 ZIP 批量导入</h4>
+        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> ZIP 批量导入</h4>
         <p>压缩包内文件会被逐个解析和分类。</p>
 
-        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;">⚠️ 冲突处理</h4>
+        <h4 style="color:${this.COLORS.gold};margin:16px 0 8px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 冲突处理</h4>
         <p>同名数据可选择：覆盖 / 跳过 / 重命名 / 合并。</p>
       </div>
     `);

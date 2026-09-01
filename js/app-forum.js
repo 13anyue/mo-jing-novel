@@ -15,10 +15,10 @@ const AppForum = {
 
   // 预设板块
   _defaultBoards: [
-    { id: 'board_world', name: '世界观讨论', icon: '🌍', description: '探讨墨境世界的设定、剧情与背景故事', order: 1 },
-    { id: 'board_char', name: '角色交流', icon: '👥', description: '角色分析、二创讨论、角色扮演', order: 2 },
-    { id: 'board_guide', name: '攻略分享', icon: '📚', description: '游戏攻略、技巧分享、疑难解答', order: 3 },
-    { id: 'board_chat', name: '水区闲聊', icon: '💬', description: '轻松话题、日常闲聊、随便聊聊', order: 4 }
+    { id: 'board_world', name: '世界观讨论', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>', description: '探讨墨境世界的设定、剧情与背景故事', order: 1 },
+    { id: 'board_char', name: '角色交流', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>', description: '角色分析、二创讨论、角色扮演', order: 2 },
+    { id: 'board_guide', name: '攻略分享', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>', description: '游戏攻略、技巧分享、疑难解答', order: 3 },
+    { id: 'board_chat', name: '水区闲聊', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>', description: '轻松话题、日常闲聊、随便聊聊', order: 4 }
   ],
 
   // 当前视图状态
@@ -29,7 +29,7 @@ const AppForum = {
    * 获取论坛用户信息（昵称、等级等）
    */
   getUser() {
-    return Storage.get(this.KEY_USER, { name: '墨境玩家', avatar: '👤', level: 1, exp: 0 });
+    return Storage.get(this.KEY_USER, { name: '墨境玩家', avatar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>', level: 1, exp: 0 });
   },
 
   saveUser(u) {
@@ -72,7 +72,11 @@ const AppForum = {
   /**
    * 初始化模块
    */
+    // 初始化模块入口
   init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
     // 确保板块数据存在
     if (!Storage.get(this.KEY_BOARDS)) {
       this.saveBoards(this._defaultBoards);
@@ -91,15 +95,15 @@ const AppForum = {
   seedSampleData() {
     const now = Date.now();
     const sampleThreads = [
-      { id: 'thread_1', boardId: 'board_world', title: '【讨论】墨境世界的地理设定', author: '世界观达人', avatar: '🌍', content: '墨境世界分为五大域，每域各有特色。大家觉得哪个域最有意思？', pinned: true, elite: true, views: 128, likes: 42, lastReply: now - 3600000, createdAt: now - 86400000 * 3 },
-      { id: 'thread_2', boardId: 'board_world', title: '关于时间线的疑问', author: '新手玩家', avatar: '🆕', content: '剧情中提到的时间线有些混乱，有没有大佬能梳理一下？', pinned: false, elite: false, views: 56, likes: 12, lastReply: now - 7200000, createdAt: now - 86400000 },
-      { id: 'thread_3', boardId: 'board_char', title: '主角性格分析帖', author: '剧情党', avatar: '📖', content: '通过多个章节的主角表现，可以看出其性格有明显的成长弧光...', pinned: true, elite: true, views: 256, likes: 89, lastReply: now - 1800000, createdAt: now - 86400000 * 5 },
-      { id: 'thread_4', boardId: 'board_guide', title: '【攻略】如何快速提升NPC好感度', author: '攻略组', avatar: '📚', content: '整理了一份NPC好感度提升指南，欢迎补充。', pinned: false, elite: true, views: 512, likes: 156, lastReply: now - 300000, createdAt: now - 86400000 * 2 },
-      { id: 'thread_5', boardId: 'board_chat', title: '今天天气不错，大家来闲聊', author: '水友A', avatar: '🌊', content: '闲来无事，聊聊天呗~', pinned: false, elite: false, views: 32, likes: 5, lastReply: now - 60000, createdAt: now - 3600000 }
+      { id: 'thread_1', boardId: 'board_world', title: '【讨论】墨境世界的地理设定', author: '世界观达人', avatar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>', content: '墨境世界分为五大域，每域各有特色。大家觉得哪个域最有意思？', pinned: true, elite: true, views: 128, likes: 42, lastReply: now - 3600000, createdAt: now - 86400000 * 3 },
+      { id: 'thread_2', boardId: 'board_world', title: '关于时间线的疑问', author: '新手玩家', avatar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>', content: '剧情中提到的时间线有些混乱，有没有大佬能梳理一下？', pinned: false, elite: false, views: 56, likes: 12, lastReply: now - 7200000, createdAt: now - 86400000 },
+      { id: 'thread_3', boardId: 'board_char', title: '主角性格分析帖', author: '剧情党', avatar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>', content: '通过多个章节的主角表现，可以看出其性格有明显的成长弧光...', pinned: true, elite: true, views: 256, likes: 89, lastReply: now - 1800000, createdAt: now - 86400000 * 5 },
+      { id: 'thread_4', boardId: 'board_guide', title: '【攻略】如何快速提升NPC好感度', author: '攻略组', avatar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>', content: '整理了一份NPC好感度提升指南，欢迎补充。', pinned: false, elite: true, views: 512, likes: 156, lastReply: now - 300000, createdAt: now - 86400000 * 2 },
+      { id: 'thread_5', boardId: 'board_chat', title: '今天天气不错，大家来闲聊', author: '水友A', avatar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12c0 3 2 5 5 5s5-2 5-5-2-5-5-5-5 2-5 5z"/><path d="M12 12c0 3 2 5 5 5s5-2 5-5-2-5-5-5-5 2-5 5z"/><path d="M7 12c0 3 2 5 5 5s5-2 5-5-2-5-5-5-5 2-5 5z"/></svg>', content: '闲来无事，聊聊天呗~', pinned: false, elite: false, views: 32, likes: 5, lastReply: now - 60000, createdAt: now - 3600000 }
     ];
     this.saveThreads(sampleThreads);
     const samplePosts = [
-      { id: 'post_1', threadId: 'thread_1', author: '剧情党', avatar: '📖', content: '我投东域一票，那里的山水描写特别细腻。', createdAt: now - 3000000 },
+      { id: 'post_1', threadId: 'thread_1', author: '剧情党', avatar: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>', content: '我投东域一票，那里的山水描写特别细腻。', createdAt: now - 3000000 },
       { id: 'post_2', threadId: 'thread_1', author: '画手', avatar: '🎨', content: '西域的异域风情更适合做插画！', createdAt: now - 2400000 },
       { id: 'post_3', threadId: 'thread_3', author: '分析帝', avatar: '🧐', content: '同意楼主，主角从冲动到沉稳的转变处理得相当自然。', createdAt: now - 900000 }
     ];
@@ -109,7 +113,9 @@ const AppForum = {
   /**
    * 进入页面时调用
    */
+    // 页面进入时调用
   onEnter() {
+    // 页面进入时调用
     this._currentBoard = null;
     this._currentThread = null;
     this.renderPage();
@@ -118,7 +124,9 @@ const AppForum = {
   /**
    * 渲染页面整体结构
    */
+    // 渲染页面主结构
   renderPage() {
+    // 渲染页面主结构
     const page = document.getElementById('page-forum');
     if (!page) return;
     page.innerHTML = `
@@ -135,7 +143,7 @@ const AppForum = {
         <div id="forumContentPanel" style="flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg-primary);">
           <div id="forumHeader" style="padding:12px 16px;border-bottom:1px solid var(--border-color);display:flex;align-items:center;justify-content:space-between;">
             <span id="forumHeaderTitle" style="font-weight:600;font-size:15px;">选择板块</span>
-            <button class="btn btn-primary btn-sm" id="forumNewPostBtn" style="display:none;" onclick="AppForum.showNewThreadModal()">➕ 发帖</button>
+            <button class="btn btn-primary btn-sm" id="forumNewPostBtn" style="display:none;" onclick="AppForum.showNewThreadModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 发帖</button>
           </div>
           <div id="forumBody" style="flex:1;overflow-y:auto;padding:16px;">
             <div class="empty-state">
@@ -204,7 +212,7 @@ const AppForum = {
       return (b.lastReply || 0) - (a.lastReply || 0);
     });
     if (threads.length === 0) {
-      body.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><p>该板块暂无帖子</p><p style="font-size:12px;color:var(--text-muted);">点击右上角"发帖"创建第一个帖子</p></div>';
+      body.innerHTML = '<div class="empty-state"><div class="empty-icon"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><p>该板块暂无帖子</p><p style="font-size:12px;color:var(--text-muted);">点击右上角"发帖"创建第一个帖子</p></div>';
       return;
     }
     body.innerHTML = `
@@ -232,11 +240,11 @@ const AppForum = {
             <span style="font-weight:600;font-size:15px;">${this.escapeHtml(t.title)}</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-muted);margin-bottom:8px;">
-            <span>${t.avatar || '👤'} ${t.author}</span>
+            <span>${t.avatar || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'} ${t.author}</span>
             <span>|</span>
             <span>👁 ${t.views || 0}</span>
             <span>❤️ ${t.likes || 0}</span>
-            <span>💬 ${this.getPostCount(t.id)}</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg> ${this.getPostCount(t.id)}</span>
             <span style="margin-left:auto;">${timeStr}</span>
           </div>
           <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${this.escapeHtml(t.content)}</p>
@@ -279,7 +287,7 @@ const AppForum = {
         <div class="card">
           <div class="card-body">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-              <span style="font-size:36px;">${thread.avatar || '👤'}</span>
+              <span style="font-size:36px;">${thread.avatar || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'}</span>
               <div>
                 <div style="font-weight:600;font-size:15px;">${thread.author}</div>
                 <div style="font-size:12px;color:var(--text-muted);">${timeStr}</div>
@@ -294,13 +302,13 @@ const AppForum = {
             <div style="display:flex;align-items:center;gap:12px;margin-top:16px;padding-top:12px;border-top:1px solid var(--border-color);">
               <button class="btn btn-sm btn-secondary" onclick="AppForum.likeThread('${threadId}')">❤️ ${thread.likes || 0}</button>
               <span style="font-size:12px;color:var(--text-muted);">👁 ${thread.views || 0} 浏览</span>
-              <span style="font-size:12px;color:var(--text-muted);">💬 ${posts.length} 回复</span>
+              <span style="font-size:12px;color:var(--text-muted);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg> ${posts.length} 回复</span>
             </div>
           </div>
         </div>
         <!-- 回复列表 -->
         ${posts.length > 0 ? `
-          <div style="font-weight:600;font-size:14px;padding-left:4px;">💬 ${posts.length} 条回复</div>
+          <div style="font-weight:600;font-size:14px;padding-left:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg> ${posts.length} 条回复</div>
           <div style="display:flex;flex-direction:column;gap:10px;">
             ${posts.map(p => this.renderPostItem(p)).join('')}
           </div>
@@ -326,7 +334,7 @@ const AppForum = {
       <div class="card" style="margin-left:20px;">
         <div class="card-body" style="padding:12px;">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
-            <span style="font-size:24px;">${p.avatar || '👤'}</span>
+            <span style="font-size:24px;">${p.avatar || '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>'}</span>
             <span style="font-weight:600;font-size:14px;">${p.author}</span>
             <span style="font-size:11px;color:var(--text-muted);margin-left:auto;">${timeStr}</span>
           </div>

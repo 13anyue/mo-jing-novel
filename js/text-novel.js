@@ -52,7 +52,11 @@ const TextNovel = {
     /**
      * 初始化阅读器：加载示例数据、恢复进度与设置、绑定事件
      */
+      // 初始化模块入口
     init() {
+      // v7: 外部模块依赖检查
+      if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
         this._loadDemoData();       // 加载示例数据
         this._loadSettings();       // 恢复设置
         this.loadProgress();        // 恢复阅读进度
@@ -63,7 +67,9 @@ const TextNovel = {
     /**
      * 页面进入时的回调（供路由系统调用）
      */
+      // 页面进入时调用
     onEnter() {
+    // 页面进入时调用
         this.renderPage();
         this._bindEvents();
         this.loadProgress();
@@ -75,7 +81,12 @@ const TextNovel = {
     /**
      * 渲染完整阅读器页面到 #page-text-novel
      */
+      // 渲染页面主结构
     renderPage() {
+      // v7: 页面渲染入口
+      const page = document.getElementById('page-' + this.constructor.name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, ''));
+      if (!page) { console.warn('[v7] 页面容器未找到'); return; }
+    // 渲染页面主结构
         const container = document.querySelector(this.containerSelector);
         if (!container) {
             console.warn('[TextNovel] 页面容器不存在：', this.containerSelector);
@@ -167,7 +178,7 @@ const TextNovel = {
                             color:${isDark ? '#C9A227' : '#8B7355'};
                             border-bottom:1px solid ${borderColor};
                             margin-bottom:8px;
-                        ">📖 章节目录</div>
+                        "><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg> 章节目录</div>
                         <ul class="chapter-list" style="list-style:none;margin:0;padding:0;">
                             ${this._renderChapterList()}
                         </ul>
@@ -199,7 +210,7 @@ const TextNovel = {
                                 border-radius:6px;
                                 cursor:pointer;
                                 font-family:'Noto Serif SC',serif;
-                            ">📥 导出</button>
+                            "><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导出</button>
                         </div>
                     </aside>
 
@@ -370,7 +381,7 @@ const TextNovel = {
 
                     <!-- 昼夜模式切换 -->
                     <div class="setting-item" style="display:flex;align-items:center;justify-content:space-between;">
-                        <label style="font-size:13px;color:${isDark ? '#8B7355' : '#8B7355'};">🌙 夜间模式</label>
+                        <label style="font-size:13px;color:${isDark ? '#8B7355' : '#8B7355'};"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg> 夜间模式</label>
                         <label class="toggle-switch" style="
                             position:relative;
                             display:inline-block;
@@ -407,7 +418,7 @@ const TextNovel = {
                     display:none;
                     font-family:'Noto Serif SC',serif;
                 ">
-                    <h3 style="margin:0 0 16px;font-size:16px;color:${isDark ? '#C9A227' : '#2C1810'};">📥 导入 Markdown 小说</h3>
+                    <h3 style="margin:0 0 16px;font-size:16px;color:${isDark ? '#C9A227' : '#2C1810'};"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导入 Markdown 小说</h3>
                     <textarea id="import-textarea" placeholder="粘贴 Markdown 格式的小说文本...&#10;以 # 章节标题 作为分章标记"
                         style="
                             width:100%;

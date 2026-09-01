@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * Preset Manager v3 - Enhanced
+ * Preset Manager v7 - Enhanced
  * 增强功能：
  * - 运行时预设（对话时一键切换）
  * - 预设绑定系统（绑定NPC/场景/风格组合）
@@ -31,18 +31,19 @@ const PresetManager = {
 
   renderPage() {
     const page = document.getElementById('page-presets');
+    if (!page) { console.warn('[v7] 元素 #page-presets 未找到'); }
     if (!page) return;
     page.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
-        <h2 class="section-title">📦 预设管理 v3</h2>
+        <h2 class="section-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> 预设管理 v7</h2>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-primary" onclick="PresetManager.importPreset()">📥 导入</button>
-          <button class="btn btn-secondary" onclick="PresetManager.exportAll()">📤 全部导出</button>
+          <button class="ez-btn btn btn-primary" onclick="PresetManager.importPreset()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导入</button>
+          <button class="ez-btn btn btn-secondary" onclick="PresetManager.exportAll()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 全部导出</button>
         </div>
       </div>
-      <div class="card" style="margin-bottom:var(--space-lg);">
-        <div class="card-header"><h3>💾 保存当前配置</h3></div>
+      <div class="ez-card" style="margin-bottom:var(--space-lg);">
+        <div class="card-header"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 保存当前配置</h3></div>
         <div class="card-body">
           <div class="form-group"><label>预设名称</label><input type="text" id="presetName" placeholder="如：古风修仙篇"></div>
           <div class="form-group"><label>描述</label><input type="text" id="presetDesc" placeholder="用途说明"></div>
@@ -53,12 +54,12 @@ const PresetManager = {
               ${this.KEYS.map((k, i) => `<label style="display:inline-flex;align-items:center;gap:4px;font-size:13px;color:var(--text-secondary);cursor:pointer;"><input type="checkbox" checked id="presetKey_${i}" value="${k.key}" style="width:auto;"> ${k.name}</label>`).join('')}
             </div>
           </div>
-          <button class="btn btn-primary" onclick="PresetManager.saveCurrent()">💾 保存</button>
+          <button class="ez-btn btn btn-primary" onclick="PresetManager.saveCurrent()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 保存</button>
         </div>
       </div>
 
       <!-- 运行时快速预设 -->
-      <div class="card" style="margin-bottom:var(--space-lg);">
+      <div class="ez-card" style="margin-bottom:var(--space-lg);">
         <div class="card-header"><h3>⚡ 运行时快速切换</h3></div>
         <div class="card-body" id="quickPresetArea">
           <p style="color:var(--text-muted);">保存预设后，可在此快速切换</p>
@@ -74,23 +75,24 @@ const PresetManager = {
 
   renderList() {
     const c = document.getElementById('presetList');
+    if (!c) { console.warn('[v7] 元素 #presetList 未找到'); }
     if (!c) return;
     const presets = this.getPresets();
-    if (presets.length === 0) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">📦</div><p>暂无预设</p></div>'; return; }
+    if (presets.length === 0) { c.innerHTML = '<div class="ez-empty"><div class="ez-empty-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div><p>暂无预设</p></div>'; return; }
     c.innerHTML = presets.map(p => `
       <div class="list-item">
-        <span style="font-size:20px;">📦</span>
+        <span style="font-size:20px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></span>
         <div class="list-info" style="flex:1;">
           <h4>${p.name}</h4>
           <p>${p.description || '无描述'} · ${Object.keys(p.data || {}).length}项 · ${new Date(p.createdAt).toLocaleDateString()}</p>
           ${p.tags?.length ? `<div style="margin-top:4px;">${p.tags.map(t => `<span class="tag tag-secondary">${t}</span>`).join(' ')}</div>` : ''}
         </div>
         <div style="display:flex;gap:4px;flex-wrap:wrap;">
-          <button class="btn btn-sm btn-primary" onclick="PresetManager.load('${p.id}')">加载</button>
-          <button class="btn btn-sm btn-secondary" onclick="PresetManager.preview('${p.id}')">预览</button>
-          <button class="btn btn-sm btn-secondary" onclick="PresetManager.exportOne('${p.id}')">📤</button>
-          <button class="btn btn-sm btn-gold" onclick="PresetManager.shareCode('${p.id}')">🔗</button>
-          <button class="btn btn-sm btn-danger" onclick="PresetManager.delete('${p.id}')">🗑️</button>
+          <button class="ez-btn btn btn-sm btn-primary" onclick="PresetManager.load('${p.id}')">加载</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="PresetManager.preview('${p.id}')">预览</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="PresetManager.exportOne('${p.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></button>
+          <button class="ez-btn btn btn-sm btn-gold" onclick="PresetManager.shareCode('${p.id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>
+          <button class="ez-btn btn btn-sm btn-danger" onclick="PresetManager.delete('${p.id}')">🗑️</button>
         </div>
       </div>
     `).join('');
@@ -98,14 +100,15 @@ const PresetManager = {
 
   renderQuickPresets() {
     const area = document.getElementById('quickPresetArea');
+    if (!area) { console.warn('[v7] 元素 #quickPresetArea 未找到'); }
     if (!area) return;
     const presets = this.getPresets().slice(0, 5);
     if (presets.length === 0) { area.innerHTML = '<p style="color:var(--text-muted);">保存预设后，可在此快速切换运行时配置</p>'; return; }
     area.innerHTML = `
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         ${presets.map(p => `
-          <button class="btn btn-sm btn-secondary" onclick="PresetManager.quickLoad('${p.id}')" title="${p.description || ''}">
-            📦 ${p.name}
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="PresetManager.quickLoad('${p.id}')" title="${p.description || ''}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg> ${p.name}
           </button>
         `).join('')}
       </div>
@@ -167,7 +170,7 @@ const PresetManager = {
         }).join('')}
       </div>
     `;
-    App.showModal('📋 预设预览', content);
+    App.showModal('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> 预设预览', content);
   },
 
   shareCode(id) {
@@ -176,11 +179,11 @@ const PresetManager = {
     try {
       const json = JSON.stringify(p.data);
       const code = btoa(encodeURIComponent(json).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)));
-      App.showModal('🔗 分享码', `
+      App.showModal('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> 分享码', `
         <div style="text-align:center;">
           <p style="margin-bottom:12px;">复制以下代码分享给他人：</p>
           <textarea readonly style="width:100%;height:120px;font-family:monospace;font-size:12px;" onclick="this.select()">${code}</textarea>
-          <button class="btn btn-primary" style="margin-top:12px;" onclick="navigator.clipboard.writeText('${code}');App.toast('已复制','success')">📋 复制</button>
+          <button class="ez-btn btn btn-primary" style="margin-top:12px;" onclick="navigator.clipboard.writeText('${code}');App.toast('已复制','success')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> 复制</button>
         </div>
       `);
     } catch (e) { App.toast('生成失败', 'error'); }

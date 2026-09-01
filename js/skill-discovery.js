@@ -8,45 +8,52 @@
 const SkillDiscovery = {
   // Static list of available skills from the system
   AVAILABLE_SKILLS: [
-    { id: 'baidu-baike-data', name: '百度百科', category: '知识', desc: '查询百科词条，获取权威解释', icon: '📚', status: 'installed' },
+    { id: 'baidu-baike-data', name: '百度百科', category: '知识', desc: '查询百科词条，获取权威解释', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>', status: 'installed' },
     { id: 'baidu-image-gen', name: 'AI生图', category: '创作', desc: '生成角色立绘、场景背景、CG插画', icon: '🎨', status: 'available' },
     { id: 'baidu-text-to-speech', name: '语音合成', category: '多媒体', desc: '将文本转为语音，生成角色配音', icon: '🔊', status: 'available' },
-    { id: 'baidu-text-video', name: '文稿视频', category: '多媒体', desc: '将文案转为图文解说视频', icon: '🎬', status: 'available' },
+    { id: 'baidu-text-video', name: '文稿视频', category: '多媒体', desc: '将文案转为图文解说视频', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="2" y1="7" x2="7" y2="7"/><line x1="2" y1="17" x2="7" y2="17"/><line x1="17" y1="17" x2="22" y2="17"/><line x1="17" y1="7" x2="22" y2="7"/></svg>', status: 'available' },
     { id: 'build-website-page', name: '网页构建', category: '开发', desc: '生成和构建响应式网页', icon: '🌐', status: 'available' },
-    { id: 'build-h5-content-studio', name: 'H5内容页', category: '开发', desc: '生成多类型H5内容页面', icon: '📱', status: 'available' },
+    { id: 'build-h5-content-studio', name: 'H5内容页', category: '开发', desc: '生成多类型H5内容页面', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>', status: 'available' },
     { id: 'build-ecommerce-detail-page', name: '电商详情页', category: '开发', desc: '生成电商商品详情页面', icon: '🛍️', status: 'available' },
     { id: 'icon-system', name: '图标系统', category: '设计', desc: '图标搜索、生成和集成', icon: '🔣', status: 'available' },
-    { id: 'product-refinement', name: '图像精修', category: '设计', desc: '商品图、立绘精修换背景', icon: '✨', status: 'available' },
+    { id: 'product-refinement', name: '图像精修', category: '设计', desc: '商品图、立绘精修换背景', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg>', status: 'available' },
     { id: 'qianfan-deepresearch', name: '深度研究', category: '知识', desc: '系统性深度研究，产出调研报告', icon: '🔬', status: 'available' },
-    { id: 'visualized-output', name: '可视化输出', category: '展示', desc: '图表、流程图、架构图渲染', icon: '📊', status: 'available' },
+    { id: 'visualized-output', name: '可视化输出', category: '展示', desc: '图表、流程图、架构图渲染', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>', status: 'available' },
     { id: 'dumate-browser-use', name: '浏览器自动化', category: '工具', desc: '网页自动化操作和数据采集', icon: '🌐', status: 'available' },
     { id: 'docx', name: 'Word文档', category: '文档', desc: '读取、创建和编辑Word文档', icon: '📝', status: 'available' },
-    { id: 'xlsx', name: 'Excel表格', category: '文档', desc: '读取、创建和编辑Excel表格', icon: '📊', status: 'available' },
+    { id: 'xlsx', name: 'Excel表格', category: '文档', desc: '读取、创建和编辑Excel表格', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>', status: 'available' },
     { id: 'pdf', name: 'PDF处理', category: '文档', desc: '生成、编辑和解析PDF文件', icon: '📄', status: 'available' },
     { id: 'pptx', name: 'PPT演示文稿', category: '文档', desc: '创建和编辑幻灯片', icon: '🎞️', status: 'available' },
     { id: 'miaoda-app-builder', name: '秒哒应用构建', category: '开发', desc: '通过自然语言构建应用', icon: '🚀', status: 'available' }
   ],
 
-  init() { this.renderPage(); },
-  onEnter() { this.renderSkillGrid(); },
+    // 初始化模块入口
+  init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    this.renderPage(); },
+    // 页面进入时调用
+  onEnter() {
+    this.renderSkillGrid(); },
 
   getUserSkills() { return Storage.get('userInstalledSkills', []); },
   saveUserSkills(list) { Storage.set('userInstalledSkills', list); },
 
+    // 渲染页面主结构
   renderPage() {
     const page = document.getElementById('page-skill-discovery');
     if (!page) return;
     page.innerHTML = `
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
-        <h2 class="section-title">🔍 技能发现</h2>
+        <h2 class="section-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 技能发现</h2>
         <div style="display:flex;gap:8px;">
-          <button class="btn btn-secondary" onclick="SkillDiscovery.refreshList()">🔄 刷新</button>
+          <button class="btn btn-secondary" onclick="SkillDiscovery.refreshList()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> 刷新</button>
         </div>
       </div>
 
       <div class="card" style="margin-bottom:var(--space-lg);">
-        <div class="card-header"><h3>📦 已安装技能</h3></div>
+        <div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> 已安装技能</h3></div>
         <div class="card-body">
           <div id="installedSkills" style="display:flex;gap:8px;flex-wrap:wrap;"></div>
         </div>
@@ -74,7 +81,7 @@ const SkillDiscovery = {
       </div>
 
       <div class="card">
-        <div class="card-header"><h3>➕ 创建自定义功能</h3></div>
+        <div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 创建自定义功能</h3></div>
         <div class="card-body">
           <p style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-md);">
             你也可以创建自己的功能模块。输入功能描述，AI将帮你生成代码。
@@ -117,7 +124,7 @@ const SkillDiscovery = {
       return true;
     });
 
-    if (filtered.length === 0) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon">🔍</div><p>没有找到匹配的技能</p></div>'; return; }
+    if (filtered.length === 0) { grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><p>没有找到匹配的技能</p></div>'; return; }
 
     grid.innerHTML = filtered.map(s => `
       <div class="card" style="cursor:pointer;" onclick="SkillDiscovery.showSkillDetail('${s.id}')">
@@ -208,7 +215,7 @@ const SkillDiscovery = {
       userSkills.push(pluginId);
       this.saveUserSkills(userSkills);
 
-      App.showModal('✨ 自定义功能已创建', `
+      App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> 自定义功能已创建', `
         <div style="line-height:1.8;">
           <p><strong>功能名称：</strong>${pluginData.name}</p>
           <p><strong>描述：</strong>${desc}</p>

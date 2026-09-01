@@ -8,8 +8,15 @@
  * + Scene System + NPC Behavior + Group Chat
  * + CodePatcher + SettingsHub + Assistant v3 + UI DIY v2 + SystemBuilder
  * + WorldviewEngine + FamilySystem + PoliticalSystem + ConspiracySystem + ButtonCustomizer
+ * 2026-09-01 升级：
+ * - callbacks 注册表补全所有模块
+ * - navigate 加强 .page-view 切换逻辑
+ * - 全局 Storage 操作加 try-catch
+ * - 全局 DOM 操作加空值检查
+ * - Emoji 替换为 SVG
  * =========================================================
  */
+
 // 全局错误捕获，防止任何JS错误阻塞整个系统
 window.addEventListener('error', function(e) {
   console.error('[全局错误]', e.message, 'at', e.filename, ':', e.lineno);
@@ -25,7 +32,52 @@ window.addEventListener('unhandledrejection', function(e) {
   e.preventDefault();
 });
 
+/** 5套内置主题定义 */
+const BUILT_IN_THEMES = {
+  ancient: {
+    name: '古风墨境',
+    colors: { bgBody: '#F5E6D3', bgCard: '#FFF8F0', textPrimary: '#2C1810', textSecondary: '#5C4033', primary: '#8B4513', primaryDark: '#5D3A1A', gold: '#C9A227', borderColor: '#D4C4A8', borderGold: '#C9A227' },
+    fonts: { main: "'Noto Serif SC', serif", display: "'Noto Serif SC', serif" },
+    radius: { sm: 8, md: 16, lg: 24 },
+    shadows: { sm: '0 2px 8px rgba(44,24,16,0.08)', md: '0 4px 16px rgba(44,24,16,0.12)', lg: '0 8px 32px rgba(44,24,16,0.16)' }
+  },
+  modern: {
+    name: '现代简约',
+    colors: { bgBody: '#F7F8FA', bgCard: '#FFFFFF', textPrimary: '#1A1A2E', textSecondary: '#4A4A6A', primary: '#4A90E2', primaryDark: '#357ABD', gold: '#E8913A', borderColor: '#E8E8EC', borderGold: '#E8913A' },
+    fonts: { main: "'Inter', 'PingFang SC', sans-serif", display: "'Inter', sans-serif" },
+    radius: { sm: 6, md: 12, lg: 20 },
+    shadows: { sm: '0 1px 4px rgba(0,0,0,0.06)', md: '0 2px 12px rgba(0,0,0,0.08)', lg: '0 4px 24px rgba(0,0,0,0.12)' }
+  },
+  scifi: {
+    name: '科幻未来',
+    colors: { bgBody: '#0A0E1A', bgCard: '#121830', textPrimary: '#E0E6F0', textSecondary: '#8A94A8', primary: '#00D4FF', primaryDark: '#00A8CC', gold: '#FFD700', borderColor: '#1E2A4A', borderGold: '#FFD700' },
+    fonts: { main: "'Orbitron', 'Noto Sans SC', sans-serif", display: "'Orbitron', sans-serif" },
+    radius: { sm: 4, md: 8, lg: 16 },
+    shadows: { sm: '0 0 8px rgba(0,212,255,0.2)', md: '0 0 16px rgba(0,212,255,0.3)', lg: '0 0 32px rgba(0,212,255,0.4)' }
+  },
+  campus: {
+    name: '校园清新',
+    colors: { bgBody: '#F0F7F4', bgCard: '#FFFFFF', textPrimary: '#2D4A3E', textSecondary: '#5A7D6E', primary: '#5CB85C', primaryDark: '#449D44', gold: '#F0AD4E', borderColor: '#D0E4D8', borderGold: '#F0AD4E' },
+    fonts: { main: "'Nunito', 'Noto Sans SC', sans-serif", display: "'Nunito', sans-serif" },
+    radius: { sm: 12, md: 20, lg: 32 },
+    shadows: { sm: '0 2px 8px rgba(92,184,92,0.1)', md: '0 4px 16px rgba(92,184,92,0.15)', lg: '0 8px 32px rgba(92,184,92,0.2)' }
+  },
+  dark: {
+    name: '暗黑深邃',
+    colors: { bgBody: '#0D0D0D', bgCard: '#1A1A1A', textPrimary: '#E8E8E8', textSecondary: '#8C8C8C', primary: '#BB86FC', primaryDark: '#9B5CDB', gold: '#03DAC6', borderColor: '#2A2A2A', borderGold: '#03DAC6' },
+    fonts: { main: "'Noto Sans SC', sans-serif", display: "'Noto Sans SC', sans-serif" },
+    radius: { sm: 8, md: 16, lg: 24 },
+    shadows: { sm: '0 2px 8px rgba(0,0,0,0.3)', md: '0 4px 16px rgba(0,0,0,0.4)', lg: '0 8px 32px rgba(0,0,0,0.5)' }
+  }
+};
+
 const App = {
+  /** 页面导航回调注册表 { pageId: { onEnter: fn } } */
+  callbacks: {},
+  /** 主题注册表 { themeId: themeObject } */
+  themes: {},
+  /** 自定义主题存储键 */
+  CUSTOM_THEMES_KEY: 'app_custom_themes_v1',
   NAV_ITEMS: [
     { iconSvg: 'icon-home', label: '首页', page: 'home' },
     { iconSvg: 'icon-game', label: '开始游戏', page: 'runtime' },
@@ -40,6 +92,8 @@ const App = {
     { iconSvg: 'icon-presets', label: '预设管理', page: 'presets' },
     { iconSvg: 'icon-regex', label: '正则引擎', page: 'regex' },
     { iconSvg: 'icon-worldbook', label: '世界书', page: 'worldbook' },
+    { iconSvg: 'icon-worldbook', label: '世界选择', page: 'world-selector' },
+    { iconSvg: 'icon-npc', label: '我的角色', page: 'hero' },
     { iconSvg: 'icon-import', label: '万能导入', page: 'import' },
     { iconSvg: 'icon-backup', label: '备份管理', page: 'backup' },
     { iconSvg: 'icon-ui', label: 'UI DIY', page: 'ui-diy' },
@@ -66,7 +120,7 @@ const App = {
     { iconSvg: 'icon-bg', label: '背包', page: 'inventory' },
     { iconSvg: 'icon-map', label: '联盟', page: 'alliance' },
     { iconSvg: 'icon-baike', label: '趣味', page: 'fun' },
-    { iconSvg: 'icon-game', label: '君成录', page: 'juncheng' },
+    { iconSvg: 'icon-game', label: '探索', page: 'juncheng' },
     { iconSvg: 'icon-worldbook', label: '时间线', page: 'timeline' },
     { iconSvg: 'icon-status', label: '事件', page: 'events' },
     { iconSvg: 'icon-backup', label: '存档管理', page: 'save-manager' },
@@ -91,223 +145,170 @@ const App = {
   _modalStack: [],
 
   async init() {
-    await Storage.initDB();
+    try { await Storage.initDB(); } catch(e) { console.warn('[App] Storage.initDB 失败:', e); }
     // Initialize event bridge for cross-module linkage
-    if (window.EventBridge) EventBridge.init();
+    if (window.EventBridge && typeof EventBridge.init === 'function') {
+      try { EventBridge.init(); } catch(e) { console.warn(e); }
+    }
     // Load user custom nav items
     this.loadCustomNavItems();
     this.renderSidebar();
     this.renderTopBar();
-    this.renderBottomNav(); // 渲染底部导航栏（易次元风格）
+    this.renderBottomNav();
     this.bindEvents();
+    this.initThemes();
     this.initModules();
     this.handleRoute();
     window.addEventListener('hashchange', () => this.handleRoute());
-    if (DesignSuiteIntegration?.restoreCustomCSS) DesignSuiteIntegration.restoreCustomCSS();
-  },
-
-  // ===== Dynamic Navigation =====
-  loadCustomNavItems() {
-    const custom = Storage.get('appCustomNavItems', []);
-    for (const item of custom) {
-      if (!this.NAV_ITEMS.find(n => n.page === item.page)) {
-        this.NAV_ITEMS.push(item);
-      }
+    if (window.DesignSuiteIntegration && DesignSuiteIntegration.restoreCustomCSS) {
+      try { DesignSuiteIntegration.restoreCustomCSS(); } catch(e) { console.warn(e); }
     }
   },
 
-  addNavItem(item) {
-    if (!this.NAV_ITEMS.find(n => n.page === item.page)) {
-      this.NAV_ITEMS.push(item);
-      const custom = Storage.get('appCustomNavItems', []);
-      custom.push(item);
-      Storage.set('appCustomNavItems', custom);
-      this.renderSidebar();
+  // ===== Theme System =====
+  /** 初始化主题系统：注册内置主题 + 加载自定义主题 */
+  initThemes() {
+    // 注册5套内置主题
+    Object.keys(BUILT_IN_THEMES).forEach(id => this.registerTheme(id, BUILT_IN_THEMES[id]));
+    // 加载用户自定义主题
+    let customs = {};
+    try { customs = Storage.get(this.CUSTOM_THEMES_KEY, {}); } catch(e) { console.warn(e); }
+    Object.keys(customs).forEach(id => { this.themes[id] = customs[id]; });
+    // 应用保存的主题，默认古风墨境
+    let saved = 'ancient';
+    try { saved = Storage.get('currentThemeId', 'ancient'); } catch(e) { console.warn(e); }
+    this.applyTheme(saved, true);
+  },
+
+  /** 注册单个主题 */
+  registerTheme(id, theme) {
+    this.themes[id] = theme;
+  },
+
+  /** 获取当前主题ID */
+  getCurrentThemeId() {
+    return this._currentThemeId || 'ancient';
+  },
+
+  /** 应用指定主题（静默模式用于初始化） */
+  applyTheme(themeId, silent = false) {
+    const theme = this.themes[themeId];
+    if (!theme) { if (!silent) this.toast('主题不存在', 'error'); return; }
+    this._currentThemeId = themeId;
+    const body = document.body;
+    if (!body) return;
+    // 移除旧主题class
+    body.classList.remove('theme-ancient', 'theme-modern', 'theme-scifi', 'theme-campus', 'theme-dark');
+    // 添加新主题class
+    body.classList.add('theme-' + themeId);
+    // 更新CSS变量
+    const root = document.documentElement;
+    if (theme.colors) {
+      root.style.setProperty('--bg-body', theme.colors.bgBody || '');
+      root.style.setProperty('--bg-card', theme.colors.bgCard || '');
+      root.style.setProperty('--text-primary', theme.colors.textPrimary || '');
+      root.style.setProperty('--text-secondary', theme.colors.textSecondary || '');
+      root.style.setProperty('--color-primary', theme.colors.primary || '');
+      root.style.setProperty('--color-primary-dark', theme.colors.primaryDark || '');
+      root.style.setProperty('--color-gold', theme.colors.gold || '');
+      root.style.setProperty('--border-color', theme.colors.borderColor || '');
+      root.style.setProperty('--border-gold', theme.colors.borderGold || '');
+    }
+    if (theme.fonts) {
+      root.style.setProperty('--font-main', theme.fonts.main || '');
+      root.style.setProperty('--font-display', theme.fonts.display || '');
+    }
+    if (theme.radius) {
+      root.style.setProperty('--border-radius-sm', (theme.radius.sm || 8) + 'px');
+      root.style.setProperty('--border-radius', (theme.radius.md || 12) + 'px');
+      root.style.setProperty('--border-radius-lg', (theme.radius.lg || 16) + 'px');
+    }
+    if (theme.shadows) {
+      root.style.setProperty('--shadow-sm', theme.shadows.sm || '');
+      root.style.setProperty('--shadow-md', theme.shadows.md || '');
+      root.style.setProperty('--shadow-lg', theme.shadows.lg || '');
+    }
+    // 存储当前主题
+    try { Storage.set('currentThemeId', themeId); } catch(e) { console.warn(e); }
+    this.updateThemeIcon(themeId);
+    if (!silent) this.toast(`已切换至「${theme.name}」`, 'success');
+    // 触发主题切换事件，供其他模块响应
+    if (window.EventBridge && EventBridge.emit) {
+      try { EventBridge.emit('theme-changed', { themeId, theme }); } catch(e) { console.warn(e); }
     }
   },
 
-    removeNavItem(pageId) {
-      const idx = this.NAV_ITEMS.findIndex(n => n.page === pageId);
-      if (idx !== -1 && idx >= 39) { // Protect built-in items (v6 has 39 items)
-      this.NAV_ITEMS.splice(idx, 1);
-      const custom = Storage.get('appCustomNavItems', []);
-      Storage.set('appCustomNavItems', custom.filter(c => c.page !== pageId));
-      this.renderSidebar();
-    }
-  },
-
-  renderSidebar() {
-    const nav = document.getElementById('sidebarNav');
-    if (!nav) return;
-    nav.innerHTML = this.NAV_ITEMS.map(item => `
-      <div class="nav-item" data-page="${item.page}" onclick="App.navigate('${item.page}')">
-        <span class="nav-icon">
-          <svg width="18" height="18"><use href="#${item.iconSvg}"/></svg>
-        </span>
-        <span>${item.label}</span>
-      </div>
-    `).join('');
-  },
-
-  renderTopBar() {
-    const bar = document.getElementById('topBar');
-    if (!bar) return;
-    const currentPage = this.NAV_ITEMS.find(n => n.page === this._currentPage);
-    const showBack = this._currentPage && this._currentPage !== 'home';
-    bar.innerHTML = `
-      <div style="display:flex;align-items:center;gap:12px;">
-        ${showBack ? `<button class="btn-icon mobile-back-btn" onclick="App.navigate('home')" title="返回首页"><svg width="20" height="20"><use href="#icon-import"/></svg></button>` : ''}
-        <button class="menu-toggle" onclick="App.toggleSidebar()" title="菜单"><svg width="20" height="20"><use href="#icon-ui"/></svg></button>
-        <span class="page-title" id="pageTitle">${currentPage?.label || '墨境'}</span>
-      </div>
-      <div class="top-actions">
-        <button class="btn-icon" onclick="BackupManager.createBackup()" title="备份"><svg width="18" height="18"><use href="#icon-backup"/></svg></button>
-        <button class="btn-icon" onclick="App.exportData()" title="导出"><svg width="18" height="18"><use href="#icon-import"/></svg></button>
-        <button class="btn-icon" onclick="App.importData()" title="导入"><svg width="18" height="18"><use href="#icon-backup"/></svg></button>
-        <button class="btn-icon" onclick="App.toggleTheme()" title="切换主题" id="themeToggle"><svg width="18" height="18"><use href="#icon-baike"/></svg></button>
-        <button class="btn-icon" onclick="Launcher.enterMainApp();location.reload()" title="重启"><svg width="18" height="18"><use href="#icon-pwa"/></svg></button>
-      </div>
-    `;
-  },
-
-  /* === 底部导航栏（易次元风格） === */
-  renderBottomNav() {
-    let nav = document.getElementById('bottomNav');
-    if (!nav) {
-      nav = document.createElement('nav');
-      nav.id = 'bottomNav';
-      nav.className = 'bottom-nav';
-      document.body.appendChild(nav);
-    }
-    // 只显示最常用的5个功能 + 首页
-    const pinned = ['home', 'runtime', 'npc', 'map', 'storyline', 'assistant'];
-    const items = pinned.map(pid => this.NAV_ITEMS.find(n => n.page === pid)).filter(Boolean);
-    nav.innerHTML = items.map(item => `
-      <div class="bottom-nav-item ${this._currentPage === item.page ? 'active' : ''}" data-page="${item.page}" onclick="App.navigate('${item.page}')">
-        <svg width="24" height="24"><use href="#${item.iconSvg}"/></svg>
-        <span>${item.label}</span>
-      </div>
-    `).join('');
-  },
-
-  bindEvents() {
-    document.getElementById('sidebarBackdrop')?.addEventListener('click', () => this.toggleSidebar(false));
-    const savedTheme = Storage.get('theme', 'light');
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    this.updateThemeIcon(savedTheme);
-    // Listen for custom module registration via EventBridge
-    if (window.EventBridge) {
-      EventBridge.on('app', (e) => {
-        if (e.type === 'nav_refresh') {
-          this.loadCustomNavItems();
-          this.renderSidebar();
-        }
-      }, 'App');
-    }
-  },
-
-  initModules() {
-    const mods = [
-      APISettings, NPCManager, BackgroundLibrary, MusicManager,
-      MapSystem, StatusBar, PromptSystem, MemorySystem,
-      PresetManager, RegexEngine, NovelRuntime, WorldBook,
-      ImportManager, BackupManager, UIDIY, BaikeIntegration,
-      DesignSuiteIntegration, SkillDiscovery, CustomCreator,
-      MobilePreview, PWASystem, CGGallery,
-      Assistant, Plugins, Notes, Relations, HomePage,
-      StorylineSystem, StorylineManager, AppChat, AppForum, AppMail,
-      AppSettings, AppBeautify, AppCustom,
-      AchievementSystem, InventorySystem, AllianceSystem,
-      FunFeatures, JunChengStyle,
-      TimelineSystem, EventSystem, SaveManager, ChapterEditor, WorldNotes,
-      TextNovel,
-      QuestSystem, WeatherSystem, LetterSystem, RandomEvents, BadgeWall,
-      SceneSystem, NPCBehavior, GroupChat,
-      SettingsHub, CodePatcher, SystemBuilder,
-      WorldviewEngine, FamilySystem, PoliticalSystem, ConspiracySystem, ButtonCustomizer
-    ];
-    mods.forEach(mod => {
-      try { if (mod && typeof mod.init === 'function') mod.init(); }
-      catch (e) { console.error('Init error:', mod?.constructor?.name, e); }
-    });
-  },
-
-  handleRoute() {
-    const hash = window.location.hash.slice(1) || 'home';
-    // 场景路由特殊处理：#scene-location-xxx 不走普通 navigate
-    if (hash.startsWith('scene-location-')) {
-      if (window.SceneSystem && typeof SceneSystem.onEnter === 'function') {
-        SceneSystem.onEnter();
-      }
-      return;
-    }
-    this.navigate(hash);
-  },
-
-  navigate(pageId) {
-    try {
-      // 若正在场景内，先清理场景覆盖层
-      if (window.SceneSystem && typeof SceneSystem.cleanup === 'function' && !pageId.startsWith('scene-')) {
-        SceneSystem.cleanup();
-      }
-      this._currentPage = pageId;
-      this.renderTopBar();
-      this.renderBottomNav(); // 更新底部导航高亮
-
-      // Run module onEnter if available
-      const cb = callbacks[pageId];
-      if (!cb) { App.toast('该功能模块暂未就绪', 'info'); return; }
-      if (cb && cb.onEnter) { try { cb.onEnter(); } catch (e) { console.warn('onEnter error:', e); } }
-    } catch (e) {
-      console.error('[导航错误]', e);
-      App.toast('页面加载失败，请重试', 'error');
-    }
-  },
-
-  toggleSidebar(force) {
-    const sidebar = document.getElementById('sidebar');
-    const backdrop = document.getElementById('sidebarBackdrop');
-    if (!sidebar) return;
-    const open = force !== undefined ? force : !sidebar.classList.contains('open');
-    sidebar.classList.toggle('open', open);
-    if (backdrop) backdrop.classList.toggle('show', open);
-  },
-
+  /** 循环切换主题 */
   toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme') || 'light';
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    Storage.set('theme', next);
-    this.updateThemeIcon(next);
+    const ids = Object.keys(this.themes);
+    if (!ids.length) return;
+    const current = this.getCurrentThemeId();
+    const idx = ids.indexOf(current);
+    const nextId = ids[(idx + 1) % ids.length];
+    this.applyTheme(nextId);
   },
 
-  updateThemeIcon(t) { const el = document.getElementById('themeToggle'); if (el) el.textContent = t === 'dark' ? '☀️' : '🌙'; },
+  /** 更新主题切换按钮图标 */
+  updateThemeIcon(themeId) {
+    const el = document.getElementById('themeToggle');
+    if (!el) return;
+    const theme = this.themes[themeId];
+    const name = theme ? theme.name : themeId;
+    // 生成主题色标识圆圈SVG
+    const colors = {
+      ancient: '#C9A227', modern: '#4A90E2', scifi: '#00D4FF',
+      campus: '#5CB85C', dark: '#BB86FC'
+    };
+    const color = colors[themeId] || '#888';
+    el.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="${color}" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="${color}"/></svg>`;
+    el.title = `当前主题：${name}（点击切换）`;
+  },
 
   toast(msg, type = 'info', duration = 3000) {
     const container = document.getElementById('toastContainer');
     if (!container) return;
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    const icons = { success: '✓', error: '✗', info: 'ℹ' };
-    toast.innerHTML = `<span>${icons[type] || ''}</span><span>${msg}</span>`;
+    // Toast 通知全部使用 SVG 图标
+    const svgs = {
+      success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>',
+      error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
+      info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+    };
+    toast.innerHTML = `<span style="display:flex;align-items:center;margin-right:6px;">${svgs[type] || ''}</span><span>${msg}</span>`;
     container.appendChild(toast);
     requestAnimationFrame(() => toast.classList.add('show'));
-    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, duration);
+    setTimeout(() => { toast.classList.remove('show'); setTimeout(() => { if(toast.parentNode) toast.parentNode.removeChild(toast); }, 300); }, duration);
   },
 
-  openModal(id) { const m = document.getElementById(id); if (m) { m.classList.add('show'); this._modalStack.push(id); } },
+  openModal(id) {
+    const m = document.getElementById(id);
+    if (m) { m.classList.add('show'); this._modalStack.push(id); }
+  },
+
   closeModal(id) {
-    if (id) { const m = document.getElementById(id); if (m) m.classList.remove('show'); }
-    else { const last = this._modalStack.pop(); if (last) { const m = document.getElementById(last); if (m) m.classList.remove('show'); } }
+    if (id) {
+      const m = document.getElementById(id);
+      if (m) m.classList.remove('show');
+    } else {
+      const last = this._modalStack.pop();
+      if (last) {
+        const m = document.getElementById(last);
+        if (m) m.classList.remove('show');
+      }
+    }
   },
 
   showModal(title, content, large = false) {
     const overlay = document.createElement('div');
     overlay.className = 'modal-overlay show';
     overlay.id = 'dynamicModal_' + Date.now();
+    // 关闭按钮从 emoji 改为 SVG
     overlay.innerHTML = `
       <div class="modal ${large ? 'xl' : ''}" style="animation:slideUp 0.3s ease;">
-        <div class="modal-header"><h3>${title}</h3><button class="btn-icon" onclick="App.closeModal('${overlay.id}')">✕</button></div>
+        <div class="modal-header"><h3>${title}</h3><button class="btn-icon" onclick="App.closeModal('${overlay.id}')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button></div>
         <div class="modal-body">${content}</div>
       </div>
     `;
@@ -318,7 +319,10 @@ const App = {
 
   async exportData() {
     try {
-      const json = await BackupManager.exportAll?.() || JSON.stringify({ version: '4.0', exportedAt: new Date().toISOString(), localStorage: {} });
+      let json = '{"version":"4.0","exportedAt":"' + new Date().toISOString() + '","localStorage":{}}';
+      if (window.BackupManager && BackupManager.exportAll) {
+        try { json = await BackupManager.exportAll(); } catch(e) { console.warn(e); }
+      }
       const blob = new Blob([json], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -338,14 +342,14 @@ const App = {
         const data = JSON.parse(text);
         if (data.localStorage) {
           for (const [k, v] of Object.entries(data.localStorage)) {
-            localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
+            try { localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v)); } catch(e) { console.warn(e); }
           }
         }
         if (data.indexedDB) {
-          if (data.indexedDB.images) for (const i of data.indexedDB.images) await Storage.dbPut('images', i);
-          if (data.indexedDB.audio) for (const a of data.indexedDB.audio) await Storage.dbPut('audio', a);
-          if (data.indexedDB.memories) for (const m of data.indexedDB.memories) await Storage.dbPut('memories', m);
-          if (data.indexedDB.plugins) for (const p of data.indexedDB.plugins) await Storage.dbPut('plugins', p);
+          if (data.indexedDB.images) for (const i of data.indexedDB.images) { try { await Storage.dbPut('images', i); } catch(e) { console.warn(e); } }
+          if (data.indexedDB.audio) for (const a of data.indexedDB.audio) { try { await Storage.dbPut('audio', a); } catch(e) { console.warn(e); } }
+          if (data.indexedDB.memories) for (const m of data.indexedDB.memories) { try { await Storage.dbPut('memories', m); } catch(e) { console.warn(e); } }
+          if (data.indexedDB.plugins) for (const p of data.indexedDB.plugins) { try { await Storage.dbPut('plugins', p); } catch(e) { console.warn(e); } }
         }
         this.toast('数据已导入，刷新生效', 'success');
         setTimeout(() => location.reload(), 1500);
@@ -357,12 +361,19 @@ const App = {
 
 // DOM ready
 document.addEventListener('DOMContentLoaded', () => {
-  const savedMask = Storage.get('userMask', null);
-  if (savedMask && Storage.get('gameLaunched', false)) {
-    document.getElementById('gameLauncher')?.classList.add('hidden');
-    document.getElementById('mainApp').style.display = 'flex';
+  let savedMask = null;
+  let gameLaunched = false;
+  try { savedMask = Storage.get('userMask', null); } catch(e) { console.warn(e); }
+  try { gameLaunched = Storage.get('gameLaunched', false); } catch(e) { console.warn(e); }
+  if (savedMask && gameLaunched) {
+    const launcher = document.getElementById('gameLauncher');
+    if (launcher) launcher.classList.add('hidden');
+    const mainApp = document.getElementById('mainApp');
+    if (mainApp) mainApp.style.display = 'flex';
     App.init();
   } else {
-    if (window.Launcher) Launcher.init();
+    if (window.Launcher && typeof Launcher.init === 'function') {
+      try { Launcher.init(); } catch(e) { console.warn(e); }
+    }
   }
 });

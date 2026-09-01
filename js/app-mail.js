@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * AppMail v6 — 邮箱系统
+ * AppMail vv7 邮箱系统
  * 模块名：AppMail
  * 功能：收件箱、发件箱、写信、已读标记
  * NPC可自动发邮件（事件触发）
@@ -9,9 +9,16 @@
 const AppMail = {
   _currentFolder: 'inbox',
 
-  init() { this.renderPage(); },
-  onEnter() { this.renderMailInterface(); },
+    // 初始化模块入口
+  init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    this.renderPage(); },
+    // 页面进入时调用
+  onEnter() {
+    this.renderMailInterface(); },
 
+    // 渲染页面主结构
   renderPage() {
     const page = document.getElementById('page-mail');
     if (!page) return;
@@ -27,7 +34,7 @@ const AppMail = {
 <div style="display:flex;height:100%;">
         <div style="width:220px;border-right:1px solid var(--border-color);background:var(--bg-sidebar);flex-shrink:0;">
           <div style="padding:12px 16px;">
-            <button class="btn btn-primary" style="width:100%;" onclick="AppMail.compose()">✉️ 写信</button>
+            <button class="btn btn-primary" style="width:100%;" onclick="AppMail.compose()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg> 写信</button>
           </div>
           <div id="mailFolderList"></div>
         </div>
@@ -42,9 +49,9 @@ const AppMail = {
     const c = document.getElementById('mailFolderList');
     if (!c) return;
     const folders = [
-      { id: 'inbox', name: '📥 收件箱', count: this.getMails().filter(m => m.folder === 'inbox' && !m.read).length },
-      { id: 'sent', name: '📤 发件箱', count: 0 },
-      { id: 'trash', name: '🗑️ 已删除', count: 0 }
+      { id: 'inbox', name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 收件箱', count: this.getMails().filter(m => m.folder === 'inbox' && !m.read).length },
+      { id: 'sent', name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 发件箱', count: 0 },
+      { id: 'trash', name: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 已删除', count: 0 }
     ];
     c.innerHTML = folders.map(f => `
       <div style="padding:10px 16px;cursor:pointer;${this._currentFolder === f.id ? 'background:var(--bg-body);border-left:3px solid var(--color-gold);' : ''}"
@@ -65,7 +72,7 @@ const AppMail = {
     if (!c) return;
     const mails = this.getMails().filter(m => m.folder === this._currentFolder).sort((a, b) => b.time - a.time);
     if (mails.length === 0) {
-      c.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:12px;">📭</div><p>暂无邮件</p></div>`;
+      c.innerHTML = `<div style="padding:40px;text-align:center;color:var(--text-muted);"><div style="font-size:48px;margin-bottom:12px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div><p>暂无邮件</p></div>`;
       return;
     }
     c.innerHTML = mails.map(m => `
@@ -109,8 +116,8 @@ const AppMail = {
       </div>
       <div style="font-size:14px;line-height:1.8;padding:16px;background:var(--bg-parchment);border-radius:var(--border-radius);">${this.escapeHtml(m.body || '')}</div>
       <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
-        <button class="btn btn-sm btn-secondary" onclick="AppMail.replyMail('${m.id}')">📤 回复</button>
-        <button class="btn btn-sm btn-danger" onclick="AppMail.deleteMail('${m.id}')">🗑️ 删除</button>
+        <button class="btn btn-sm btn-secondary" onclick="AppMail.replyMail('${m.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 回复</button>
+        <button class="btn btn-sm btn-danger" onclick="AppMail.deleteMail('${m.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 删除</button>
       </div>
     `);
   },

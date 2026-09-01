@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * ChapterEditor v6 — 简易章节/剧本编辑器
+ * ChapterEditor vv7 简易章节/剧本编辑器
  * 模块名：ChapterEditor
  * 功能：可视化编辑剧情章节，节点关系管理，测试播放
  * 支持：创建章节（标题、场景、背景、NPC、对话内容）
@@ -13,22 +13,22 @@ const ChapterEditor = {
    * 章节类型定义
    */
   CHAPTER_TYPES: [
-    { id: 'main', name: '主线', color: '#C9A227', icon: '⭐', desc: '核心剧情，推动故事发展' },
-    { id: 'branch', name: '支线', color: '#4A90C2', icon: '🌿', desc: '角色专属剧情' },
-    { id: 'daily', name: '日常', color: '#6B8E23', icon: '🌸', desc: '轻松日常，增进感情' },
-    { id: 'hidden', name: '隐藏', color: '#9C27B0', icon: '🔮', desc: '特殊条件解锁' }
+    { id: 'main', name: '主线', color: '#C9A227', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>', desc: '核心剧情，推动故事发展' },
+    { id: 'branch', name: '支线', color: '#4A90C2', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 21c0-3 2-5 4-7"/><path d="M18 21c0-3-2-5-4-7"/><path d="M12 21V11"/><path d="M12 11c-2-2-2-6 0-8"/><path d="M12 11c2-2 2-6 0-8"/></svg>', desc: '角色专属剧情' },
+    { id: 'daily', name: '日常', color: '#6B8E23', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 7.5a4.5 4.5 0 10-4.5 4.5"/><path d="M12 7.5a4.5 4.5 0 014.5 4.5"/><path d="M12 7.5V3"/><path d="M7.5 12H3"/><path d="M16.5 12H21"/><path d="M12 16.5V21"/><circle cx="12" cy="12" r="9"/></svg>', desc: '轻松日常，增进感情' },
+    { id: 'hidden', name: '隐藏', color: '#9C27B0', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 000 20 14.5 14.5 0 000-20"/><path d="M2 12h20"/></svg>', desc: '特殊条件解锁' }
   ],
 
   /**
    * 节点类型定义
    */
   NODE_TYPES: [
-    { id: 'dialogue', name: '对话', icon: '💬', desc: '角色对话节点' },
+    { id: 'dialogue', name: '对话', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/></svg>', desc: '角色对话节点' },
     { id: 'choice', name: '选择', icon: '🔀', desc: '分支选择节点' },
-    { id: 'action', name: '动作', icon: '⚡', desc: '描述性动作或旁白' },
-    { id: 'scene', name: '场景', icon: '🏞️', desc: '场景切换节点' },
-    { id: 'condition', name: '条件', icon: '❓', desc: '条件判断节点' },
-    { id: 'reward', name: '奖励', icon: '🎁', desc: '发放奖励节点' }
+    { id: 'action', name: '动作', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>', desc: '描述性动作或旁白' },
+    { id: 'scene', name: '场景', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M12 3l-8 8h16l-8-8z"/></svg>', desc: '场景切换节点' },
+    { id: 'condition', name: '条件', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>', desc: '条件判断节点' },
+    { id: 'reward', name: '奖励', icon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>', desc: '发放奖励节点' }
   ],
 
   _currentStoryId: null,
@@ -38,14 +38,20 @@ const ChapterEditor = {
   /**
    * 初始化模块
    */
+    // 初始化模块入口
   init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
     this.renderPage();
   },
 
   /**
    * 进入页面时刷新
    */
+    // 页面进入时调用
   onEnter() {
+    // 页面进入时调用
     this.renderStoryList();
     this._currentStoryId = null;
     this._currentChapterId = null;
@@ -63,7 +69,7 @@ const ChapterEditor = {
    * 保存编辑器数据到Storage
    */
   _saveData(data) {
-    Storage.set('chapter_editor_v7', data);
+    try { Storage.set('chapter_editor_v7', data); } catch(e) { console.warn('[v7] Storage.set失败:', e); }
   },
 
   getStories() {
@@ -313,7 +319,7 @@ const ChapterEditor = {
       if (currentIndex >= nodes.length) {
         return `
           <div style="text-align:center;padding:40px 20px;">
-            <div style="font-size:32px;margin-bottom:12px;">🎉</div>
+            <div style="font-size:32px;margin-bottom:12px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
             <div style="font-size:16px;color:var(--text-primary);margin-bottom:16px;">章节测试结束</div>
             <button class="btn btn-primary" onclick="App.closeModal()">关闭</button>
           </div>
@@ -357,7 +363,7 @@ const ChapterEditor = {
         case 'scene':
           nodeContent = `
             <div style="margin-bottom:16px;padding:16px;text-align:center;background:var(--bg-sidebar);border-radius:8px;">
-              <div style="font-size:24px;margin-bottom:8px;">🏞️</div>
+              <div style="font-size:24px;margin-bottom:8px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M12 3l-8 8h16l-8-8z"/></svg></div>
               <div style="font-size:14px;color:var(--text-primary);">场景切换至：${node.content || '未知场景'}</div>
             </div>
           `;
@@ -365,7 +371,7 @@ const ChapterEditor = {
         case 'reward':
           nodeContent = `
             <div style="margin-bottom:16px;padding:12px;background:var(--color-gold)11;border:1px solid var(--color-gold)33;border-radius:8px;">
-              <div style="font-size:16px;margin-bottom:4px;">🎁 获得奖励</div>
+              <div style="font-size:16px;margin-bottom:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg> 获得奖励</div>
               <div style="font-size:14px;color:var(--color-gold);">${node.reward || node.content || '（无奖励）'}</div>
             </div>
           `;
@@ -428,7 +434,7 @@ const ChapterEditor = {
     if (currentIndex >= nodes.length) {
       container.innerHTML = `
         <div style="text-align:center;padding:40px 20px;">
-          <div style="font-size:32px;margin-bottom:12px;">🎉</div>
+          <div style="font-size:32px;margin-bottom:12px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
           <div style="font-size:16px;color:var(--text-primary);margin-bottom:16px;">章节测试结束</div>
           <button class="btn btn-primary" onclick="App.closeModal()">关闭</button>
         </div>
@@ -477,7 +483,7 @@ const ChapterEditor = {
       case 'scene':
         nodeContent = `
           <div style="margin-bottom:16px;padding:16px;text-align:center;background:var(--bg-sidebar);border-radius:8px;">
-            <div style="font-size:24px;margin-bottom:8px;">🏞️</div>
+            <div style="font-size:24px;margin-bottom:8px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><path d="M12 3l-8 8h16l-8-8z"/></svg></div>
             <div style="font-size:14px;color:var(--text-primary);">场景切换至：${node.content || '未知场景'}</div>
           </div>
         `;
@@ -485,7 +491,7 @@ const ChapterEditor = {
       case 'reward':
         nodeContent = `
           <div style="margin-bottom:16px;padding:12px;background:var(--color-gold)11;border:1px solid var(--color-gold)33;border-radius:8px;">
-            <div style="font-size:16px;margin-bottom:4px;">🎁 获得奖励</div>
+            <div style="font-size:16px;margin-bottom:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg> 获得奖励</div>
             <div style="font-size:14px;color:var(--color-gold);">${node.reward || node.content || '（无奖励）'}</div>
           </div>
         `;
@@ -566,7 +572,7 @@ const ChapterEditor = {
       existingStories.push(storylineData);
     }
 
-    Storage.set('storylines_v6', existingStories);
+    try { Storage.set('storylines_v6', existingStories); } catch(e) { console.warn('[v7] Storage.set失败:', e); }
     App.toast(`已同步「${story.title}」到故事线`, 'success');
 
     // 触发事件
@@ -577,7 +583,9 @@ const ChapterEditor = {
 
   // ========== 渲染方法 ==========
 
+    // 渲染页面主结构
   renderPage() {
+    // 渲染页面主结构
     const page = document.getElementById('page-chapter-editor');
     if (!page) return;
     page.innerHTML = `
@@ -586,8 +594,8 @@ const ChapterEditor = {
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
           <h2 class="section-title">✍️ 章节编辑器</h2>
           <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="ChapterEditor.showCreateStoryModal()">➕ 新建故事</button>
-            <button class="btn btn-secondary" onclick="ChapterEditor.showImportModal()">📥 导入</button>
+            <button class="btn btn-primary" onclick="ChapterEditor.showCreateStoryModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 新建故事</button>
+            <button class="btn btn-secondary" onclick="ChapterEditor.showImportModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导入</button>
           </div>
         </div>
 
@@ -616,7 +624,7 @@ const ChapterEditor = {
     if (stories.length === 0) {
       container.innerHTML = `
         <div class="empty-state" style="padding:20px;">
-          <div style="font-size:28px;margin-bottom:8px;">📖</div>
+          <div style="font-size:28px;margin-bottom:8px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg></div>
           <p style="font-size:13px;">暂无故事线</p>
           <p style="font-size:12px;color:var(--text-muted);">点击上方按钮创建</p>
         </div>
@@ -655,7 +663,7 @@ const ChapterEditor = {
       return `
         <div style="margin-top:8px;padding-left:8px;">
           <p style="font-size:12px;color:var(--text-muted);">暂无章节</p>
-          <button class="btn btn-sm btn-primary" style="margin-top:4px;font-size:12px;" onclick="ChapterEditor.showCreateChapterModal('${story.id}')">➕ 添加章节</button>
+          <button class="btn btn-sm btn-primary" style="margin-top:4px;font-size:12px;" onclick="ChapterEditor.showCreateChapterModal('${story.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加章节</button>
         </div>
       `;
     }
@@ -676,7 +684,7 @@ const ChapterEditor = {
             </div>
           `;
         }).join('')}
-        <button class="btn btn-sm btn-secondary" style="margin-top:4px;font-size:12px;" onclick="ChapterEditor.showCreateChapterModal('${story.id}')">➕ 添加章节</button>
+        <button class="btn btn-sm btn-secondary" style="margin-top:4px;font-size:12px;" onclick="ChapterEditor.showCreateChapterModal('${story.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加章节</button>
       </div>
     `;
   },
@@ -721,10 +729,10 @@ const ChapterEditor = {
         <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:${typeInfo.color}22;color:${typeInfo.color};">${typeInfo.icon} ${typeInfo.name}</span>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="btn btn-sm btn-primary" onclick="ChapterEditor.showAddNodeModal()">➕ 添加节点</button>
-        <button class="btn btn-sm btn-secondary" onclick="ChapterEditor.showEditChapterModal('${this._currentStoryId}', '${this._currentChapterId}')">✏️ 编辑</button>
+        <button class="btn btn-sm btn-primary" onclick="ChapterEditor.showAddNodeModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加节点</button>
+        <button class="btn btn-sm btn-secondary" onclick="ChapterEditor.showEditChapterModal('${this._currentStoryId}', '${this._currentChapterId}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 编辑</button>
         <button class="btn btn-sm btn-gold" onclick="ChapterEditor.testPlayChapter('${this._currentStoryId}', '${this._currentChapterId}')">▶️ 测试</button>
-        <button class="btn btn-sm btn-secondary" onclick="ChapterEditor.syncToStoryline('${this._currentStoryId}')">🔄 同步</button>
+        <button class="btn btn-sm btn-secondary" onclick="ChapterEditor.syncToStoryline('${this._currentStoryId}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg> 同步</button>
       </div>
     `;
 
@@ -752,7 +760,7 @@ const ChapterEditor = {
                 <div style="display:flex;align-items:center;gap:8px;">
                   <span style="font-size:12px;color:var(--text-muted);width:24px;text-align:center;">${index + 1}</span>
                   <span style="font-size:13px;">${nodeTypeInfo.icon} ${nodeTypeInfo.name}</span>
-                  ${node.speaker ? `<span style="font-size:12px;color:var(--color-gold);">👤 ${node.speaker}</span>` : ''}
+                  ${node.speaker ? `<span style="font-size:12px;color:var(--color-gold);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> ${node.speaker}</span>` : ''}
                 </div>
                 <div style="display:flex;gap:4px;">
                   <button class="btn btn-sm btn-secondary" style="font-size:11px;padding:2px 6px;" onclick="ChapterEditor.showEditNodeModal('${node.id}')">编辑</button>
@@ -763,7 +771,7 @@ const ChapterEditor = {
                 ${preview}
                 ${node.nextNodeId ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">➡️ 下一节点：${node.nextNodeId.slice(-6)}</div>` : ''}
                 ${node.choices?.length ? `<div style="font-size:11px;color:var(--text-muted);margin-top:4px;">🔀 ${node.choices.length} 个选项</div>` : ''}
-                ${node.reward ? `<div style="font-size:11px;color:var(--color-gold);margin-top:4px;">🎁 ${node.reward}</div>` : ''}
+                ${node.reward ? `<div style="font-size:11px;color:var(--color-gold);margin-top:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg> ${node.reward}</div>` : ''}
               </div>
             </div>
           `;
@@ -782,10 +790,10 @@ const ChapterEditor = {
           ${this.CHAPTER_TYPES.map(t => `<option value="${t.id}">${t.icon} ${t.name}</option>`).join('')}
         </select>
         <textarea id="storyDescInput" placeholder="故事简介（可选）" rows="3" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);resize:vertical;"></textarea>
-        <button class="btn btn-primary" onclick="ChapterEditor.confirmCreateStory()">💾 创建</button>
+        <button class="btn btn-primary" onclick="ChapterEditor.confirmCreateStory()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 创建</button>
       </div>
     `;
-    App.showModal('➕ 新建故事线', content);
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 新建故事线', content);
   },
 
   confirmCreateStory() {
@@ -810,10 +818,10 @@ const ChapterEditor = {
         </select>
         <textarea id="chapterDescInput" placeholder="章节简介（可选）" rows="2" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);resize:vertical;"></textarea>
         <input type="text" id="chapterBgInput" placeholder="背景图 URL / 名称（可选）" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);">
-        <button class="btn btn-primary" onclick="ChapterEditor.confirmCreateChapter('${storyId}')">💾 创建</button>
+        <button class="btn btn-primary" onclick="ChapterEditor.confirmCreateChapter('${storyId}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 创建</button>
       </div>
     `;
-    App.showModal('➕ 添加章节', content);
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加章节', content);
   },
 
   confirmCreateChapter(storyId) {
@@ -844,10 +852,10 @@ const ChapterEditor = {
         <textarea id="editChDesc" placeholder="章节简介" rows="2" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);resize:vertical;">${chapter.description || ''}</textarea>
         <input type="text" id="editChBg" value="${(chapter.background || '').replace(/"/g, '&quot;')}" placeholder="背景图 URL / 名称" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);">
         <input type="text" id="editChNpcs" value="${(chapter.npcs || []).join(', ').replace(/"/g, '&quot;')}" placeholder="NPC列表（逗号分隔）" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);">
-        <button class="btn btn-primary" onclick="ChapterEditor.confirmEditChapter('${storyId}', '${chapterId}')">💾 保存</button>
+        <button class="btn btn-primary" onclick="ChapterEditor.confirmEditChapter('${storyId}', '${chapterId}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 保存</button>
       </div>
     `;
-    App.showModal('✏️ 编辑章节', content);
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 编辑章节', content);
   },
 
   confirmEditChapter(storyId, chapterId) {
@@ -882,10 +890,10 @@ const ChapterEditor = {
           <textarea id="nodeChoicesInput" placeholder="例如：\n同意帮忙->node_xxx\n拒绝->node_yyy" rows="3" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);resize:vertical;font-family:monospace;font-size:12px;"></textarea>
         </div>
         <input type="text" id="nodeNextInput" placeholder="下一节点ID（可选）" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);">
-        <button class="btn btn-primary" onclick="ChapterEditor.confirmAddNode()">➕ 添加</button>
+        <button class="btn btn-primary" onclick="ChapterEditor.confirmAddNode()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加</button>
       </div>
     `;
-    App.showModal('➕ 添加节点', content, true);
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加节点', content, true);
   },
 
   confirmAddNode() {
@@ -939,10 +947,10 @@ const ChapterEditor = {
         <input type="text" id="editNodeReward" value="${(node.reward || '').replace(/"/g, '&quot;')}" placeholder="奖励" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);">
         <textarea id="editNodeChoices" rows="3" placeholder="选项格式：文本->下一节点ID" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);resize:vertical;font-family:monospace;font-size:12px;">${choicesText.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</textarea>
         <input type="text" id="editNodeNext" value="${(node.nextNodeId || '').replace(/"/g, '&quot;')}" placeholder="下一节点ID" style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);">
-        <button class="btn btn-primary" onclick="ChapterEditor.confirmEditNode('${nodeId}')">💾 保存</button>
+        <button class="btn btn-primary" onclick="ChapterEditor.confirmEditNode('${nodeId}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 保存</button>
       </div>
     `;
-    App.showModal('✏️ 编辑节点', content, true);
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 编辑节点', content, true);
   },
 
   confirmEditNode(nodeId) {
@@ -978,10 +986,10 @@ const ChapterEditor = {
       <div style="display:flex;flex-direction:column;gap:12px;">
         <p style="font-size:13px;color:var(--text-muted);">粘贴故事线JSON数据导入：</p>
         <textarea id="importJsonInput" rows="8" placeholder='[{&quot;title&quot;:&quot;故事名&quot;,&quot;type&quot;:&quot;main&quot;,&quot;chapters&quot;:[{&quot;title&quot;:&quot;章节1&quot;,&quot;nodes&quot;:[]}]}]' style="padding:8px;border-radius:4px;border:1px solid var(--border-color);background:var(--bg-card);color:var(--text-primary);resize:vertical;font-family:monospace;font-size:12px;"></textarea>
-        <button class="btn btn-primary" onclick="ChapterEditor.confirmImport()">📥 导入</button>
+        <button class="btn btn-primary" onclick="ChapterEditor.confirmImport()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导入</button>
       </div>
     `;
-    App.showModal('📥 导入故事线', content, true);
+    App.showModal('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导入故事线', content, true);
   },
 
   confirmImport() {

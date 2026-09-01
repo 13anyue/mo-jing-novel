@@ -1,7 +1,7 @@
 /**
  * =========================================================
  * QuestSystem - 任务/委托系统 v1.0
- * 君成录风格 · 古风墨境配色
+ * 古风墨境风格 · 古风墨境配色
  * 零预设 · 全用户自定义 · AI辅助 · 模板支持
  * =========================================================
  */
@@ -32,7 +32,11 @@ const QuestSystem = {
    * 初始化任务系统
    * 从本地存储加载数据，若首次使用则初始化空数据结构
    */
+    // 初始化模块入口
   init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
     this.loadData();
     this.bindGlobalEvents();
     console.log('[QuestSystem] 任务系统已初始化');
@@ -42,7 +46,9 @@ const QuestSystem = {
    * 进入任务页面时调用
    * 渲染任务板主界面
    */
+    // 页面进入时调用
   onEnter() {
+    // 页面进入时调用
     this.renderPage();
   },
 
@@ -100,7 +106,9 @@ const QuestSystem = {
    * 渲染任务系统主页面
    * 包含：顶部工具栏、分类筛选、任务板、统计面板
    */
+    // 渲染页面主结构
   renderPage() {
+    // 渲染页面主结构
     const page = document.getElementById('quest-system-page');
     if (!page) return;
 
@@ -116,7 +124,7 @@ const QuestSystem = {
             <div class="quest-search">
               <input type="text" id="quest-search-input" placeholder="搜索任务..." 
                 value="${this.escapeHtml(this.data.filter.search)}">
-              <span class="search-icon">🔍</span>
+              <span class="search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
             </div>
             <button class="btn btn-gold btn-sm" onclick="QuestSystem.openCreateModal()">
               <span>+</span> 新建任务
@@ -244,7 +252,7 @@ const QuestSystem = {
     if (filtered.length === 0) {
       return `
         <div class="quest-empty-state">
-          <div class="empty-icon">📜</div>
+          <div class="empty-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
           <h3>暂无任务</h3>
           <p>点击上方「新建任务」按钮，创建你的第一个任务</p>
           <button class="btn btn-gold" onclick="QuestSystem.openCreateModal()">
@@ -314,7 +322,7 @@ const QuestSystem = {
         <div class="quest-card-footer">
           <div class="quest-card-meta">
             ${task.deadline ? `<span class="quest-deadline ${countdown.urgent ? 'urgent' : ''}">⏳ ${deadlineStr}</span>` : ''}
-            ${task.reward ? `<span class="quest-reward">🏆 ${this.escapeHtml(task.reward)}</span>` : ''}
+            ${task.reward ? `<span class="quest-reward"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/></svg> ${this.escapeHtml(task.reward)}</span>` : ''}
           </div>
           ${npcHtml}
         </div>
@@ -408,7 +416,7 @@ const QuestSystem = {
 
         <div class="detail-meta-bar">
           ${task.deadline ? `<span>⏳ 期限：${this.formatDeadline(task.deadline)} (${this.calcCountdown(task.deadline).text})</span>` : ''}
-          ${task.reward ? `<span>🏆 奖励：${this.escapeHtml(task.reward)}</span>` : ''}
+          ${task.reward ? `<span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/></svg> 奖励：${this.escapeHtml(task.reward)}</span>` : ''}
           <span>🕐 创建：${this.formatDate(task.createdAt)}</span>
           ${task.completedAt ? `<span>✓ 完成：${this.formatDate(task.completedAt)}</span>` : ''}
         </div>
@@ -451,7 +459,7 @@ const QuestSystem = {
 
     return `
       <div class="quest-stats-card">
-        <h4>📊 任务统计</h4>
+        <h4><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg> 任务统计</h4>
         <div class="stat-overview">
           <div class="stat-circle">
             <svg viewBox="0 0 36 36">
@@ -595,7 +603,7 @@ const QuestSystem = {
       task.completedAt = now;
       task.history.push({ time: now, action: `任务完成` });
       this.playCompletionFx();
-      this.showToast(`✨ 「${task.title}」已完成！`, 'success');
+      this.showToast(`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> 「${task.title}」已完成！`, 'success');
     } else if (newStatus === 'failed') {
       task.history.push({ time: now, action: `任务失败` });
       this.showToast(`「${task.title}」已标记为失败`, 'error');
@@ -1158,7 +1166,7 @@ const QuestSystem = {
           </div>
           <p class="ai-suggestion-desc">${this.escapeHtml(s.description)}</p>
           <div class="ai-suggestion-meta">
-            <span>🏆 ${this.escapeHtml(s.reward)}</span>
+            <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/></svg> ${this.escapeHtml(s.reward)}</span>
           </div>
           <button class="btn btn-gold btn-sm" style="width:100%; margin-top:8px;" 
             onclick="QuestSystem.createTaskFromSuggestion(${i})">
@@ -1418,7 +1426,7 @@ const QuestSystem = {
     if (!fx) return;
 
     fx.innerHTML = `
-      <div class="completion-text">✨ 任务完成 ✨</div>
+      <div class="completion-text"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg> 任务完成 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2 7h7l-5.5 4 2 7-5.5-4-5.5 4 2-7L3 9h7z"/></svg></div>
     `;
     fx.classList.add('show');
 

@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * StorylineManager v11 — 交互式剧情树可视化系统
+ * StorylineManager vv12 交互式剧情树可视化系统
  * 模块名：StorylineManager
  * 功能：
  *   1. 多独立故事线（Slot管理）：每个slot有独立的角色/世界观/进度
@@ -67,7 +67,11 @@ const StorylineManager = {
   /**
    * 初始化管理器
    */
+    // 初始化模块入口
   init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
     this._migrateFromV8();
     this.renderPage();
   },
@@ -75,7 +79,9 @@ const StorylineManager = {
   /**
    * 页面进入时调用
    */
+    // 页面进入时调用
   onEnter() {
+    // 页面进入时调用
     this._initCanvas();
     this._loadNodes();
     this._computeTreeLayout();
@@ -1208,7 +1214,9 @@ const StorylineManager = {
   /**
    * 构建页面HTML结构
    */
+    // 渲染页面主结构
   renderPage() {
+    // 渲染页面主结构
     const page = document.getElementById('page-storyline-manager');
     if (!page) return;
     page.innerHTML = `
@@ -1217,18 +1225,18 @@ const StorylineManager = {
            padding:12px 16px;background:linear-gradient(135deg,#2C1810,#4A3025);
            border-bottom:2px solid #C9A227;flex-wrap:wrap;gap:8px;">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <h2 style="margin:0;font-size:18px;color:#C9A227;font-family:var(--font-display);">📚 墨境剧情树</h2>
+          <h2 style="margin:0;font-size:18px;color:#C9A227;font-family:var(--font-display);"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg> 墨境剧情树</h2>
           <select id="storyFilter" class="btn btn-secondary" style="font-size:13px;padding:4px 8px;">
             <option value="all">全部故事线</option>
           </select>
-          <input id="nodeSearch" type="text" placeholder="🔍 搜索存档..." style="
+          <input id="nodeSearch" type="text" placeholder="<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 搜索存档..." style="
             padding:4px 10px;border-radius:6px;border:1px solid #C9A227;
             background:rgba(245,230,211,0.9);color:#2C1810;font-size:13px;width:160px;">
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="StorylineManager.createSlot()">➕ 新故事线</button>
-          <button class="btn btn-secondary" onclick="StorylineManager.importSlots()">📥 导入</button>
-          <button class="btn btn-secondary" onclick="StorylineManager.exportSlots()">📤 导出</button>
+          <button class="btn btn-primary" onclick="StorylineManager.createSlot()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 新故事线</button>
+          <button class="btn btn-secondary" onclick="StorylineManager.importSlots()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导入</button>
+          <button class="btn btn-secondary" onclick="StorylineManager.exportSlots()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导出</button>
         </div>
       </div>
       <div id="treeCanvasContainer" style="flex:1;position:relative;overflow:hidden;background:#F5E6D3;"></div>
@@ -1330,9 +1338,9 @@ const StorylineManager = {
         <p><strong style="color:#2C1810;">节点ID：</strong><span style="font-size:11px;color:#8D6E63;">${node.id}</span></p>
       </div>
       <div style="padding:12px 16px;border-top:1px solid #C9A22740;display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-primary btn-sm" onclick="StorylineManager.loadSlot('${node.id}')">🎮 继续游戏</button>
-        <button class="btn btn-secondary btn-sm" onclick="StorylineManager.editNode('${node.id}')">✏️ 编辑</button>
-        <button class="btn btn-sm" style="background:#C0392B;color:#fff;" onclick="StorylineManager.deleteNode('${node.id}')">🗑️ 删除</button>
+        <button class="btn btn-primary btn-sm" onclick="StorylineManager.loadSlot('${node.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg> 继续游戏</button>
+        <button class="btn btn-secondary btn-sm" onclick="StorylineManager.editNode('${node.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 编辑</button>
+        <button class="btn btn-sm" style="background:#C0392B;color:#fff;" onclick="StorylineManager.deleteNode('${node.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 删除</button>
       </div>
     `;
     panel.style.display = 'block';
@@ -1359,11 +1367,11 @@ const StorylineManager = {
       menu.innerHTML = `
         <div style="padding:8px 0;">
           <div style="padding:6px 14px;font-size:12px;color:#8D6E63;border-bottom:1px solid #C9A22730;">${node.label}</div>
-          <button class="context-menu-item" onclick="StorylineManager.addNode('${node.id}');StorylineManager._hideContextMenu()">➕ 添加子节点</button>
-          <button class="context-menu-item" onclick="StorylineManager.editNode('${node.id}');StorylineManager._hideContextMenu()">✏️ 编辑节点</button>
-          <button class="context-menu-item" onclick="StorylineManager.loadSlot('${node.id}');StorylineManager._hideContextMenu()">🎮 跳转至此</button>
+          <button class="context-menu-item" onclick="StorylineManager.addNode('${node.id}');StorylineManager._hideContextMenu()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加子节点</button>
+          <button class="context-menu-item" onclick="StorylineManager.editNode('${node.id}');StorylineManager._hideContextMenu()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 编辑节点</button>
+          <button class="context-menu-item" onclick="StorylineManager.loadSlot('${node.id}');StorylineManager._hideContextMenu()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg> 跳转至此</button>
           <div style="border-top:1px solid #C9A22730;margin:4px 0;"></div>
-          <button class="context-menu-item" style="color:#C0392B;" onclick="StorylineManager.deleteNode('${node.id}');StorylineManager._hideContextMenu()">🗑️ 删除节点</button>
+          <button class="context-menu-item" style="color:#C0392B;" onclick="StorylineManager.deleteNode('${node.id}');StorylineManager._hideContextMenu()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg> 删除节点</button>
         </div>
       `;
     } else {
@@ -1371,7 +1379,7 @@ const StorylineManager = {
         <div style="padding:8px 0;">
           <button class="context-menu-item" onclick="StorylineManager.fitView();StorylineManager._hideContextMenu()">⊘ 适应屏幕</button>
           <button class="context-menu-item" onclick="StorylineManager.resetView();StorylineManager._hideContextMenu()">⌂ 重置视图</button>
-          <button class="context-menu-item" onclick="StorylineManager.createSlot();StorylineManager._hideContextMenu()">➕ 新建故事线</button>
+          <button class="context-menu-item" onclick="StorylineManager.createSlot();StorylineManager._hideContextMenu()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 新建故事线</button>
         </div>
       `;
     }

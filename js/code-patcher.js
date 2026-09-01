@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * CodePatcher v1 — 自编程引擎 / 运行时动态代码修改系统
+ * CodePatcher vv2 自编程引擎 / 运行时动态代码修改系统
  *
  * 核心概念：纯前端运行时动态修改代码，通过 localStorage
  * 持久化自定义代码，浏览器刷新后自动加载，无需手动改文件。
@@ -71,7 +71,11 @@ const CodePatcher = {
   /**
    * 初始化 CodePatcher，捕获所有 script 标签源码，并触发自动加载
    */
+    // 初始化模块入口
   init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    // 初始化模块入口
     this._captureModuleSources();
     this._loadPatchHistory();
     this._loadOperationLog();
@@ -525,24 +529,26 @@ const CodePatcher = {
   /**
    * 渲染 CodePatcher 主面板（供导航页调用）
    */
+    // 渲染页面主结构
   renderPage() {
+    // 渲染页面主结构
     const page = document.getElementById('page-code-patcher');
     if (!page) return;
     page.innerHTML = `
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-lg);flex-wrap:wrap;gap:8px;">
-        <h2 class="section-title">🔧 自编程引擎</h2>
+        <h2 class="section-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg> 自编程引擎</h2>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-secondary" onclick="CodePatcher.renderSearchPanel()">🔍 代码搜索</button>
+          <button class="btn btn-secondary" onclick="CodePatcher.renderSearchPanel()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 代码搜索</button>
           <button class="btn btn-secondary" onclick="CodePatcher.renderPatchPanel()">🩹 补丁管理</button>
-          <button class="btn btn-secondary" onclick="CodePatcher.renderModulePanel()">📦 模块列表</button>
+          <button class="btn btn-secondary" onclick="CodePatcher.renderModulePanel()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> 模块列表</button>
           <button class="btn btn-secondary" onclick="CodePatcher.renderEditorPanel()">📝 代码编辑器</button>
           <button class="btn btn-danger" onclick="CodePatcher.resetAll()">↺ 恢复默认</button>
         </div>
       </div>
       <div id="cp_mainPanel" style="min-height:400px;">
         <div class="empty-state">
-          <div class="empty-icon" style="font-size:48px;">🔧</div>
+          <div class="empty-icon" style="font-size:48px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg></div>
           <p>欢迎使用自编程引擎</p>
           <p style="font-size:13px;color:var(--text-secondary);margin-top:8px;">
             选择上方功能开始动态修改代码。所有修改通过 localStorage 持久化，刷新后自动恢复。
@@ -555,7 +561,9 @@ const CodePatcher = {
   /**
    * 页面进入回调（由 App.navigate 触发）
    */
+    // 页面进入时调用
   onEnter() {
+    // 页面进入时调用
     this.renderPage();
   },
 
@@ -567,7 +575,7 @@ const CodePatcher = {
     if (!panel) return;
     panel.innerHTML = `
       <div class="card" style="margin-bottom:var(--space-lg);">
-        <div class="card-header"><h3>🔍 代码搜索</h3></div>
+        <div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 代码搜索</h3></div>
         <div class="card-body">
           <div style="display:flex;gap:12px;margin-bottom:var(--space-md);flex-wrap:wrap;">
             <div class="form-group" style="flex:1;min-width:200px;">
@@ -579,7 +587,7 @@ const CodePatcher = {
               <input type="text" id="cp_searchPattern" placeholder="输入字符串或正则表达式...">
             </div>
           </div>
-          <button class="btn btn-primary" onclick="CodePatcher.doSearch()">🔍 搜索</button>
+          <button class="btn btn-primary" onclick="CodePatcher.doSearch()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> 搜索</button>
           <div id="cp_searchResults" style="margin-top:var(--space-md);"></div>
         </div>
       </div>
@@ -663,7 +671,7 @@ const CodePatcher = {
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><h3>📜 补丁历史</h3></div>
+        <div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg> 补丁历史</h3></div>
         <div class="card-body" id="cp_patchHistory"></div>
       </div>
     `;
@@ -791,17 +799,17 @@ const CodePatcher = {
     if (!panel) return;
     panel.innerHTML = `
       <div class="card" style="margin-bottom:var(--space-lg);">
-        <div class="card-header"><h3>📦 自定义模块</h3></div>
+        <div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg> 自定义模块</h3></div>
         <div class="card-body" id="cp_moduleList"></div>
       </div>
       <div class="card">
-        <div class="card-header"><h3>➕ 导入模块</h3></div>
+        <div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 导入模块</h3></div>
         <div class="card-body">
           <div class="form-group">
             <label>导入 JSON（包含模块代码）</label>
             <textarea id="cp_importJson" rows="6" placeholder='{"modules": {"MyModule": "const MyModule = {...}"}}'></textarea>
           </div>
-          <button class="btn btn-primary" onclick="CodePatcher.doImport()">📥 导入</button>
+          <button class="btn btn-primary" onclick="CodePatcher.doImport()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导入</button>
         </div>
       </div>
     `;
@@ -819,7 +827,7 @@ const CodePatcher = {
     if (modules.length === 0) {
       container.innerHTML = `
         <div class="empty-state">
-          <div class="empty-icon">📦</div>
+          <div class="empty-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg></div>
           <p>暂无自定义模块</p>
           <p style="font-size:13px;color:var(--text-secondary);">在「代码编辑器」面板中创建新模块</p>
         </div>
@@ -830,12 +838,12 @@ const CodePatcher = {
       <div class="list-item" style="flex-wrap:wrap;gap:8px;">
         <div class="list-info" style="flex:1;">
           <h4>${m.name}</h4>
-          <p>${m.size} 字符 · ${new Date(m.createdAt).toLocaleString()} ${m.hasInit ? '· ✅ init' : ''} ${m.hasOnEnter ? '· ✅ onEnter' : ''}</p>
+          <p>${m.size} 字符 · ${new Date(m.createdAt).toLocaleString()} ${m.hasInit ? '· <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> init' : ''} ${m.hasOnEnter ? '· <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> onEnter' : ''}</p>
         </div>
         <div style="display:flex;gap:4px;">
           <button class="btn btn-sm btn-secondary" onclick="CodePatcher.viewModuleCode('${m.name}')">👁️</button>
-          <button class="btn btn-sm btn-secondary" onclick="CodePatcher.exportModule('${m.name}')">📤</button>
-          <button class="btn btn-sm btn-danger" onclick="CodePatcher.deleteModuleAndRefresh('${m.name}')">🗑️</button>
+          <button class="btn btn-sm btn-secondary" onclick="CodePatcher.exportModule('${m.name}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></button>
+          <button class="btn btn-sm btn-danger" onclick="CodePatcher.deleteModuleAndRefresh('${m.name}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>
         </div>
       </div>
     `).join('');
@@ -890,9 +898,9 @@ const CodePatcher = {
             </div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="CodePatcher.doCreateModule()">💾 创建并注册</button>
+            <button class="btn btn-primary" onclick="CodePatcher.doCreateModule()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 创建并注册</button>
             <button class="btn btn-secondary" onclick="CodePatcher.doTestCode()">🧪 语法测试</button>
-            <button class="btn btn-secondary" onclick="CodePatcher.exportAllModules()">📤 导出全部</button>
+            <button class="btn btn-secondary" onclick="CodePatcher.exportAllModules()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导出全部</button>
           </div>
           <div id="cp_editorResult" style="margin-top:var(--space-md);"></div>
         </div>
@@ -1038,7 +1046,7 @@ const CodePatcher = {
    * 弹窗确认，防止误操作
    */
   resetAll() {
-    if (!confirm('⚠️ 警告：此操作将删除所有自定义模块和补丁！\n\n确定要恢复默认状态吗？此操作不可撤销。')) return;
+    if (!confirm('<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 警告：此操作将删除所有自定义模块和补丁！\n\n确定要恢复默认状态吗？此操作不可撤销。')) return;
     // 删除所有相关 localStorage 项
     const keysToRemove = [];
     for (let i = 0; i < localStorage.length; i++) {

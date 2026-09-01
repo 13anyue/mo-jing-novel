@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * 万能小助手 v3 — 自编程AI引擎
+ * 万能小助手 v7 — 自编程AI引擎
  *
  * 核心能力：
  * 1. 独立API配置 — 与其他API完全分离，使用 assistant_api_v14
@@ -25,6 +25,181 @@ const Assistant = {
   _choiceCallback: null,
   /** @type {string|null} 当前等待选择的上下文类型 */
   _choiceContext: null,
+
+  // =========================================================
+  // 代码预览渲染子模块
+  // =========================================================
+
+  /**
+   * CodePreview — 在对话中实时预览生成的HTML/CSS/JS代码
+   * 使用 sandbox iframe 隔离执行，确保安全
+   */
+  CodePreview: {
+    /** @type {Map<string, HTMLIFrameElement>} 已创建的预览iframe缓存 */
+    _iframes: new Map(),
+
+    /** 配色引用（从父对象同步） */
+    get _colors() { return Assistant._colors; },
+
+    /**
+     * 创建预览容器HTML
+     * @param {string} previewId - 唯一预览ID
+     * @param {string} language - 代码语言
+     * @returns {string} 预览区域HTML字符串
+     */
+    createPreviewContainer(previewId, language) {
+      return `
+        <div id="preview-wrap-${previewId}" style="margin:8px 0;border:1px solid ${this._colors.border};border-radius:8px;overflow:hidden;background:${this._colors.bgCard};display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:${this._colors.inkMid};color:${this._colors.gold};font-size:11px;">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              实时预览 (${language})
+            </span>
+            <span style="display:flex;gap:6px;">
+              <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.CodePreview.reloadPreview('${previewId}')" style="font-size:10px;padding:2px 6px;background:transparent;border:1px solid ${this._colors.gold};color:${this._colors.gold};border-radius:4px;cursor:pointer;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> 重载
+              </button>
+              <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.CodePreview.togglePreview('${previewId}')" style="font-size:10px;padding:2px 6px;background:transparent;border:1px solid ${this._colors.gold};color:${this._colors.gold};border-radius:4px;cursor:pointer;">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 关闭
+              </button>
+            </span>
+          </div>
+          <iframe id="preview-iframe-${previewId}" sandbox="allow-scripts" style="width:100%;height:300px;border:none;background:${this._colors.parchment};" title="代码预览"></iframe>
+        </div>
+      `;
+    },
+
+    /**
+     * 渲染预览 — 将代码注入 sandbox iframe
+     * @param {string} previewId - 预览ID
+     * @param {string} code - 代码内容
+     * @param {string} type - 代码类型 'html'|'css'|'js'
+     */
+    renderPreview(previewId, code, type) {
+      const iframe = document.getElementById(`preview-iframe-${previewId}`);
+      if (!iframe) { console.warn('[CodePreview] iframe 未找到:', previewId); return; }
+
+      let srcdoc = '';
+      if (type === 'html') {
+        // HTML代码直接渲染（注入基础样式保持一致）
+        srcdoc = code;
+      } else if (type === 'css') {
+        // CSS代码渲染为样式预览页面
+        srcdoc = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>${code}</style></head>
+<body><div style="padding:20px;font-family:sans-serif;"><h3>CSS预览</h3><p>以下为应用了上述样式的示例内容：</p>
+<div class="preview-box" style="padding:16px;margin:8px 0;border:1px solid #ccc;border-radius:8px;">示例盒子</div>
+<button class="preview-btn" style="padding:8px 16px;margin:8px 0;">示例按钮</button>
+</div></body></html>`;
+      } else if (type === 'js') {
+        // JS代码渲染为控制台输出页面
+        srcdoc = `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><style>body{font-family:monospace;padding:12px;background:#1a1a1a;color:#d4d4d4;font-size:13px;line-height:1.6;} .log{margin:2px 0;padding:2px 4px;border-radius:3px;} .log-info{background:#1e3a5f;} .log-warn{background:#5f5f1e;color:#ffeebb;} .log-error{background:#5f1e1e;color:#ffbbbb;} .log-result{background:#1e5f1e;}</style></head>
+<body><div id="console-output"><div class="log log-info">[JS预览] 脚本开始执行...</div></div>
+<script>
+(function(){
+  const out = document.getElementById('console-output');
+  const origLog = console.log, origWarn = console.warn, origError = console.error;
+  function append(txt, cls) {
+    const d = document.createElement('div'); d.className='log '+cls; d.textContent='> '+txt; out.appendChild(d);
+    out.scrollTop = out.scrollHeight;
+  }
+  console.log = function(...a){ append(a.join(' '),'log-result'); origLog.apply(console,a); };
+  console.warn = function(...a){ append(a.join(' '),'log-warn'); origWarn.apply(console,a); };
+  console.error = function(...a){ append(a.join(' '),'log-error'); origError.apply(console,a); };
+  try {
+    ${code}
+    append('[JS预览] 脚本执行完成','log-info');
+  } catch(e) {
+    append('Error: '+e.message,'log-error');
+  }
+})();
+<\/script></body></html>`;
+      }
+
+      // 使用 srcdoc 安全注入（iframe已设置sandbox="allow-scripts"）
+      iframe.srcdoc = srcdoc;
+    },
+
+    /**
+     * 切换预览显示/隐藏
+     * @param {string} previewId - 预览ID
+     */
+    togglePreview(previewId) {
+      const wrap = document.getElementById(`preview-wrap-${previewId}`);
+      if (!wrap) return;
+      const isHidden = wrap.style.display === 'none';
+      wrap.style.display = isHidden ? 'block' : 'none';
+      // 展开时若iframe未加载则自动加载（由调用方保证code已缓存）
+    },
+
+    /**
+     * 打开预览 — 从DOM中最近的代码块获取代码并渲染
+     * 此辅助方法由代码块下方的"预览"按钮调用
+     * @param {string} previewId - 预览ID
+     * @param {string} type - 代码类型
+     * @param {HTMLElement} btnEl - 点击的按钮元素（用于定位代码块）
+     */
+    _openPreview(previewId, type, btnEl) {
+      try {
+        // 向上查找代码块容器，提取原始代码
+        const codeBlock = btnEl.closest('div').previousElementSibling;
+        let code = '';
+        if (codeBlock && codeBlock.tagName === 'PRE') {
+          code = codeBlock.textContent || '';
+        } else {
+          // fallback: 尝试通过id查找
+          const pre = btnEl.closest('div[style*="background"]')?.querySelector('pre');
+          if (pre) code = pre.textContent || '';
+        }
+        // 缓存代码
+        this._iframes.set(previewId, { code, type });
+        // 切换显示
+        this.togglePreview(previewId);
+        // 渲染内容
+        this.renderPreview(previewId, code, type);
+      } catch (e) {
+        console.warn('[CodePreview] 打开预览失败:', e);
+      }
+    },
+
+    /**
+     * 重新加载预览（从缓存的代码重新渲染）
+     * @param {string} previewId - 预览ID
+     */
+    reloadPreview(previewId) {
+      const cached = this._iframes.get(previewId);
+      if (cached && cached.code && cached.type) {
+        this.renderPreview(previewId, cached.code, cached.type);
+        // 在控制台提示
+        console.log('[CodePreview] 重新加载预览:', previewId);
+      }
+    },
+
+    /**
+     * 导出预览为独立HTML文件（触发下载）
+     * @param {string} previewId - 预览ID
+     */
+    exportPreview(previewId) {
+      const cached = this._iframes.get(previewId);
+      if (!cached || !cached.code) { console.warn('[CodePreview] 无缓存代码可导出'); return; }
+      let content = cached.code;
+      if (cached.type === 'css') {
+        content = `<!DOCTYPE html>\n<html><head><meta charset="utf-8"><style>${cached.code}</style></head><body><div style="padding:20px"><h3>CSS预览</h3></div></body></html>`;
+      } else if (cached.type === 'js') {
+        content = `<!DOCTYPE html>\n<html><head><meta charset="utf-8"></head><body><script>${cached.code}<\/script></body></html>`;
+      }
+      const blob = new Blob([content], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `preview-${previewId}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  },
 
   // =========================================================
   // 系统提示词
@@ -145,21 +320,21 @@ const Assistant = {
    * @returns {string} Markdown格式的欢迎消息
    */
   _renderWelcomeMessage() {
-    return `🎋 **欢迎来到万能小助手 v3**
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> **欢迎来到万能小助手 v7**
 
 我是你的自编程AI引擎，具备以下能力：
 
-📋 **制作预设** — 生成角色卡、场景、世界观预设
-🎨 **美化UI** — 一键切换配色、字体、布局风格
-⚙️ **制作功能** — 创建完整JS模块并自动注册到系统
-👤 **制作角色** — 生成NPC完整数据并导入人物志
-📱 **制作APP** — 创建小手机App并添加到虚拟App平台
-🔧 **修改代码** — 分析并应用代码补丁
-📥 **导入代码** — 识别并自动导入外部代码
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> **制作预设** — 生成角色卡、场景、世界观预设
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> **美化UI** — 一键切换配色、字体、布局风格
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> **制作功能** — 创建完整JS模块并自动注册到系统
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> **制作角色** — 生成NPC完整数据并导入人物志
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> **制作APP** — 创建小手机App并添加到虚拟App平台
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> **修改代码** — 分析并应用代码补丁
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> **导入代码** — 识别并自动导入外部代码
 
-💡 上方快捷按钮可快速开始，或直接输入你的需求！
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 上方快捷按钮可快速开始，或直接输入你的需求！
 
-⚠️ **我会先询问再执行，所有修改都会征求你的同意。**`;
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> **我会先询问再执行，所有修改都会征求你的同意。**`;
   },
 
   /**
@@ -168,24 +343,25 @@ const Assistant = {
    */
   renderPage() {
     const page = document.getElementById('page-assistant');
+    if (!page) { console.warn('[v7] 元素 #page-assistant 未找到'); }
     if (!page) return;
 
     page.innerHTML = `
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <!-- 页面标题与API设置按钮 -->
       <div class="assistant-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg,16px);">
-        <h2 class="section-title" style="margin:0;color:${this._colors.inkDark};">🤖 万能小助手 v3</h2>
-        <button class="btn btn-sm btn-secondary" onclick="Assistant.toggleApiPanel()" style="display:flex;align-items:center;gap:4px;border-color:${this._colors.gold};color:${this._colors.gold};">
+        <h2 class="section-title" style="margin:0;color:${this._colors.inkDark};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> 万能小助手 v3</h2>
+        <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.toggleApiPanel()" style="display:flex;align-items:center;gap:4px;border-color:${this._colors.gold};color:${this._colors.gold};">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           API设置
         </button>
       </div>
 
       <!-- API设置面板（默认隐藏） -->
-      <div id="assistantApiPanel" class="card" style="display:none;margin-bottom:var(--space-lg,16px);background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:12px;overflow:hidden;">
+      <div id="assistantApiPanel" class="ez-card" style="display:none;margin-bottom:var(--space-lg,16px);background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:12px;overflow:hidden;">
         <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:${this._colors.inkDark};color:${this._colors.gold};">
-          <span style="font-weight:600;font-size:14px;">⚙️ 小助手独立API配置</span>
-          <button class="btn btn-sm btn-secondary" onclick="Assistant.toggleApiPanel()" style="color:${this._colors.gold};border-color:${this._colors.gold};">收起</button>
+          <span style="font-weight:600;font-size:14px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 小助手独立API配置</span>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.toggleApiPanel()" style="color:${this._colors.gold};border-color:${this._colors.gold};">收起</button>
         </div>
         <div class="card-body" style="display:grid;gap:12px;padding:16px;">
           <div style="display:grid;grid-template-columns:120px 1fr;gap:8px;align-items:center;">
@@ -220,23 +396,23 @@ const Assistant = {
             <input type="number" id="assistMaxTokens" class="form-input" value="4096" min="256" max="32768" step="256" style="background:${this._colors.parchment};color:${this._colors.inkDark};border:1px solid ${this._colors.border};border-radius:6px;padding:6px 10px;font-size:13px;">
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px;">
-            <button class="btn btn-sm btn-secondary" onclick="Assistant.resetApiSettings()" style="border-color:${this._colors.border};color:${this._colors.textSecondary};">恢复默认</button>
-            <button class="btn btn-sm btn-primary" onclick="Assistant.saveApiSettings()" style="background:${this._colors.gold};color:${this._colors.inkDark};border:none;">💾 保存配置</button>
+            <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.resetApiSettings()" style="border-color:${this._colors.border};color:${this._colors.textSecondary};">恢复默认</button>
+            <button class="ez-btn btn btn-sm btn-primary" onclick="Assistant.saveApiSettings()" style="background:${this._colors.gold};color:${this._colors.inkDark};border:none;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 保存配置</button>
           </div>
         </div>
       </div>
 
       <!-- 快捷操作按钮栏 -->
-      <div class="card" style="margin-bottom:var(--space-lg,16px);background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:12px;overflow:hidden;">
-        <div class="card-header" style="padding:10px 16px;font-size:13px;color:${this._colors.textSecondary};background:${this._colors.bgSecondary};border-bottom:1px solid ${this._colors.border};">⚡ 快捷操作</div>
+      <div class="ez-card" style="margin-bottom:var(--space-lg,16px);background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:12px;overflow:hidden;">
+        <div class="card-header" style="padding:10px 16px;font-size:13px;color:${this._colors.textSecondary};background:${this._colors.bgSecondary};border-bottom:1px solid ${this._colors.border};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 快捷操作</div>
         <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;">
-          <button class="btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作预设')" title="生成预设配置" style="border-color:${this._colors.gold};color:${this._colors.gold};">📋 制作预设</button>
-          <button class="btn btn-sm btn-secondary" onclick="Assistant.quickTask('美化UI')" title="修改配色/字体/布局" style="border-color:${this._colors.gold};color:${this._colors.gold};">🎨 美化UI</button>
-          <button class="btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作功能')" title="创建JS模块" style="border-color:${this._colors.gold};color:${this._colors.gold};">⚙️ 制作功能</button>
-          <button class="btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作角色')" title="生成NPC数据" style="border-color:${this._colors.gold};color:${this._colors.gold};">👤 制作角色</button>
-          <button class="btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作APP')" title="创建小手机App" style="border-color:${this._colors.gold};color:${this._colors.gold};">📱 制作APP</button>
-          <button class="btn btn-sm btn-secondary" onclick="Assistant.quickTask('修改代码')" title="分析并修改代码" style="border-color:${this._colors.gold};color:${this._colors.gold};">🔧 修改代码</button>
-          <button class="btn btn-sm btn-secondary" onclick="Assistant.quickTask('导入代码')" title="导入外部代码" style="border-color:${this._colors.gold};color:${this._colors.gold};">📥 导入代码</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作预设')" title="生成预设配置" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> 制作预设</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('美化UI')" title="修改配色/字体/布局" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> 美化UI</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作功能')" title="创建JS模块" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 制作功能</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作角色')" title="生成NPC数据" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> 制作角色</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作APP')" title="创建小手机App" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 制作APP</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('修改代码')" title="分析并修改代码" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 修改代码</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('导入代码')" title="导入外部代码" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导入代码</button>
         </div>
       </div>
 
@@ -250,9 +426,9 @@ const Assistant = {
 
         <!-- 文件上传拖放区 -->
         <div id="assistantDropZone" style="display:none;padding:8px 16px;background:${this._colors.bgSecondary};border-bottom:1px dashed ${this._colors.border};text-align:center;font-size:12px;color:${this._colors.textSecondary};">
-          📎 拖放文件到此处上传，或
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> 拖放文件到此处上传，或
           <input type="file" id="assistantFileInput" style="display:none;" onchange="Assistant.handleFileUpload(this.files[0])">
-          <button class="btn btn-sm btn-secondary" onclick="document.getElementById('assistantFileInput').click()" style="border-color:${this._colors.border};color:${this._colors.textSecondary};">选择文件</button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="document.getElementById('assistantFileInput').click()" style="border-color:${this._colors.border};color:${this._colors.textSecondary};">选择文件</button>
         </div>
 
         <!-- 消息列表 -->
@@ -260,13 +436,13 @@ const Assistant = {
 
         <!-- 输入区域 -->
         <div class="assistant-chat-input" style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid ${this._colors.border};background:${this._colors.bgSecondary};">
-          <button class="btn btn-sm btn-secondary" onclick="Assistant.toggleDropZone()" title="上传文件" style="padding:6px 8px;border-color:${this._colors.border};color:${this._colors.textSecondary};">
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.toggleDropZone()" title="上传文件" style="padding:6px 8px;border-color:${this._colors.border};color:${this._colors.textSecondary};">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>
           <input type="text" id="assistantInput" placeholder="输入你的需求，或描述你想制作的内容..."
             style="flex:1;background:${this._colors.parchment};color:${this._colors.inkDark};border:1px solid ${this._colors.border};border-radius:8px;padding:8px 12px;font-size:13px;"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();Assistant.send();}">
-          <button class="btn btn-primary" onclick="Assistant.send()" style="padding:8px 16px;background:${this._colors.gold};color:${this._colors.inkDark};border:none;border-radius:8px;font-weight:600;">发送</button>
+          <button class="ez-btn btn btn-primary" onclick="Assistant.send()" style="padding:8px 16px;background:${this._colors.gold};color:${this._colors.inkDark};border:none;border-radius:8px;font-weight:600;">发送</button>
         </div>
       </div>
     `;
@@ -284,6 +460,7 @@ const Assistant = {
    */
   toggleApiPanel() {
     const panel = document.getElementById('assistantApiPanel');
+    if (!panel) { console.warn('[v7] 元素 #assistantApiPanel 未找到'); }
     if (!panel) return;
     panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
     this._showApiPanel = panel.style.display === 'block';
@@ -326,7 +503,7 @@ const Assistant = {
       maxTokens: parseInt(document.getElementById('assistMaxTokens')?.value || 4096)
     };
     this.saveSettings(settings);
-    this._addSystemMessage('✅ API配置已保存！小助手将使用独立的API设置。');
+    this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> API配置已保存！小助手将使用独立的API设置。');
   },
 
   /**
@@ -343,7 +520,7 @@ const Assistant = {
     };
     this.saveSettings(defaults);
     this.loadApiSettings();
-    this._addSystemMessage('🔄 API配置已恢复默认。');
+    this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> API配置已恢复默认。');
   },
 
   // =========================================================
@@ -355,6 +532,7 @@ const Assistant = {
    */
   renderChat() {
     const body = document.getElementById('assistantChatBody');
+    if (!body) { console.warn('[v7] 元素 #assistantChatBody 未找到'); }
     if (!body) return;
 
     if (this._chatHistory.length === 0) {
@@ -374,9 +552,9 @@ const Assistant = {
   _renderWelcomeCard() {
     return `
       <div class="assistant-msg ai" style="margin-bottom:16px;">
-        <div class="msg-sender" style="font-size:12px;color:${this._colors.gold};margin-bottom:4px;font-weight:600;">🤖 万能小助手</div>
+        <div class="msg-sender" style="font-size:12px;color:${this._colors.gold};margin-bottom:4px;font-weight:600;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> 万能小助手</div>
         <div class="msg-content" style="background:${this._colors.bgSecondary};padding:12px 16px;border-radius:8px;border-left:3px solid ${this._colors.gold};color:${this._colors.textPrimary};font-size:13px;line-height:1.7;">
-          <p style="margin:0 0 8px 0;font-weight:600;color:${this._colors.inkDark};">🎋 欢迎来到万能小助手 v3</p>
+          <p style="margin:0 0 8px 0;font-weight:600;color:${this._colors.inkDark};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 欢迎来到万能小助手 v3</p>
           <p style="margin:0 0 8px 0;">我是你的自编程AI引擎，所有操作在对话框内完成。</p>
           <p style="margin:0;font-size:12px;color:${this._colors.textSecondary};">上方快捷按钮可快速开始，或直接输入你的需求！</p>
         </div>
@@ -396,7 +574,7 @@ const Assistant = {
     return `
       <div class="assistant-msg ${isAI ? 'ai' : 'user'}" style="margin-bottom:16px;${isAI ? '' : 'text-align:right;'}">
         <div class="msg-sender" style="font-size:12px;color:${isAI ? this._colors.gold : this._colors.textSecondary};margin-bottom:4px;font-weight:600;">
-          ${isAI ? '🤖 万能小助手' : '👤 你'}
+          ${isAI ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> 万能小助手' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> 你'}
         </div>
         <div class="msg-content" style="display:inline-block;max-width:85%;background:${isAI ? this._colors.bgSecondary : this._colors.inkMid};padding:12px 16px;border-radius:8px;border-left:${isAI ? '3px solid ' + this._colors.gold : 'none'};color:${isAI ? this._colors.textPrimary : this._colors.parchment};font-size:13px;line-height:1.7;text-align:left;">
           ${content}
@@ -415,18 +593,38 @@ const Assistant = {
     if (!text) return '';
     let html = text;
 
-    // 代码块（带语法高亮和复制按钮）
+    // 代码块（带语法高亮、复制按钮和预览按钮）
     html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
       const language = lang || 'javascript';
       const escapedCode = this.escapeHtml(code.trim());
       const uniqueId = 'code-' + Math.random().toString(36).substr(2, 9);
+      const previewId = 'preview-' + Math.random().toString(36).substr(2, 9);
+      const previewable = /^(html|css|javascript|js)$/.test(language.toLowerCase());
+      const typeMap = { 'html': 'html', 'css': 'css', 'javascript': 'js', 'js': 'js' };
+      const previewType = typeMap[language.toLowerCase()] || null;
+
+      let previewHtml = '';
+      if (previewable) {
+        // 缓存代码到CodePreview模块供后续使用
+        previewHtml = `
+          <div style="margin-top:4px;">
+            <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.CodePreview._openPreview('${previewId}', '${previewType}', this)" style="font-size:11px;padding:2px 8px;background:transparent;border:1px solid ${this._colors.gold};color:${this._colors.gold};border-radius:4px;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              预览
+            </button>
+          </div>
+          ${this.CodePreview.createPreviewContainer(previewId, language)}
+        `;
+      }
+
       return `
         <div style="margin:8px 0;border:1px solid ${this._colors.border};border-radius:8px;overflow:hidden;background:${this._colors.inkDark};">
           <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 12px;background:${this._colors.inkMid};color:${this._colors.gold};font-size:11px;">
             <span>${language}</span>
-            <button class="btn btn-sm btn-secondary" onclick="Assistant.copyCode('${uniqueId}')" style="font-size:11px;padding:2px 8px;background:transparent;border:1px solid ${this._colors.gold};color:${this._colors.gold};border-radius:4px;cursor:pointer;">📋 复制</button>
+            <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.copyCode('${uniqueId}')" style="font-size:11px;padding:2px 8px;background:transparent;border:1px solid ${this._colors.gold};color:${this._colors.gold};border-radius:4px;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> 复制</button>
           </div>
           <pre id="${uniqueId}" style="margin:0;padding:12px;overflow-x:auto;font-size:12px;line-height:1.5;color:${this._colors.parchment};background:${this._colors.inkDark};"><code>${escapedCode}</code></pre>
+          ${previewHtml}
         </div>
       `;
     });
@@ -518,7 +716,7 @@ const Assistant = {
     if (!el) return;
     const code = el.textContent;
     navigator.clipboard.writeText(code).then(() => {
-      this._addSystemMessage('✅ 代码已复制到剪贴板');
+      this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 代码已复制到剪贴板');
     }).catch(() => {
       // 降级方案：使用textarea fallback
       const textarea = document.createElement('textarea');
@@ -527,7 +725,7 @@ const Assistant = {
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      this._addSystemMessage('✅ 代码已复制到剪贴板');
+      this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 代码已复制到剪贴板');
     });
   },
 
@@ -682,6 +880,7 @@ const Assistant = {
    */
   async send() {
     const input = document.getElementById('assistantInput');
+    if (!input) { console.warn('[v7] 元素 #assistantInput 未找到'); }
     if (!input) return;
     const text = input.value.trim();
     if (!text) return;
@@ -772,7 +971,7 @@ const Assistant = {
     } catch (e) {
       this._chatHistory.push({
         role: 'assistant',
-        content: `❌ 抱歉，处理出错：${e.message}\n\n请检查API设置是否正确配置。`,
+        content: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 抱歉，处理出错：${e.message}\n\n请检查API设置是否正确配置。`,
         time: Date.now()
       });
       this.renderChat();
@@ -807,7 +1006,7 @@ const Assistant = {
     }
 
     // 无API时的模拟回复
-    return `🎋 收到你的消息："${text}"\n\n（当前未配置API，请在上方"API设置"中配置你的API Key，或使用系统主API）`;
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 收到你的消息："${text}"\n\n（当前未配置API，请在上方"API设置"中配置你的API Key，或使用系统主API）`;
   },
 
   // =========================================================
@@ -820,7 +1019,7 @@ const Assistant = {
    * @param {string} text - 用户输入
    */
   async _makePreset(text) {
-    this._addSystemMessage(`📋 开始制作预设...
+    this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> 开始制作预设...
 
 请确认预设类型：
 **A) 角色卡** — AI扮演的角色设定
@@ -836,7 +1035,7 @@ const Assistant = {
       const typeMap = { 'a': '角色卡', 'b': '场景', 'c': '世界观', 'd': '自定义' };
       const type = typeMap[choice.toLowerCase().trim()] || '自定义';
 
-      this._addSystemMessage(`✅ 已选择：**${type}**\n\n请描述这个预设的详细内容，例如名称、描述、提示词模板等。我会为你生成完整的预设数据。`);
+      this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 已选择：**${type}**\n\n请描述这个预设的详细内容，例如名称、描述、提示词模板等。我会为你生成完整的预设数据。`);
 
       this._waitingForChoice = true;
       this._choiceContext = 'preset_detail';
@@ -853,7 +1052,7 @@ const Assistant = {
         };
 
         // 显示预览卡片
-        const preview = `📝 **预设预览**
+        const preview = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> **预设预览**
 
 | 字段 | 内容 |
 |------|------|
@@ -870,9 +1069,9 @@ ${preset.promptTemplate.substring(0, 200)}${preset.promptTemplate.length > 200 ?
 是否自动导入到预设管理？`;
 
         this._addSystemMessage(preview + '\n\n' + this._renderChoiceButtons([
-          { id: 'import_yes', label: '✅ 是，立即导入' },
-          { id: 'import_no_edit', label: '✏️ 否，我再修改' },
-          { id: 'import_draft', label: '📝 保存为草稿' }
+          { id: 'import_yes', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 是，立即导入' },
+          { id: 'import_no_edit', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 否，我再修改' },
+          { id: 'import_draft', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 保存为草稿' }
         ], 'preset_confirm'));
 
         this._waitingForChoice = true;
@@ -882,13 +1081,13 @@ ${preset.promptTemplate.substring(0, 200)}${preset.promptTemplate.length > 200 ?
           if (c === 'import_yes' || c === 'a' || c.includes('是') || c.includes('导入')) {
             if (typeof window !== 'undefined' && window.PresetManager && window.PresetManager.addPreset) {
               window.PresetManager.addPreset(preset);
-              this._addSystemMessage(`✅ 预设「${preset.name}」已成功导入到预设管理！\n\n你可以在「预设」页面查看和使用。`);
+              this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 预设「${preset.name}」已成功导入到预设管理！\n\n你可以在「预设」页面查看和使用。`);
             } else {
               // 预设管理器未加载时的降级方案：保存到localStorage
               const presets = JSON.parse(localStorage.getItem('assistant_presets') || '[]');
               presets.push(preset);
               localStorage.setItem('assistant_presets', JSON.stringify(presets));
-              this._addSystemMessage(`✅ 预设「${preset.name}」已保存！\n\n（预设管理器未加载，已保存到助手草稿箱）`);
+              this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 预设「${preset.name}」已保存！\n\n（预设管理器未加载，已保存到助手草稿箱）`);
             }
           } else if (c === 'import_no_edit' || c === 'b' || c.includes('修改')) {
             this._addSystemMessage('好的，请告诉我需要修改哪里，我会更新预设内容。');
@@ -920,7 +1119,7 @@ ${preset.promptTemplate.substring(0, 200)}${preset.promptTemplate.length > 200 ?
    * @param {string} text - 用户输入
    */
   async _beautifyUI(text) {
-    this._addSystemMessage(`🎨 开始分析UI美化需求...
+    this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> 开始分析UI美化需求...
 
 **请选择美化方向：**
 
@@ -971,7 +1170,7 @@ ${preset.promptTemplate.substring(0, 200)}${preset.promptTemplate.length > 200 ?
       }
 
       // 生成diff预览表格
-      let diffPreview = `🎨 **「${themeName}」主题预览**
+      let diffPreview = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> **「${themeName}」主题预览**
 
 **CSS变更对比：**\n\n`;
       diffPreview += '| 属性 | 变更前 | 变更后 |\n';
@@ -983,9 +1182,9 @@ ${preset.promptTemplate.substring(0, 200)}${preset.promptTemplate.length > 200 ?
       diffPreview += `\n\n是否应用这些修改？`;
 
       this._addSystemMessage(diffPreview + '\n\n' + this._renderChoiceButtons([
-        { id: 'apply_yes', label: '✅ 是，应用修改' },
-        { id: 'apply_adjust', label: '✏️ 否，我再调整' },
-        { id: 'apply_preview', label: '👁️ 仅预览不应用' }
+        { id: 'apply_yes', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 是，应用修改' },
+        { id: 'apply_adjust', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 否，我再调整' },
+        { id: 'apply_preview', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 仅预览不应用' }
       ], 'ui_confirm'));
 
       this._waitingForChoice = true;
@@ -996,14 +1195,14 @@ ${preset.promptTemplate.substring(0, 200)}${preset.promptTemplate.length > 200 ?
           if (typeof window !== 'undefined' && window.CodePatcher && window.CodePatcher.applyPatch) {
             const success = await window.CodePatcher.applyPatch(cssChanges);
             if (success) {
-              this._addSystemMessage(`✅ 「${themeName}」主题已成功应用！\n\n页面样式已更新，你可以立即看到效果。`);
+              this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 「${themeName}」主题已成功应用！\n\n页面样式已更新，你可以立即看到效果。`);
             } else {
-              this._addSystemMessage(`❌ 应用失败，CodePatcher返回错误。\n\n你可以尝试手动修改CSS，或检查CodePatcher是否可用。`);
+              this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 应用失败，CodePatcher返回错误。\n\n你可以尝试手动修改CSS，或检查CodePatcher是否可用。`);
             }
           } else {
             // 降级方案：直接修改CSS变量
             this._applyCSSChanges(cssChanges);
-            this._addSystemMessage(`✅ 「${themeName}」主题已通过CSS变量应用！\n\n（CodePatcher未加载，使用了降级方案）`);
+            this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 「${themeName}」主题已通过CSS变量应用！\n\n（CodePatcher未加载，使用了降级方案）`);
           }
         } else if (c === 'apply_adjust' || c === 'b' || c.includes('调整')) {
           this._addSystemMessage('好的，请告诉我想要调整的地方，我会更新修改方案。');
@@ -1046,7 +1245,7 @@ ${preset.promptTemplate.substring(0, 200)}${preset.promptTemplate.length > 200 ?
    * @param {string} text - 用户输入
    */
   async _makeFeature(text) {
-    this._addSystemMessage(`⚙️ 开始制作新功能模块...
+    this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 开始制作新功能模块...
 
 请详细描述你想要的功能：
 
@@ -1113,19 +1312,20 @@ const ${moduleName} = {
    */
   renderPage() {
     const page = document.getElementById('page-${moduleId}');
+    if (!page) { console.warn('[v7] 元素 #page-${moduleId} 未找到'); }
     if (!page) return;
     page.innerHTML = \`
       <h2 class="section-title" style="color:${this._colors.inkDark};">${moduleName}</h2>
-      <div class="card" style="background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:12px;">
+      <div class="ez-card" style="background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:12px;">
         <div class="card-body" style="padding:16px;">
           <p style="color:${this._colors.textSecondary};font-size:13px;line-height:1.6;">
             ${detail.substring(0, 100).replace(/'/g, "\\'")}
           </p>
           <div style="margin-top:16px;display:flex;gap:8px;">
-            <button class="btn btn-primary" onclick="${moduleName}.mainAction()" style="background:${this._colors.gold};color:${this._colors.inkDark};border:none;border-radius:6px;padding:8px 16px;font-weight:600;cursor:pointer;">
+            <button class="ez-btn btn btn-primary" onclick="${moduleName}.mainAction()" style="background:${this._colors.gold};color:${this._colors.inkDark};border:none;border-radius:6px;padding:8px 16px;font-weight:600;cursor:pointer;">
               主要功能
             </button>
-            <button class="btn btn-secondary" onclick="${moduleName}.saveData()" style="background:transparent;border:1px solid ${this._colors.gold};color:${this._colors.gold};border-radius:6px;padding:8px 16px;cursor:pointer;">
+            <button class="ez-btn btn btn-secondary" onclick="${moduleName}.saveData()" style="background:transparent;border:1px solid ${this._colors.gold};color:${this._colors.gold};border-radius:6px;padding:8px 16px;cursor:pointer;">
               保存数据
             </button>
           </div>
@@ -1180,7 +1380,7 @@ if (typeof window !== 'undefined' && window.App) {
 }`;
 
       // 显示代码预览和选项按钮
-      const preview = `⚙️ **「${moduleName}」模块预览**
+      const preview = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> **「${moduleName}」模块预览**
 
 \`\`\`javascript
 ${code}
@@ -1196,9 +1396,9 @@ ${code}
 是否自动导入到系统？`;
 
       this._addSystemMessage(preview + '\n\n' + this._renderChoiceButtons([
-        { id: 'feature_import', label: '✅ 是，导入并注册' },
-        { id: 'feature_save', label: '💾 否，仅保存代码' },
-        { id: 'feature_edit', label: '✏️ 我需要修改代码' }
+        { id: 'feature_import', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 是，导入并注册' },
+        { id: 'feature_save', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 否，仅保存代码' },
+        { id: 'feature_edit', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 我需要修改代码' }
       ], 'feature_confirm'));
 
       // 保存代码到临时存储
@@ -1211,7 +1411,7 @@ ${code}
         if (c === 'feature_import' || c === 'a' || c.includes('是') || c.includes('导入')) {
           await this._importFeatureModule(moduleName, moduleId, code);
         } else if (c === 'feature_save' || c === 'b' || c.includes('保存')) {
-          this._addSystemMessage(`✅ 代码已保存到助手草稿箱。\n\n你可以在 localStorage 的 assistant_temp_module 中找到这段代码。`);
+          this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 代码已保存到助手草稿箱。\n\n你可以在 localStorage 的 assistant_temp_module 中找到这段代码。`);
         } else {
           this._addSystemMessage('好的，请告诉我需要修改哪里，我会更新代码。');
         }
@@ -1249,14 +1449,14 @@ ${code}
         // 避免重复注册
         const exists = window.App.NAV_ITEMS.some(item => item.id === moduleId);
         if (!exists) {
-          window.App.NAV_ITEMS.push({ id: moduleId, label: moduleName, icon: '⚙️' });
+          window.App.NAV_ITEMS.push({ id: moduleId, label: moduleName, icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' });
         }
-        this._addSystemMessage(`✅ 模块「${moduleName}」已成功导入并注册到系统！\n\n请刷新页面以使用新功能。`);
+        this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 模块「${moduleName}」已成功导入并注册到系统！\n\n请刷新页面以使用新功能。`);
       } else {
-        this._addSystemMessage(`✅ 模块「${moduleName}」已保存！\n\n（App对象未加载，已保存到草稿箱，稍后手动注册即可）`);
+        this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 模块「${moduleName}」已保存！\n\n（App对象未加载，已保存到草稿箱，稍后手动注册即可）`);
       }
     } catch (e) {
-      this._addSystemMessage(`❌ 导入失败：${e.message}\n\n代码已保存到草稿箱，你可以手动导入。`);
+      this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 导入失败：${e.message}\n\n代码已保存到草稿箱，你可以手动导入。`);
     }
   },
 
@@ -1270,7 +1470,7 @@ ${code}
    * @param {string} text - 用户输入
    */
   async _makeCharacter(text) {
-    this._addSystemMessage(`👤 开始制作新角色...
+    this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> 开始制作新角色...
 
 请描述角色信息（可以分条或一整段）：
 
@@ -1292,7 +1492,7 @@ ${code}
       const npc = this._parseCharacterInfo(detail);
 
       // 显示角色预览卡片
-      const preview = `👤 **「${npc.name}」角色预览**
+      const preview = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> **「${npc.name}」角色预览**
 
 | 属性 | 内容 |
 |------|------|
@@ -1310,9 +1510,9 @@ ${npc.schedule ? Object.entries(npc.schedule).map(([k, v]) => `- ${k}: ${v}`).jo
 是否自动导入到人物志？`;
 
       this._addSystemMessage(preview + '\n\n' + this._renderChoiceButtons([
-        { id: 'char_import', label: '✅ 是，导入角色' },
-        { id: 'char_edit', label: '✏️ 否，我再修改' },
-        { id: 'char_portrait', label: '🎨 同时AI生成立绘描述词' }
+        { id: 'char_import', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 是，导入角色' },
+        { id: 'char_edit', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 否，我再修改' },
+        { id: 'char_portrait', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> 同时AI生成立绘描述词' }
       ], 'character_confirm'));
 
       this._waitingForChoice = true;
@@ -1322,12 +1522,12 @@ ${npc.schedule ? Object.entries(npc.schedule).map(([k, v]) => `- ${k}: ${v}`).jo
         if (c === 'char_import' || c === 'a' || c.includes('是') || c.includes('导入')) {
           if (typeof window !== 'undefined' && window.NPCManager && window.NPCManager.addNPC) {
             window.NPCManager.addNPC(npc);
-            this._addSystemMessage(`✅ 角色「${npc.name}」已成功导入到人物志！\n\n你可以在「人物志」页面查看。`);
+            this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 角色「${npc.name}」已成功导入到人物志！\n\n你可以在「人物志」页面查看。`);
           } else {
             const npcs = JSON.parse(localStorage.getItem('assistant_npcs') || '[]');
             npcs.push(npc);
             localStorage.setItem('assistant_npcs', JSON.stringify(npcs));
-            this._addSystemMessage(`✅ 角色「${npc.name}」已保存！\n\n（人物志管理器未加载，已保存到助手草稿箱）`);
+            this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 角色「${npc.name}」已保存！\n\n（人物志管理器未加载，已保存到助手草稿箱）`);
           }
         } else if (c === 'char_edit' || c === 'b' || c.includes('修改')) {
           this._addSystemMessage('好的，请告诉我需要修改哪里。');
@@ -1335,10 +1535,10 @@ ${npc.schedule ? Object.entries(npc.schedule).map(([k, v]) => `- ${k}: ${v}`).jo
           // 生成AI立绘提示词
           const prompt = this._generatePortraitPrompt(npc);
           npc.portraitPrompt = prompt;
-          this._addSystemMessage(`🎨 **AI立绘提示词已生成：**\n\n\`\`\`\n${prompt}\n\`\`\`\n\n你可以使用这个提示词在AI绘图工具中生成立绘。\n\n是否现在导入角色？` +
+          this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> **AI立绘提示词已生成：**\n\n\`\`\`\n${prompt}\n\`\`\`\n\n你可以使用这个提示词在AI绘图工具中生成立绘。\n\n是否现在导入角色？` +
             '\n\n' + this._renderChoiceButtons([
-              { id: 'char_import_now', label: '✅ 导入角色' },
-              { id: 'char_wait', label: '📝 先不导入' }
+              { id: 'char_import_now', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 导入角色' },
+              { id: 'char_wait', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 先不导入' }
             ], 'character_final'));
 
           this._waitingForChoice = true;
@@ -1348,12 +1548,12 @@ ${npc.schedule ? Object.entries(npc.schedule).map(([k, v]) => `- ${k}: ${v}`).jo
             if (fc === 'char_import_now' || fc.includes('导入')) {
               if (typeof window !== 'undefined' && window.NPCManager && window.NPCManager.addNPC) {
                 window.NPCManager.addNPC(npc);
-                this._addSystemMessage(`✅ 角色「${npc.name}」已导入（含立绘提示词）！`);
+                this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 角色「${npc.name}」已导入（含立绘提示词）！`);
               } else {
                 const npcs = JSON.parse(localStorage.getItem('assistant_npcs') || '[]');
                 npcs.push(npc);
                 localStorage.setItem('assistant_npcs', JSON.stringify(npcs));
-                this._addSystemMessage(`✅ 角色「${npc.name}」已保存（含立绘提示词）！`);
+                this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 角色「${npc.name}」已保存（含立绘提示词）！`);
               }
             }
           };
@@ -1444,7 +1644,7 @@ ${npc.schedule ? Object.entries(npc.schedule).map(([k, v]) => `- ${k}: ${v}`).jo
    * @param {string} text - 用户输入
    */
   async _makeApp(text) {
-    this._addSystemMessage(`📱 开始制作小手机App...
+    this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 开始制作小手机App...
 
 请描述App功能：
 
@@ -1479,7 +1679,7 @@ const ${appName} = {
     id: '${appId}',
     name: '${appName}',
     version: '1.0.0',
-    icon: '📱',
+    icon: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
     description: '${detail.substring(0, 50).replace(/'/g, "\\'")}',
     color: '${this._colors.gold}'
   },
@@ -1525,13 +1725,13 @@ const ${appName} = {
         <span style="font-weight:600;font-size:16px;">${appName}</span>
       </div>
       <div class="app-body" style="padding:16px;background:${this._colors.parchment};">
-        <div class="card" style="margin-bottom:12px;background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:8px;">
+        <div class="ez-card" style="margin-bottom:12px;background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:8px;">
           <div class="card-body" style="padding:12px;">
             <p style="color:${this._colors.textSecondary};font-size:13px;line-height:1.6;">${detail.substring(0, 100).replace(/'/g, "\\'")}</p>
           </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="${appName}.mainAction()" style="flex:1;background:${this._colors.gold};color:${this._colors.inkDark};border:none;border-radius:6px;padding:10px;font-weight:600;cursor:pointer;">
+          <button class="ez-btn btn btn-primary" onclick="${appName}.mainAction()" style="flex:1;background:${this._colors.gold};color:${this._colors.inkDark};border:none;border-radius:6px;padding:10px;font-weight:600;cursor:pointer;">
             主要功能
           </button>
         </div>
@@ -1579,7 +1779,7 @@ if (typeof window !== 'undefined' && window.MobilePreview && window.MobilePrevie
 }`;
 
       // 显示预览
-      const preview = `📱 **「${appName}」App预览**
+      const preview = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> **「${appName}」App预览**
 
 \`\`\`javascript
 ${code}
@@ -1590,14 +1790,14 @@ ${code}
 |------|-----|
 | App ID | ${appId} |
 | 名称 | ${appName} |
-| 图标 | 📱 |
+| 图标 | <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> |
 
 是否自动导入到虚拟App平台？`;
 
       this._addSystemMessage(preview + '\n\n' + this._renderChoiceButtons([
-        { id: 'app_import', label: '✅ 是，导入App' },
-        { id: 'app_save', label: '💾 否，仅保存代码' },
-        { id: 'app_edit', label: '✏️ 我需要修改' }
+        { id: 'app_import', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 是，导入App' },
+        { id: 'app_save', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> 否，仅保存代码' },
+        { id: 'app_edit', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 我需要修改' }
       ], 'app_confirm'));
 
       localStorage.setItem('assistant_temp_app', code);
@@ -1609,7 +1809,7 @@ ${code}
         if (c === 'app_import' || c === 'a' || c.includes('是') || c.includes('导入')) {
           await this._importApp(appName, appId, code);
         } else if (c === 'app_save' || c === 'b' || c.includes('保存')) {
-          this._addSystemMessage(`✅ App代码已保存到助手草稿箱。`);
+          this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> App代码已保存到助手草稿箱。`);
         } else {
           this._addSystemMessage('好的，请告诉我需要修改哪里。');
         }
@@ -1646,15 +1846,15 @@ ${code}
         const appObj = window[appName];
         if (appObj) {
           window.MobilePreview.apps.push(appObj);
-          this._addSystemMessage(`✅ App「${appName}」已成功导入到虚拟App平台！\n\n请刷新页面以在小手机页面看到新App。`);
+          this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> App「${appName}」已成功导入到虚拟App平台！\n\n请刷新页面以在小手机页面看到新App。`);
         } else {
-          this._addSystemMessage(`⚠️ App「${appName}」代码已执行，但未能自动注册。\n\n请手动添加到虚拟App平台。`);
+          this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> App「${appName}」代码已执行，但未能自动注册。\n\n请手动添加到虚拟App平台。`);
         }
       } else {
-        this._addSystemMessage(`✅ App「${appName}」已保存！\n\n（虚拟App平台未加载，已保存到草稿箱）`);
+        this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> App「${appName}」已保存！\n\n（虚拟App平台未加载，已保存到草稿箱）`);
       }
     } catch (e) {
-      this._addSystemMessage(`❌ 导入失败：${e.message}`);
+      this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 导入失败：${e.message}`);
     }
   },
 
@@ -1668,7 +1868,7 @@ ${code}
    * @param {string} text - 用户输入
    */
   async _modifyCode(text) {
-    this._addSystemMessage(`🔧 开始分析代码修改需求...
+    this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 开始分析代码修改需求...
 
 请描述你想要什么修改：
 
@@ -1686,7 +1886,7 @@ ${code}
       // 分析需要修改的目标文件
       const targetFiles = this._analyzeTargetFiles(detail);
 
-      const analysis = `🔧 **修改分析**
+      const analysis = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> **修改分析**
 
 **需求：** ${detail}
 
@@ -1700,9 +1900,9 @@ ${targetFiles.map(f => `- ${f}`).join('\n')}
       // 生成模拟的diff预览
       const diffPreview = this._generateDiffPreview(detail, targetFiles);
       this._addSystemMessage(diffPreview + '\n\n' + this._renderChoiceButtons([
-        { id: 'mod_apply', label: '✅ 是，应用修改' },
-        { id: 'mod_adjust', label: '✏️ 否，我再调整' },
-        { id: 'mod_cancel', label: '❌ 取消' }
+        { id: 'mod_apply', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 是，应用修改' },
+        { id: 'mod_adjust', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 否，我再调整' },
+        { id: 'mod_cancel', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 取消' }
       ], 'modify_confirm'));
 
       this._waitingForChoice = true;
@@ -1713,12 +1913,12 @@ ${targetFiles.map(f => `- ${f}`).join('\n')}
           if (typeof window !== 'undefined' && window.CodePatcher && window.CodePatcher.applyPatch) {
             const success = window.CodePatcher.applyPatch(diffPreview);
             if (success) {
-              this._addSystemMessage(`✅ 修改已成功应用！\n\n修改内容已生效，请刷新页面查看效果。`);
+              this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 修改已成功应用！\n\n修改内容已生效，请刷新页面查看效果。`);
             } else {
-              this._addSystemMessage(`❌ 应用失败。\n\n请检查CodePatcher是否可用，或尝试手动修改。`);
+              this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 应用失败。\n\n请检查CodePatcher是否可用，或尝试手动修改。`);
             }
           } else {
-            this._addSystemMessage(`⚠️ CodePatcher未加载，无法自动应用。\n\n以下是手动修改步骤：\n\n${diffPreview}\n\n请按照上述diff手动修改对应文件。`);
+            this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> CodePatcher未加载，无法自动应用。\n\n以下是手动修改步骤：\n\n${diffPreview}\n\n请按照上述diff手动修改对应文件。`);
           }
         } else if (c === 'mod_adjust' || c === 'b' || c.includes('调整')) {
           this._addSystemMessage('好的，请告诉我需要调整哪里。');
@@ -1753,7 +1953,7 @@ ${targetFiles.map(f => `- ${f}`).join('\n')}
    * @returns {string} diff预览文本
    */
   _generateDiffPreview(detail, files) {
-    return `🔧 **修改预览（Diff）**
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> **修改预览（Diff）**
 
 **变更文件：** ${files.join(', ')}
 
@@ -1798,7 +1998,7 @@ ${targetFiles.map(f => `- ${f}`).join('\n')}
    */
   async _importCode(text) {
     if (!text || text.length < 20) {
-      this._addSystemMessage(`📥 导入代码功能
+      this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导入代码功能
 
 请粘贴代码内容，或点击附件按钮上传文件。
 
@@ -1816,7 +2016,7 @@ ${targetFiles.map(f => `- ${f}`).join('\n')}
     // 分析代码类型
     const type = this._detectCodeType(text);
 
-    const analysis = `📥 **代码分析结果**
+    const analysis = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> **代码分析结果**
 
 **检测到的类型：** ${type}
 
@@ -1828,9 +2028,9 @@ ${text.substring(0, 200)}${text.length > 200 ? '...' : ''}
 是否导入这段代码？`;
 
     this._addSystemMessage(analysis + '\n\n' + this._renderChoiceButtons([
-      { id: 'imp_yes', label: '✅ 是，自动导入' },
-      { id: 'imp_repaste', label: '📝 否，重新粘贴' },
-      { id: 'imp_edit', label: '✏️ 我需要先修改代码' }
+      { id: 'imp_yes', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 是，自动导入' },
+      { id: 'imp_repaste', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 否，重新粘贴' },
+      { id: 'imp_edit', label: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 我需要先修改代码' }
     ], 'import_confirm'));
 
     this._waitingForChoice = true;
@@ -1872,47 +2072,47 @@ ${text.substring(0, 200)}${text.length > 200 ? '...' : ''}
     try {
       switch (type) {
         case 'App模块':
-          this._addSystemMessage('📱 检测到App代码，正在导入到虚拟App平台...');
+          this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 检测到App代码，正在导入到虚拟App平台...');
           await this._importApp('ImportedApp', 'app_imported_' + Date.now(), code);
           break;
         case '预设数据':
-          this._addSystemMessage('📋 检测到预设数据，正在导入到预设管理...');
+          this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> 检测到预设数据，正在导入到预设管理...');
           if (typeof window !== 'undefined' && window.PresetManager && window.PresetManager.addPreset) {
             const preset = JSON.parse(code);
             window.PresetManager.addPreset(preset);
-            this._addSystemMessage('✅ 预设已导入！');
+            this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 预设已导入！');
           } else {
             localStorage.setItem('assistant_imported_preset', code);
-            this._addSystemMessage('✅ 预设已保存到草稿箱！');
+            this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 预设已保存到草稿箱！');
           }
           break;
         case '角色数据':
-          this._addSystemMessage('👤 检测到角色数据，正在导入到人物志...');
+          this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> 检测到角色数据，正在导入到人物志...');
           if (typeof window !== 'undefined' && window.NPCManager && window.NPCManager.addNPC) {
             const npc = JSON.parse(code);
             window.NPCManager.addNPC(npc);
-            this._addSystemMessage('✅ 角色已导入！');
+            this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 角色已导入！');
           } else {
             localStorage.setItem('assistant_imported_npc', code);
-            this._addSystemMessage('✅ 角色已保存到草稿箱！');
+            this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 角色已保存到草稿箱！');
           }
           break;
         case 'CSS样式':
-          this._addSystemMessage('🎨 检测到CSS样式，正在应用...');
+          this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> 检测到CSS样式，正在应用...');
           const style = document.createElement('style');
           style.textContent = code;
           document.head.appendChild(style);
-          this._addSystemMessage('✅ CSS样式已应用到当前页面！');
+          this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> CSS样式已应用到当前页面！');
           break;
         default:
-          this._addSystemMessage('⚙️ 检测到JS模块，正在注册...');
+          this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 检测到JS模块，正在注册...');
           const script = document.createElement('script');
           script.textContent = code;
           document.head.appendChild(script);
-          this._addSystemMessage('✅ JS模块已加载到页面！');
+          this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> JS模块已加载到页面！');
       }
     } catch (e) {
-      this._addSystemMessage(`❌ 导入失败：${e.message}\n\n请检查代码格式是否正确。`);
+      this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 导入失败：${e.message}\n\n请检查代码格式是否正确。`);
     }
   },
 
@@ -1925,6 +2125,7 @@ ${text.substring(0, 200)}${text.length > 200 ? '...' : ''}
    */
   toggleDropZone() {
     const dropZone = document.getElementById('assistantDropZone');
+    if (!dropZone) { console.warn('[v7] 元素 #assistantDropZone 未找到'); }
     if (!dropZone) return;
     dropZone.style.display = dropZone.style.display === 'none' ? 'block' : 'none';
   },
@@ -1937,18 +2138,18 @@ ${text.substring(0, 200)}${text.length > 200 ? '...' : ''}
   async handleFileUpload(file) {
     if (!file) return;
 
-    this._addSystemMessage(`📎 正在读取文件：${file.name} (${(file.size / 1024).toFixed(1)}KB)`);
+    this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg> 正在读取文件：${file.name} (${(file.size / 1024).toFixed(1)}KB)`);
 
     try {
       const text = await file.text();
-      this._addSystemMessage(`✅ 文件读取完成！正在分析内容...`);
+      this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 文件读取完成！正在分析内容...`);
       // 将文件内容作为用户消息记录
       this._chatHistory.push({ role: 'user', content: `【上传文件：${file.name}】\n\n${text.substring(0, 500)}${text.length > 500 ? '...' : ''}`, time: Date.now() });
       this.renderChat();
       // 触发导入分析
       await this._importCode(text);
     } catch (e) {
-      this._addSystemMessage(`❌ 文件读取失败：${e.message}`);
+      this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 文件读取失败：${e.message}`);
     }
 
     // 隐藏拖放区
@@ -1963,6 +2164,7 @@ ${text.substring(0, 200)}${text.length > 200 ? '...' : ''}
 
 document.addEventListener('dragover', (e) => {
   const chat = document.getElementById('assistantChat');
+  if (!chat) { console.warn('[v7] 元素 #assistantChat 未找到'); }
   if (chat && chat.contains(e.target)) {
     e.preventDefault();
   }
@@ -1970,6 +2172,7 @@ document.addEventListener('dragover', (e) => {
 
 document.addEventListener('drop', (e) => {
   const chat = document.getElementById('assistantChat');
+  if (!chat) { console.warn('[v7] 元素 #assistantChat 未找到'); }
   if (chat && chat.contains(e.target)) {
     e.preventDefault();
     const files = e.dataTransfer.files;

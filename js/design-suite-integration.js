@@ -7,17 +7,24 @@
  */
 const DesignSuiteIntegration = {
   TEMPLATES: [
-    { id: 'classic_vn', name: '经典视觉小说', desc: '底部对话框 + 中央立绘', preview: '🎮', config: { dialogPosition: 'bottom', portraitPosition: 'center-right', statusBarPosition: 'top-left' } },
+    { id: 'classic_vn', name: '经典视觉小说', desc: '底部对话框 + 中央立绘', preview: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="6" y1="12" x2="10" y2="12"/><line x1="8" y1="10" x2="8" y2="14"/><line x1="15" y1="13" x2="15.01" y2="13"/><line x1="18" y1="11" x2="18.01" y2="11"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg>', config: { dialogPosition: 'bottom', portraitPosition: 'center-right', statusBarPosition: 'top-left' } },
     { id: 'immersive', name: '沉浸式体验', desc: '全屏背景 + 悬浮对话框', preview: '🌄', config: { dialogPosition: 'bottom', portraitPosition: 'full', statusBarPosition: 'top-right' } },
-    { id: 'minimal', name: '极简风格', desc: '隐藏UI + 纯净阅读', preview: '📖', config: { dialogPosition: 'center', portraitPosition: 'center-right', statusBarPosition: 'hidden' } },
-    { id: 'mobile', name: '手机优化', desc: '大按钮 + 触摸友好', preview: '📱', config: { dialogPosition: 'bottom', portraitPosition: 'center-right', statusBarPosition: 'bottom-left' } },
+    { id: 'minimal', name: '极简风格', desc: '隐藏UI + 纯净阅读', preview: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 01-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>', config: { dialogPosition: 'center', portraitPosition: 'center-right', statusBarPosition: 'hidden' } },
+    { id: 'mobile', name: '手机优化', desc: '大按钮 + 触摸友好', preview: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>', config: { dialogPosition: 'bottom', portraitPosition: 'center-right', statusBarPosition: 'bottom-left' } },
     { id: 'retro', name: '复古像素', desc: '像素风UI + 怀旧配色', preview: '👾', config: { dialogPosition: 'bottom', portraitPosition: 'center-right', statusBarPosition: 'top-left' } },
     { id: 'elegant', name: '典雅古风', desc: '卷轴式对话框 + 水墨边框', preview: '🏮', config: { dialogPosition: 'bottom', portraitPosition: 'center-right', statusBarPosition: 'top-right' } }
   ],
 
-  init() { this.renderPage(); },
-  onEnter() { this.renderTemplates(); },
+    // 初始化模块入口
+  init() {
+    // v7: 外部模块依赖检查
+    if (typeof Storage === 'undefined') { console.warn('[v7] Storage模块未加载'); return; }
+    this.renderPage(); },
+    // 页面进入时调用
+  onEnter() {
+    this.renderTemplates(); },
 
+    // 渲染页面主结构
   renderPage() {
     const page = document.getElementById('page-design-suite');
     if (!page) return;
@@ -48,7 +55,7 @@ const DesignSuiteIntegration = {
       </div>
 
       <div class="card">
-        <div class="card-header"><h3>🔧 自定义样式</h3></div>
+        <div class="card-header"><h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg> 自定义样式</h3></div>
         <div class="card-body">
           <div class="form-group"><label>自定义CSS（高级）</label><textarea id="customCSS" rows="6" placeholder="输入自定义CSS样式..."></textarea></div>
           <button class="btn btn-primary" onclick="DesignSuiteIntegration.applyCustomCSS()">应用样式</button>
@@ -109,7 +116,7 @@ const DesignSuiteIntegration = {
     const old = document.getElementById('customColorPreset');
     if (old) old.remove();
     document.head.appendChild(style);
-    Storage.set('customColorPreset', { primary, gold, bg });
+    try { Storage.set('customColorPreset', { primary, gold, bg }); } catch(e) { console.warn('[v7] Storage.set失败:', e); }
     App.toast('配色已应用', 'success');
   },
 
@@ -122,7 +129,7 @@ const DesignSuiteIntegration = {
     const old = document.getElementById('userCustomCSS');
     if (old) old.remove();
     document.head.appendChild(style);
-    Storage.set('userCustomCSS', css);
+    try { Storage.set('userCustomCSS', css); } catch(e) { console.warn('[v7] Storage.set失败:', e); }
     App.toast('自定义样式已应用', 'success');
   },
 

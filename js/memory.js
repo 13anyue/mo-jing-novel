@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * Memory System v3 - Enhanced
+ * Memory System v7 - Enhanced
  * 增强功能：
  * - 对话上下文关联记忆
  * - NPC专属记忆隔离
@@ -55,7 +55,7 @@ const MemorySystem = {
   computeTF(tokens) { const tf = new Map(); for (const t of tokens) tf.set(t, (tf.get(t) || 0) + 1); const tot = tokens.length || 1; for (const [k, v] of tf) tf.set(k, v / tot); return tf; },
   computeIDF(docs) { const df = new Map(); const N = docs.length || 1; for (const dt of docs) { const u = new Set(dt); for (const t of u) df.set(t, (df.get(t) || 0) + 1); } const idf = new Map(); for (const [t, f] of df) idf.set(t, Math.log((N + 1) / (f + 1)) + 1); return idf; },
   buildVector(tf, idf) { const v = new Map(); for (const [t, tfv] of tf) v.set(t, tfv * (idf.get(t) || 1)); return v; },
-  cosSim(v1, v2) { let dp = 0, n1 = 0, n2 = 0; const [sm, lg] = v1.size < v2.size ? [v1, v2] : [v2, v1]; for (const [k, val1] of sm) { const val2 = lg.get(k); if (val2 !== undefined) dp += val1 * val2; } for (const [, v] of v1) n1 += v * v; for (const [, v] of v2) n2 += v * v; n1 = Math.sqrt(n1); n2 = Math.sqrt(n2); if (n1 === 0 || n2 === 0) return 0; return dp / (n1 * n2); },
+  cosSim(v1, v7) { let dp = 0, n1 = 0, n2 = 0; const [sm, lg] = v1.size < v2.size ? [v1, v2] : [v2, v1]; for (const [k, val1] of sm) { const val2 = lg.get(k); if (val2 !== undefined) dp += val1 * val2; } for (const [, v] of v7) n1 += v * v; for (const [, v] of v7) n2 += v * v; n1 = Math.sqrt(n1); n2 = Math.sqrt(n2); if (n1 === 0 || n2 === 0) return 0; return dp / (n1 * n2); },
   cosSimArr(a1, a2) { let dp = 0, n1 = 0, n2 = 0; const len = Math.min(a1.length, a2.length); for (let i = 0; i < len; i++) { dp += a1[i] * a2[i]; n1 += a1[i] * a1[i]; n2 += a2[i] * a2[i]; } n1 = Math.sqrt(n1); n2 = Math.sqrt(n2); if (n1 === 0 || n2 === 0) return 0; return dp / (n1 * n2); },
 
   /* 计算记忆重要性评分 */
@@ -146,14 +146,15 @@ const MemorySystem = {
 
   renderPage() {
     const page = document.getElementById('page-memory');
+    if (!page) { console.warn('[v7] 元素 #page-memory 未找到'); }
     if (!page) return;
     page.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
-      <h2 class="section-title" style="margin-bottom:var(--space-lg);">仿向量记忆 v3</h2>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+      <h2 class="section-title" style="margin-bottom:var(--space-lg);">仿向量记忆 v7</h2>
       <div class="grid grid-3" id="memStats" style="margin-bottom:var(--space-lg);"></div>
 
-      <div class="card" style="margin-bottom:var(--space-lg);">
-        <div class="card-header"><h3>🔍 记忆检索</h3></div>
+      <div class="ez-card" style="margin-bottom:var(--space-lg);">
+        <div class="card-header"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> 记忆检索</h3></div>
         <div class="card-body">
           <div class="form-group"><textarea id="memQuery" placeholder="输入查询内容..."></textarea></div>
           <div class="form-row">
@@ -161,15 +162,15 @@ const MemorySystem = {
             <div class="form-group"><input type="number" id="memTopN" value="5" min="1" max="20" style="width:80px;"></div>
             <div class="form-group"><label style="display:flex;align-items:center;gap:6px;cursor:pointer;"><input type="checkbox" id="memUseNPC" checked style="width:auto;"> NPC隔离</label></div>
           </div>
-          <button class="btn btn-primary" onclick="MemorySystem.doRecall()">🔍 检索</button>
+          <button class="ez-btn btn btn-primary" onclick="MemorySystem.doRecall()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg> 检索</button>
           <label style="display:inline-flex;align-items:center;gap:6px;margin-left:var(--space-md);font-size:13px;color:var(--text-secondary);"><div class="switch ${APISettings.getConfig().embEnabled?'on':''}" onclick="this.classList.toggle('on');MemorySystem._useEmb=this.classList.contains('on')"></div>Embedding</label>
         </div>
       </div>
 
       <div id="memResults" style="margin-bottom:var(--space-lg);"></div>
 
-      <div class="card" style="margin-bottom:var(--space-lg);">
-        <div class="card-header"><h3>➕ 添加记忆</h3></div>
+      <div class="ez-card" style="margin-bottom:var(--space-lg);">
+        <div class="card-header"><h3><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加记忆</h3></div>
         <div class="card-body">
           <div class="form-group"><textarea id="memAddContent" placeholder="记忆内容..."></textarea></div>
           <div class="form-row">
@@ -177,13 +178,13 @@ const MemorySystem = {
             <div class="form-group"><input type="text" id="memAddScene" placeholder="场景"></div>
             <div class="form-group"><input type="text" id="memAddTags" placeholder="标签（逗号分隔）"></div>
           </div>
-          <button class="btn btn-primary" onclick="MemorySystem.addFromForm()">添加</button>
-          <button class="btn btn-gold" style="margin-left:8px;" onclick="MemorySystem.aiCategorize()">🤖 AI分类</button>
-          <button class="btn btn-secondary" style="margin-left:8px;" onclick="MemorySystem.batchImportPrompt()">📥 批量导入</button>
+          <button class="ez-btn btn btn-primary" onclick="MemorySystem.addFromForm()">添加</button>
+          <button class="ez-btn btn btn-gold" style="margin-left:8px;" onclick="MemorySystem.aiCategorize()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> AI分类</button>
+          <button class="ez-btn btn btn-secondary" style="margin-left:8px;" onclick="MemorySystem.batchImportPrompt()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 批量导入</button>
         </div>
       </div>
 
-      <div class="card" style="margin-bottom:var(--space-lg);">
+      <div class="ez-card" style="margin-bottom:var(--space-lg);">
         <div class="card-header"><h3>⚙️ 配置</h3></div>
         <div class="card-body" id="memConfigArea"></div>
       </div>
@@ -203,6 +204,7 @@ const MemorySystem = {
   renderConfig() {
     const c = this.getConfig();
     const area = document.getElementById('memConfigArea');
+    if (!area) { console.warn('[v7] 元素 #memConfigArea 未找到'); }
     if (!area) return;
     area.innerHTML = `
       <div class="form-group"><label>总结提示词</label><textarea id="memSumPrompt" rows="2">${c.summaryPrompt}</textarea></div>
@@ -217,8 +219,8 @@ const MemorySystem = {
         <div class="form-group"><label>衰减天数</label><input type="number" id="memDecayDays" value="${c.decayDays}" min="1" max="365"></div>
         <div class="form-group"><label>重要性阈值</label><input type="number" id="memImpThreshold" value="${c.importanceThreshold}" min="0" max="1" step="0.1"></div>
       </div>
-      <button class="btn btn-primary" onclick="MemorySystem.saveConfigFromForm()">保存配置</button>
-      <button class="btn btn-secondary" style="margin-left:8px;" onclick="MemorySystem.manageCategories()">管理分类</button>
+      <button class="ez-btn btn btn-primary" onclick="MemorySystem.saveConfigFromForm()">保存配置</button>
+      <button class="ez-btn btn btn-secondary" style="margin-left:8px;" onclick="MemorySystem.manageCategories()">管理分类</button>
     `;
   },
 
@@ -228,14 +230,14 @@ const MemorySystem = {
       <div class="form-row" style="margin-bottom:8px;">
         <input type="text" value="${c.name}" id="cat_name_${i}" style="flex:1;">
         <input type="color" value="${c.color}" id="cat_color_${i}" style="width:60px;">
-        <button class="btn btn-sm btn-danger" onclick="MemorySystem.deleteCategory('${c.id}')">删除</button>
+        <button class="ez-btn btn btn-sm btn-danger" onclick="MemorySystem.deleteCategory('${c.id}')">删除</button>
       </div>
     `).join('') + `
       <div style="display:flex;gap:8px;margin-top:12px;">
-        <button class="btn btn-sm btn-primary" onclick="MemorySystem.addCategory()">➕ 添加</button>
-        <button class="btn btn-sm btn-secondary" onclick="MemorySystem.saveCategoriesFromForm()">保存</button>
+        <button class="ez-btn btn btn-sm btn-primary" onclick="MemorySystem.addCategory()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 添加</button>
+        <button class="ez-btn btn btn-sm btn-secondary" onclick="MemorySystem.saveCategoriesFromForm()">保存</button>
       </div>`;
-    App.showModal('📂 分类管理', content);
+    App.showModal('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg> 分类管理', content);
   },
 
   addCategory() {
@@ -286,12 +288,13 @@ const MemorySystem = {
     const topN = parseInt(document.getElementById('memTopN').value) || 5;
     const useEmb = this._useEmb ?? APISettings.getConfig().embEnabled;
     const r = document.getElementById('memResults');
+    if (!r) { console.warn('[v7] 元素 #memResults 未找到'); }
     r.innerHTML = '<p style="color:var(--text-muted);">检索中...</p>';
     const res = await this.recall(q, { category: cat || null, topN, useEmb });
-    if (res.length === 0) { r.innerHTML = '<div class="empty-state"><p>未找到相关记忆</p></div>'; return; }
+    if (res.length === 0) { r.innerHTML = '<div class="ez-empty"><p>未找到相关记忆</p></div>'; return; }
     r.innerHTML = '<h4 style="margin-bottom:8px;">检索结果：</h4>' + res.map(x => {
       const m = x.memory; const cat = this.getCategories().find(c => c.id === m.category);
-      return `<div class="card" style="margin-bottom:var(--space-sm);border-left:3px solid ${cat?.color || 'var(--border-color)'};">
+      return `<div class="ez-card" style="margin-bottom:var(--space-sm);border-left:3px solid ${cat?.color || 'var(--border-color)'};">
         <div class="card-body">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
             <span style="font-size:12px;color:var(--text-muted);">${cat?.name || ''} · ${m.scene || '无场景'}</span>
@@ -346,32 +349,34 @@ const MemorySystem = {
 
   renderStats() {
     const c = document.getElementById('memStats');
+    if (!c) { console.warn('[v7] 元素 #memStats 未找到'); }
     if (!c) return;
     Storage.getMemories().then(mems => {
       const cfg = APISettings.getConfig();
       c.innerHTML = `
-        <div class="card"><div class="card-body" style="text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--color-primary);">${mems.length}</div><div style="font-size:12px;color:var(--text-muted);">记忆数</div></div></div>
-        <div class="card"><div class="card-body" style="text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--color-gold);">${cfg.embEnabled ? '🧠' : '📊'}</div><div style="font-size:12px;color:var(--text-muted);">${cfg.embEnabled ? 'Embedding' : 'TF-IDF'}</div></div></div>
-        <div class="card"><div class="card-body" style="text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--color-accent);">${this.getCategories().length}</div><div style="font-size:12px;color:var(--text-muted);">分类数</div></div></div>
+        <div class="ez-card"><div class="card-body" style="text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--color-primary);">${mems.length}</div><div style="font-size:12px;color:var(--text-muted);">记忆数</div></div></div>
+        <div class="ez-card"><div class="card-body" style="text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--color-gold);">${cfg.embEnabled ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12L2.5 8.5"/><path d="M12 12v10"/></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>'}</div><div style="font-size:12px;color:var(--text-muted);">${cfg.embEnabled ? 'Embedding' : 'TF-IDF'}</div></div></div>
+        <div class="ez-card"><div class="card-body" style="text-align:center;"><div style="font-size:28px;font-weight:700;color:var(--color-accent);">${this.getCategories().length}</div><div style="font-size:12px;color:var(--text-muted);">分类数</div></div></div>
       `;
     });
   },
 
   async renderList() {
     const c = document.getElementById('memList');
+    if (!c) { console.warn('[v7] 元素 #memList 未找到'); }
     if (!c) return;
     const mems = await Storage.getMemories();
     mems.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-    if (mems.length === 0) { c.innerHTML = '<div class="empty-state"><div class="empty-icon">🧠</div><p>暂无记忆</p></div>'; return; }
+    if (mems.length === 0) { c.innerHTML = '<div class="ez-empty"><div class="ez-empty-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 12L2.5 8.5"/><path d="M12 12v10"/></svg></div><p>暂无记忆</p></div>'; return; }
     c.innerHTML = mems.map(m => {
       const cat = this.getCategories().find(c => c.id === m.category);
       return `<div class="list-item">
-        <span style="font-size:20px;">${cat ? '●' : '📄'}</span>
+        <span style="font-size:20px;">${cat ? '●' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>'}</span>
         <div class="list-info">
           <h4>${(m.content || '').substring(0, 50)}${m.content?.length > 50 ? '...' : ''}</h4>
           <p><span style="color:${cat?.color || 'var(--text-muted)'};">${cat?.name || '未分类'}</span> · ${m.scene || '无场景'} · ${m.tokens?.length || 0}词 ${m.importance ? `· 重要度${(m.importance*100).toFixed(0)}%` : ''}</p>
         </div>
-        <button class="btn btn-sm btn-danger" onclick="MemorySystem.deleteMem('${m.id}')">🗑️</button>
+        <button class="ez-btn btn btn-sm btn-danger" onclick="MemorySystem.deleteMem('${m.id}')">🗑️</button>
       </div>`;
     }).join('');
   },

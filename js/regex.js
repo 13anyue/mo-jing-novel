@@ -1,6 +1,6 @@
 /**
  * =========================================================
- * RegexEngine v2 — 专业文本处理工具
+ * RegexEngine v7 — 专业文本处理工具
  * 功能：正则模板库 / 八股文处理 / 可视化测试 / 批量规则链 / 导入导出
  * 存储键：regex_engine_v16
  * 配色：古风墨境（暖羊皮纸底色 + 金色 + 墨色）
@@ -325,7 +325,7 @@ const RegexEngine = {
       try {
         regex = new RegExp(rule.pattern, rule.flags || 'g');
       } catch (e) {
-        logs.push(`❌ [${rule.name}] 正则语法错误: ${e.message}`);
+        logs.push(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> [${rule.name}] 正则语法错误: ${e.message}`);
         continue;
       }
       const before = output;
@@ -339,7 +339,7 @@ const RegexEngine = {
       totalMatches += count;
       totalReplacements += count;
       const diff = before.length - output.length;
-      logs.push(`✅ [${rule.name}] 匹配 ${count} 处，字符变化 ${diff >= 0 ? '-' : '+'}${Math.abs(diff)}`);
+      logs.push(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> [${rule.name}] 匹配 ${count} 处，字符变化 ${diff >= 0 ? '-' : '+'}${Math.abs(diff)}`);
     }
     return {
       output,
@@ -530,16 +530,17 @@ const RegexEngine = {
   /** 渲染整页结构 */
   renderPage() {
     const page = document.getElementById('page-regex');
+    if (!page) { console.warn('[v7] 元素 #page-regex 未找到'); }
     if (!page) return;
     page.innerHTML = `
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 14px;"><button class="btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:0 14px;"><button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
       <div id="regex-page" style="display:flex;flex-direction:column;height:100%;background:#F5E6D3;color:#2C1810;font-family:'Noto Serif SC','Microsoft YaHei',serif;">
         <!-- 顶部工具栏 -->
         <div id="regex-toolbar" style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid #C9A227;background:#F5E6D3;flex-shrink:0;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="RegexEngine.openEditor()" style="background:#C9A227;color:#2C1810;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-weight:bold;">➕ 新建规则</button>
-          <button class="btn btn-secondary" onclick="RegexEngine.openAIGenModal()" style="background:#2C1810;color:#F5E6D3;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">✨ AI生成规则</button>
-          <button class="btn btn-secondary" onclick="RegexEngine.triggerImport()" style="background:#8B7355;color:#F5E6D3;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">📥 导入规则</button>
-          <button class="btn btn-secondary" onclick="RegexEngine.exportRules()" style="background:#8B7355;color:#F5E6D3;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;">📤 导出规则</button>
+          <button class="ez-btn btn btn-primary" onclick="RegexEngine.openEditor()" style="background:#C9A227;color:#2C1810;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;font-weight:bold;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> 新建规则</button>
+          <button class="ez-btn btn btn-secondary" onclick="RegexEngine.openAIGenModal()" style="background:#2C1810;color:#F5E6D3;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg> AI生成规则</button>
+          <button class="ez-btn btn btn-secondary" onclick="RegexEngine.triggerImport()" style="background:#8B7355;color:#F5E6D3;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导入规则</button>
+          <button class="ez-btn btn btn-secondary" onclick="RegexEngine.exportRules()" style="background:#8B7355;color:#F5E6D3;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 导出规则</button>
           <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
             <span style="font-size:13px;color:#8B7355;">八股文处理：</span>
             <select onchange="RegexEngine.runBaguProcess(this.value);this.value='';" style="background:#F5E6D3;color:#2C1810;border:1px solid #C9A227;border-radius:4px;padding:4px 8px;font-size:13px;">
@@ -557,8 +558,8 @@ const RegexEngine = {
           <!-- 左侧边栏：规则列表 -->
           <div id="regex-sidebar" style="width:260px;flex-shrink:0;border-right:1px solid #C9A227;background:#F5E6D3;overflow-y:auto;transition:width 0.3s;">
             <div style="padding:10px 12px;border-bottom:1px solid #C9A227;display:flex;justify-content:space-between;align-items:center;">
-              <strong style="font-size:14px;">📜 规则列表</strong>
-              <button onclick="RegexEngine.toggleSidebar()" style="background:none;border:none;cursor:pointer;color:#2C1810;font-size:16px;">☰</button>
+              <strong style="font-size:14px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> 规则列表</strong>
+              <button onclick="RegexEngine.toggleSidebar()" style="background:none;border:none;cursor:pointer;color:#2C1810;font-size:16px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></button>
             </div>
             <div id="regex-rule-list" style="padding:8px;"></div>
           </div>
@@ -567,7 +568,7 @@ const RegexEngine = {
             <div style="flex:1;display:flex;overflow:hidden;">
               <!-- 输入区 -->
               <div style="flex:1;display:flex;flex-direction:column;border-right:1px solid #C9A227;min-width:220px;">
-                <div style="padding:8px 12px;border-bottom:1px solid #C9A227;font-weight:bold;font-size:14px;background:#F5E6D3;">📝 输入文本</div>
+                <div style="padding:8px 12px;border-bottom:1px solid #C9A227;font-weight:bold;font-size:14px;background:#F5E6D3;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> 输入文本</div>
                 <textarea id="rx-input" placeholder="在此粘贴大段文本…" oninput="RegexEngine.onTestInput()"
                   style="flex:1;border:none;resize:none;padding:12px;background:#F5E6D3;color:#2C1810;font-size:14px;line-height:1.7;outline:none;"></textarea>
               </div>
@@ -605,7 +606,7 @@ const RegexEngine = {
               <!-- 输出区 -->
               <div style="flex:1;display:flex;flex-direction:column;min-width:220px;">
                 <div style="padding:8px 12px;border-bottom:1px solid #C9A227;font-weight:bold;font-size:14px;background:#F5E6D3;display:flex;justify-content:space-between;align-items:center;">
-                  <span>📤 处理结果</span>
+                  <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 处理结果</span>
                   <div style="display:flex;gap:6px;">
                     <button onclick="RegexEngine.copyOutput()" style="font-size:12px;background:#C9A227;color:#2C1810;border:none;padding:3px 8px;border-radius:3px;cursor:pointer;">复制</button>
                     <button onclick="RegexEngine.exportOutput()" style="font-size:12px;background:#8B7355;color:#F5E6D3;border:none;padding:3px 8px;border-radius:3px;cursor:pointer;">导出txt</button>
@@ -624,7 +625,7 @@ const RegexEngine = {
             <!-- 底部规则链面板 -->
             <div id="regex-chain-panel" style="flex-shrink:0;max-height:160px;overflow-y:auto;border-top:1px solid #C9A227;background:#F5E6D3;padding:10px 14px;">
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-                <strong style="font-size:14px;">🔗 规则链（按顺序执行）</strong>
+                <strong style="font-size:14px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg> 规则链（按顺序执行）</strong>
                 <button onclick="RegexEngine.runChain()" style="background:#C9A227;color:#2C1810;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;font-weight:bold;font-size:13px;">▶ 一键执行规则链</button>
               </div>
               <div id="regex-chain-list" style="font-size:13px;"></div>
@@ -650,7 +651,7 @@ const RegexEngine = {
       <div class="modal-overlay" id="regexAIGenModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
         <div style="background:#F5E6D3;border:1px solid #C9A227;border-radius:6px;width:480px;max-width:90vw;box-shadow:0 4px 16px rgba(0,0,0,0.3);">
           <div style="padding:12px 16px;border-bottom:1px solid #C9A227;display:flex;justify-content:space-between;align-items:center;">
-            <h3 style="margin:0;font-size:16px;color:#2C1810;">✨ AI 生成正则</h3>
+            <h3 style="margin:0;font-size:16px;color:#2C1810;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg> AI 生成正则</h3>
             <button onclick="RegexEngine.closeModal('regexAIGenModal')" style="background:none;border:none;cursor:pointer;font-size:18px;color:#2C1810;">✕</button>
           </div>
           <div style="padding:16px;">
@@ -673,6 +674,7 @@ const RegexEngine = {
   /** 渲染规则列表到侧边栏 */
   renderSidebar() {
     const container = document.getElementById('regex-rule-list');
+    if (!container) { console.warn('[v7] 元素 #regex-rule-list 未找到'); }
     if (!container) return;
     const rules = this.getRules();
     if (rules.length === 0) {
@@ -718,6 +720,7 @@ const RegexEngine = {
   /** 折叠/展开侧边栏 */
   toggleSidebar() {
     const sb = document.getElementById('regex-sidebar');
+    if (!sb) { console.warn('[v7] 元素 #regex-sidebar 未找到'); }
     if (!sb) return;
     this.state.sidebarCollapsed = !this.state.sidebarCollapsed;
     sb.style.width = this.state.sidebarCollapsed ? '40px' : '260px';
@@ -732,6 +735,7 @@ const RegexEngine = {
   /** 渲染底部规则链状态 */
   renderChainPanel() {
     const container = document.getElementById('regex-chain-list');
+    if (!container) { console.warn('[v7] 元素 #regex-chain-list 未找到'); }
     if (!container) return;
     const enabled = this.getRules().filter(r => r.enabled);
     if (enabled.length === 0) {
@@ -834,6 +838,7 @@ const RegexEngine = {
   /** 渲染 AI 生成结果 */
   renderAIGenResult() {
     const container = document.getElementById('ai-gen-result');
+    if (!container) { console.warn('[v7] 元素 #ai-gen-result 未找到'); }
     const gen = this.state.aiGenerated;
     if (!gen || !container) return;
     container.innerHTML = `
@@ -877,8 +882,11 @@ const RegexEngine = {
                   (document.getElementById('rx-flag-i').checked ? 'i' : '') +
                   (document.getElementById('rx-flag-m').checked ? 'm' : '');
     const preview = document.getElementById('rx-preview');
+    if (!preview) { console.warn('[v7] 元素 #rx-preview 未找到'); }
     const output = document.getElementById('rx-output');
+    if (!output) { console.warn('[v7] 元素 #rx-output 未找到'); }
     const stats = document.getElementById('rx-stats');
+    if (!stats) { console.warn('[v7] 元素 #rx-stats 未找到'); }
     if (!pattern) {
       preview.innerHTML = '<span style="color:#8B7355;opacity:0.6;">请输入正则表达式以预览匹配结果…</span>';
       output.value = text;
@@ -903,6 +911,7 @@ const RegexEngine = {
   /** 复制输出 */
   copyOutput() {
     const out = document.getElementById('rx-output');
+    if (!out) { console.warn('[v7] 元素 #rx-output 未找到'); }
     if (!out || !out.value) { this.toast('没有可复制的内容', 'error'); return; }
     this.copyToClipboard(out.value);
   },
@@ -910,6 +919,7 @@ const RegexEngine = {
   /** 导出输出为 txt */
   exportOutput() {
     const out = document.getElementById('rx-output');
+    if (!out) { console.warn('[v7] 元素 #rx-output 未找到'); }
     if (!out || !out.value) { this.toast('没有可导出的内容', 'error'); return; }
     this.exportText(out.value, 'regex_output.txt');
   },
@@ -931,6 +941,7 @@ const RegexEngine = {
   /** 八股文快捷处理 */
   runBaguProcess(type) {
     const input = document.getElementById('rx-input');
+    if (!input) { console.warn('[v7] 元素 #rx-input 未找到'); }
     if (!input || !input.value) { this.toast('请输入文本', 'error'); return; }
     let text = input.value;
     switch (type) {

@@ -154,8 +154,39 @@ const BackgroundLibrary = {
     const cats = this.getCategories();
     const catOptions = Object.entries(cats).map(([id, c]) => `<option value="${id}">${c.name}</option>`).join('');
     body.innerHTML = `
+      <!-- 批量上传入口 -->
+      <div style="display:flex;gap:8px;margin-bottom:var(--space-md);flex-wrap:wrap;">
+        <button class="btn btn-sm btn-gold" onclick="BackgroundLibrary.switchUploadMode('single')">单张</button>
+        <button class="btn btn-sm btn-secondary" onclick="BackgroundLibrary.switchUploadMode('album')">相册批量</button>
+        <button class="btn btn-sm btn-secondary" onclick="BackgroundLibrary.switchUploadMode('url')">URL批量</button>
+      </div>
+      <div id="bgUploadModeArea">
+        ${this._renderSingleUpload(catOptions)}
+      </div>
+    `;
+    this._pending = null;
+    this._batchPending = [];
+    App.openModal('bgUploadModal');
+  },
+
+  switchUploadMode(mode) {
+    const area = document.getElementById('bgUploadModeArea');
+    const cats = this.getCategories();
+    const catOptions = Object.entries(cats).map(([id, c]) => `<option value="${id}">${c.name}</option>`).join('');
+    if (mode === 'single') {
+      area.innerHTML = this._renderSingleUpload(catOptions);
+    } else if (mode === 'album') {
+      area.innerHTML = this._renderAlbumUpload(catOptions);
+    } else if (mode === 'url') {
+      area.innerHTML = this._renderUrlUpload(catOptions);
+    }
+  },
+
+  _renderSingleUpload(catOptions) {
+    return `
       <div class="upload-zone" id="bgDropZone" onclick="document.getElementById('bgFileInput').click()">
-        <div class="upload-icon">🖼️</div><p>点击或拖拽上传</p><p style="font-size:12px;color:var(--text-muted);">支持 JPG/PNG/WebP</p>
+        <svg width="48" height="48" style="opacity:0.5;margin-bottom:8px;"><use href="#icon-bg"/></svg>
+        <p>点击或拖拽上传</p><p style="font-size:12px;color:var(--text-muted);">支持 JPG/PNG/WebP</p>
         <input type="file" id="bgFileInput" accept="image/*" style="display:none;" onchange="BackgroundLibrary.handleFile(event)">
       </div>
       <div id="bgPreview" style="margin-top:var(--space-md);"></div>
@@ -167,9 +198,109 @@ const BackgroundLibrary = {
         <button class="btn btn-primary" onclick="BackgroundLibrary.saveUpload()">保存</button>
       </div>
     `;
-    this.updateSubSelect();
-    this._pending = null;
-    App.openModal('bgUploadModal');
+  },
+
+  _renderAlbumUpload(catOptions) {
+    return `
+      <div style="border:2px dashed var(--border-gold);border-radius:var(--border-radius);padding:var(--space-lg);text-align:center;margin-bottom:var(--space-md);">
+        <svg width="48" height="48" style="opacity:0.5;margin-bottom:8px;"><use href="#icon-import"/></svg>
+        <p>选择多张图片批量上传</p>
+        <input type="file" id="bgBatchInput" accept="image/*" multiple style="display:none;" onchange="BackgroundLibrary.handleBatchFiles(event)">
+        <button class="btn btn-primary" style="margin-top:8px;" onclick="document.getElementById('bgBatchInput').click()">选择相册</button>
+      </div>
+      <div id="bgBatchPreview" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:var(--space-md);max-height:240px;overflow-y:auto;"></div>
+      <div class="form-group"><label>分类</label><select id="bgBatchCategory">${catOptions}</select></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:var(--space-md);">
+        <button class="btn btn-secondary" onclick="App.closeModal('bgUploadModal')">取消</button>
+        <button class="btn btn-primary" onclick="BackgroundLibrary.saveBatchUpload()">保存全部 (${this._batchPending?.length || 0})</button>
+      </div>
+    `;
+  },
+
+  _renderUrlUpload(catOptions) {
+    return `
+      <div class="form-group"><label>图片URL（每行一个）</label><textarea id="bgUrlList" rows="6" placeholder="https://example.com/bg1.jpg\nhttps://example.com/bg2.jpg\n支持 http/https 直链"></textarea></div>
+      <div class="form-group"><label>分类</label><select id="bgUrlCategory">${catOptions}</select></div>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:var(--space-md);">
+        <button class="btn btn-secondary" onclick="App.closeModal('bgUploadModal')">取消</button>
+        <button class="btn btn-primary" onclick="BackgroundLibrary.saveUrlBatch()">开始下载</button>
+      </div>
+      <div id="bgUrlProgress" style="margin-top:8px;"></div>
+    `;
+  },
+
+  async handleBatchFiles(e) {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    this._batchPending = [];
+    const preview = document.getElementById('bgBatchPreview');
+    let html = '';
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      try {
+        const data = await Storage.fileToDataUrl(f);
+        this._batchPending.push({ data, name: f.name, file: f });
+        html += `<div style="position:relative;border-radius:var(--border-radius-sm);overflow:hidden;border:1px solid var(--border-color);">
+          <img src="${data}" style="width:100%;height:80px;object-fit:cover;">
+          <div style="position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,0.6);color:#fff;font-size:10px;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${f.name}</div>
+        </div>`;
+      } catch (err) { console.error(err); }
+    }
+    preview.innerHTML = html || '<p style="color:var(--text-muted);">无有效图片</p>';
+    const btn = document.querySelector('[onclick*="saveBatchUpload"]');
+    if (btn) btn.textContent = `保存全部 (${this._batchPending.length})`;
+  },
+
+  async saveBatchUpload() {
+    if (!this._batchPending?.length) { App.toast('请先选择图片', 'error'); return; }
+    const cat = document.getElementById('bgBatchCategory')?.value || '未分类';
+    let success = 0;
+    for (const item of this._batchPending) {
+      try {
+        const id = 'bg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+        await Storage.saveImage(id, 'background', null, item.name, item.data, { category: cat });
+        const bgs = this.getBackgrounds();
+        bgs.push({ id, name: item.name.replace(/\.[^.]+$/, ''), category: cat, subcategory: '', addedAt: Date.now() });
+        this.saveBackgrounds(bgs);
+        success++;
+      } catch (e) { console.error('Batch save error:', e); }
+    }
+    App.toast(`批量上传完成：${success}/${this._batchPending.length}`, success > 0 ? 'success' : 'error');
+    this._batchPending = [];
+    this.renderGrid();
+    App.closeModal('bgUploadModal');
+  },
+
+  async saveUrlBatch() {
+    const textarea = document.getElementById('bgUrlList');
+    const urls = textarea.value.split('\n').map(u => u.trim()).filter(u => /^https?:\/\/.+/.test(u));
+    if (!urls.length) { App.toast('请输入有效的图片URL', 'error'); return; }
+    const cat = document.getElementById('bgUrlCategory')?.value || '未分类';
+    const progress = document.getElementById('bgUrlProgress');
+    progress.innerHTML = `<div class="progress-bar"><div class="progress-fill" style="width:0%"></div></div><p style="font-size:12px;color:var(--text-muted);margin-top:4px;">下载中 0/${urls.length}...</p>`;
+    let success = 0;
+    for (let i = 0; i < urls.length; i++) {
+      try {
+        const response = await fetch(urls[i], { mode: 'cors' });
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        const blob = await response.blob();
+        if (!blob.type.startsWith('image/')) throw new Error('Not image');
+        const ext = blob.type.split('/')[1] || 'jpg';
+        const file = new File([blob], `url_bg_${i}.${ext}`, { type: blob.type });
+        const data = await Storage.fileToDataUrl(file);
+        const id = 'bg_url_' + Date.now() + '_' + i;
+        await Storage.saveImage(id, 'background', null, file.name, data, { category: cat, sourceUrl: urls[i] });
+        const bgs = this.getBackgrounds();
+        bgs.push({ id, name: `URL_${i+1}`, category: cat, subcategory: '', addedAt: Date.now(), sourceUrl: urls[i] });
+        this.saveBackgrounds(bgs);
+        success++;
+      } catch (e) { console.error(`URL ${i} failed:`, e); }
+      const pct = Math.round(((i + 1) / urls.length) * 100);
+      progress.innerHTML = `<div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><p style="font-size:12px;color:var(--text-muted);margin-top:4px;">下载中 ${i+1}/${urls.length}... 成功 ${success} 个</p>`;
+    }
+    App.toast(`URL下载完成：${success}/${urls.length}`, success > 0 ? 'success' : 'error');
+    this.renderGrid();
+    if (success === urls.length) App.closeModal('bgUploadModal');
   },
 
   updateSubSelect() {
