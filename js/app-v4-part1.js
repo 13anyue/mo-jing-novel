@@ -139,7 +139,8 @@ const App = {
     { iconSvg: 'icon-npc', label: '家族', page: 'family' },
     { iconSvg: 'icon-map', label: '政治', page: 'political' },
     { iconSvg: 'icon-relations', label: '密谋', page: 'conspiracy' },
-    { iconSvg: 'icon-ui', label: '按钮自定义', page: 'button-customizer' }
+    { iconSvg: 'icon-ui', label: '按钮自定义', page: 'button-customizer' },
+    { iconSvg: 'icon-map', label: '剧情分支树', page: 'storytree' }
   ],
 
   _modalStack: [],
@@ -356,91 +357,14 @@ const App = {
       } catch (e) { this.toast('导入失败: ' + e.message, 'error'); }
     };
     input.click();
-  },
-
-  /* ===== v8: 核心路由与模块管理 ===== */
+  /** ===== v8: 核心路由与模块管理（补充缺失函数） ===== */
+  /** 初始化所有模块 */
   initModules() {
     if (window.StoryTreeEditor && typeof StoryTreeEditor.init === 'function') {
       try { StoryTreeEditor.init(); } catch(e) { console.warn('[App] StoryTreeEditor init failed:', e); }
     }
-    const mods = [
-      { page:'home', mod:window.HomePage, init:'init' },
-      { page:'runtime', mod:window.NovelRuntime, init:'init' },
-      { page:'api', mod:window.APISettings, init:'init' },
-      { page:'npc', mod:window.NPCManager, init:'init' },
-      { page:'background', mod:window.BackgroundLibrary, init:'init' },
-      { page:'music', mod:window.MusicManager, init:'init' },
-      { page:'map', mod:window.MapManager, init:'init' },
-      { page:'status', mod:window.StatusBar, init:'init' },
-      { page:'prompts', mod:window.PromptManager, init:'init' },
-      { page:'memory', mod:window.MemorySystem, init:'init' },
-      { page:'presets', mod:window.PresetManager, init:'init' },
-      { page:'regex', mod:window.RegexEngine, init:'init' },
-      { page:'worldbook', mod:window.WorldbookManager, init:'init' },
-      { page:'cg-gallery', mod:window.CGGallery, init:'init' },
-      { page:'storytree', mod:window.StoryTreeEditor, init:'init' }
-    ];
-    mods.forEach(m=>{ if(m.mod&&typeof m.mod[m.init]==='function') this.registerPageCallback(m.page,()=>m.mod[m.init]()); });
-  },
-
-  registerPageCallback(pageId, onEnterFn) { this.callbacks[pageId]={onEnter:onEnterFn}; },
-
-  navigate(pageId) { location.hash=pageId; this.handleRoute(); },
-
-  handleRoute() {
-    const pageId=location.hash.replace('#','')||'home';
-    document.querySelectorAll('.page-view').forEach(p=>{p.classList.remove('active');p.style.display='none';});
-    const target=document.getElementById('page-'+pageId);
-    if(target){target.style.display='block';target.classList.add('active');}
-    const cb=this.callbacks[pageId];
-    if(cb&&typeof cb.onEnter==='function'){try{cb.onEnter();}catch(e){console.warn('[App] Page '+pageId+' onEnter error:',e);}}
-    document.getElementById('sidebar')?.classList.remove('open');
-    document.getElementById('sidebarBackdrop')?.classList.remove('show');
-    const navItem=this.NAV_ITEMS.find(n=>n.page===pageId);
-    if(navItem){const t=document.getElementById('pageTitle');if(t)t.textContent=navItem.label;}
-    document.getElementById('contentArea')?.scrollTo(0,0);
-  },
-
-  renderTopBar() {
-    const bar=document.getElementById('topBar'); if(!bar)return;
-    bar.innerHTML=`<div style="display:flex;align-items:center;gap:12px;"><button class="btn-icon" id="sidebarToggle" style="display:none;" onclick="document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebarBackdrop').classList.toggle('show');"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></button><span id="pageTitle" style="font-family:var(--font-display);font-size:18px;color:var(--color-primary-dark);">首页</span></div><div style="display:flex;align-items:center;gap:8px;"><button class="btn-icon" id="themeToggle" onclick="App.toggleTheme()" title="切换主题"><svg width="18" height="18" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#C9A227" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="#C9A227"/></svg></button></div>`;
-    if(window.innerWidth<768){const t=document.getElementById('sidebarToggle');if(t)t.style.display='block';}
-  },
-
-  renderBottomNav() {},
-
-  renderSidebar() {
-    const nav=document.getElementById('sidebarNav'); if(!nav)return;
-    nav.innerHTML=this.NAV_ITEMS.map(item=>`<a href="#${item.page}" class="nav-item" data-page="${item.page}" onclick="App.navigate('${item.page}');return false;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><use href="#${item.iconSvg}"/></svg><span>${item.label}</span></a>`).join('');
-  },
-
-  bindEvents() {
-    const bd=document.getElementById('sidebarBackdrop');
-    if(bd){bd.addEventListener('click',()=>{document.getElementById('sidebar')?.classList.remove('open');bd.classList.remove('show');});}
-    document.addEventListener('keydown',e=>{if(e.key==='Escape')this.closeModal();});
-  },
-
-  loadCustomNavItems() {
-    try{const c=Storage.get('customNavItems',[]);if(Array.isArray(c)&&c.length>0)this.NAV_ITEMS=[...this.NAV_ITEMS,...c];}
-    catch(e){console.warn('[App] load custom nav failed:',e);}
-  }
-};
-
-// DOM ready
-document.addEventListener('DOMContentLoaded', () => {
-  let savedMask = null;
-  let gameLaunched = false;
-  try { savedMask = Storage.get('userMask', null); } catch(e) { console.warn(e); }
-  try { gameLaunched = Storage.get('gameLaunched', false); } catch(e) { console.warn(e); }
-  if (savedMask && gameLaunched) {
-    const launcher = document.getElementById('gameLauncher');
-    if (launcher) launcher.classList.add('hidden');
-    const mainApp = document.getElementById('mainApp');
-    if (mainApp) mainApp.style.display = 'flex';
-    App.init();
-  } else {
-    if (window.Launcher && typeof Launcher.init === 'function') {
-      try { Launcher.init(); } catch(e) { console.warn(e); }
-    }
-  }
-});
+    const modules = [
+      { page: 'home',        mod: window.HomePage,         init: 'init' },
+      { page: 'runtime',     mod: window.NovelRuntime,     init: 'init' },
+      { page: 'api',         mod: window.APISettings,       init: 'init' },
+      { page: 'npc',         mod: window.NPCManager,         init: 'init' },
