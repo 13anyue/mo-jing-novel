@@ -424,14 +424,14 @@ const HomePage = {
   },
 
   /** =========================================================
-   *  底部功能导航：NPC/衣橱/商城/任务/成就/图鉴/信件/背包
+   *  底部功能导航：随从/衣橱/商城/任务/成就/图鉴/信件/背包
    * ========================================================= */
   _renderBottomNav() {
     // 导航项配置：[图标路径d, 标签文字, 跳转页面]
     const navItems = [
       {
         icon: '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
-        label: 'NPC',
+        label: '随从',
         page: 'npc'
       },
       {
@@ -458,11 +458,6 @@ const HomePage = {
         icon: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
         label: '图鉴',
         page: 'archive'
-      },
-      {
-        icon: '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>',
-        label: '情缘',
-        page: 'affection'
       },
       {
         icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
@@ -502,7 +497,7 @@ const HomePage = {
       /* 静默失败，返回默认值 */
     }
     return defaultValue;
-  },
+  }
   /** 回到页面顶部 */
   scrollToTop() {
     const content = document.querySelector('.page-frame-content') || document.getElementById('page-home');

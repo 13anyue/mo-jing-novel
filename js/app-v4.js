@@ -422,8 +422,6 @@ App.initModules = function() {
     'chapter-editor': 'ChapterEditor', 'text-novel': 'TextNovel',
     'world-notes': 'WorldNotes', 'scene': 'SceneSystem', 'npc-behavior': 'NPCBehavior',
     'code-patcher': 'CodePatcher',
-    // NPC 好感度事件链
-    'affection': 'NPCAffection',
     // 补充缺失的页面映射
     'world-selector': 'WorldSelector', 'hero': 'HeroSystem',
     'import': 'ImportManager', 'backup': 'BackupManager',
