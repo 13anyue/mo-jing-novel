@@ -88,100 +88,105 @@
     'beautify':    { mod: 'AppBeautify',   method: 'renderPage' }
   };
 
-  /* ===== 2. 补充缺失的核心方法 ===== */
+  /* ===== 2. 补充缺失的核心方法（仅在 App 未定义时） ===== */
 
   /** 初始化所有已加载的模块 */
-  App.initModules = function() {
-    console.log('[AppRouter] 初始化模块...');
-    // 尝试初始化每个已存在的模块
-    Object.keys(PAGE_REGISTRY).forEach(pageId => {
-      const reg = PAGE_REGISTRY[pageId];
-      const mod = window[reg.mod];
-      if (mod && typeof mod.init === 'function') {
-        try { mod.init(); } catch(e) { console.warn('[AppRouter]', reg.mod, 'init失败:', e.message); }
-      }
-    });
-    // 注册回调
-    Object.keys(PAGE_REGISTRY).forEach(pageId => {
-      const reg = PAGE_REGISTRY[pageId];
-      const mod = window[reg.mod];
-      if (mod && typeof mod[reg.method] === 'function') {
-        const navItem = this.NAV_ITEMS.find(n => n.page === pageId);
-        const title = navItem ? navItem.label : pageId;
-        this.callbacks[pageId] = { 
-          onEnter: () => {
-            mod[reg.method]();
-            if (window.PageFrame && typeof PageFrame.wrap === 'function') {
-              setTimeout(() => PageFrame.wrap('page-' + pageId, title), 0);
-            }
-          }
-        };
-      }
-    });
-    console.log('[AppRouter] 已注册', Object.keys(this.callbacks).length, '个页面回调');
-  };
-
-  /** 页面导航 */
-  App.navigate = function(pageId) {
-    location.hash = pageId;
-    this.handleRoute();
-  };
-
-  /** 处理路由变化 */
-  App.handleRoute = function() {
-    const pageId = location.hash.replace('#', '') || 'home';
-    console.log('[AppRouter] 路由到:', pageId);
-
-    // 隐藏所有页面
-    document.querySelectorAll('.page-view').forEach(p => {
-      p.classList.remove('active');
-      p.style.display = 'none';
-    });
-
-    // 显示目标页面
-    const target = document.getElementById('page-' + pageId);
-    if (target) {
-      target.style.display = 'block';
-      target.classList.add('active');
-    } else {
-      console.warn('[AppRouter] 页面容器不存在:', 'page-' + pageId);
-      // 尝试回退到home
-      const homePage = document.getElementById('page-home');
-      if (homePage) { homePage.style.display = 'block'; homePage.classList.add('active'); }
-    }
-
-    // 触发页面回调
-    const cb = this.callbacks[pageId];
-    if (cb && typeof cb.onEnter === 'function') {
-      try { cb.onEnter(); } catch(e) { console.warn('[AppRouter] 页面 onEnter 出错:', pageId, e); }
-    } else {
-      // 如果没有回调但有模块，直接调用renderPage
-      const reg = PAGE_REGISTRY[pageId];
-      if (reg) {
+  if (!App.initModules) {
+    App.initModules = function() {
+      console.log('[AppRouter] 初始化模块...');
+      // 尝试初始化每个已存在的模块
+      Object.keys(PAGE_REGISTRY).forEach(pageId => {
+        const reg = PAGE_REGISTRY[pageId];
+        const mod = window[reg.mod];
+        if (mod && typeof mod.init === 'function') {
+          try { mod.init(); } catch(e) { console.warn('[AppRouter]', reg.mod, 'init失败:', e.message); }
+        }
+      });
+      // 注册回调
+      Object.keys(PAGE_REGISTRY).forEach(pageId => {
+        const reg = PAGE_REGISTRY[pageId];
         const mod = window[reg.mod];
         if (mod && typeof mod[reg.method] === 'function') {
-          try { mod[reg.method](); } catch(e) { console.warn('[AppRouter] 直接renderPage出错:', pageId, e); }
+          const navItem = App.NAV_ITEMS.find(n => n.page === pageId);
+          const title = navItem ? navItem.label : pageId;
+          this.callbacks[pageId] = { 
+            onEnter: () => {
+              mod[reg.method]();
+              if (window.PageFrame && typeof PageFrame.wrap === 'function') {
+                setTimeout(() => PageFrame.wrap('page-' + pageId, title), 0);
+              }
+            }
+          };
+        }
+      });
+      console.log('[AppRouter] 已注册', Object.keys(this.callbacks).length, '个页面回调');
+    };
+  }
+
+  /** 页面导航 — 仅在未定义时补充 */
+  if (!App.navigate) {
+    App.navigate = function(pageId) {
+      location.hash = pageId;
+      // hashchange 会自动触发 handleRoute，无需手动调用
+    };
+  }
+
+  /** 处理路由变化 — 仅在未定义时补充 */
+  if (!App.handleRoute) {
+    App.handleRoute = function() {
+      const pageId = location.hash.replace('#', '') || 'home';
+      console.log('[AppRouter] 路由到:', pageId);
+
+      // 隐藏所有页面
+      document.querySelectorAll('.page-view').forEach(p => {
+        p.classList.remove('active');
+        p.style.display = 'none';
+      });
+
+      // 显示目标页面
+      const target = document.getElementById('page-' + pageId);
+      if (target) {
+        target.style.display = 'block';
+        target.classList.add('active');
+      } else {
+        console.warn('[AppRouter] 页面容器不存在:', 'page-' + pageId);
+        const homePage = document.getElementById('page-home');
+        if (homePage) { homePage.style.display = 'block'; homePage.classList.add('active'); }
+      }
+
+      // 触发页面回调
+      const cb = this.callbacks[pageId];
+      if (cb && typeof cb.onEnter === 'function') {
+        try { cb.onEnter(); } catch(e) { console.warn('[AppRouter] 页面 onEnter 出错:', pageId, e); }
+      } else {
+        // 如果没有回调但有模块，直接调用renderPage
+        const reg = PAGE_REGISTRY[pageId];
+        if (reg) {
+          const mod = window[reg.mod];
+          if (mod && typeof mod[reg.method] === 'function') {
+            try { mod[reg.method](); } catch(e) { console.warn('[AppRouter] 直接renderPage出错:', pageId, e); }
+          }
         }
       }
-    }
 
-    // 移动端关闭侧边栏
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) sidebar.classList.remove('open');
-    const backdrop = document.getElementById('sidebarBackdrop');
-    if (backdrop) backdrop.classList.remove('show');
+      // 移动端关闭侧边栏
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar) sidebar.classList.remove('open');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (backdrop) backdrop.classList.remove('show');
 
-    // 更新标题
-    const navItem = this.NAV_ITEMS.find(n => n.page === pageId);
-    if (navItem) {
-      const titleEl = document.getElementById('pageTitle');
-      if (titleEl) titleEl.textContent = navItem.label;
-    }
+      // 更新标题
+      const navItem = App.NAV_ITEMS.find(n => n.page === pageId);
+      if (navItem) {
+        const titleEl = document.getElementById('pageTitle');
+        if (titleEl) titleEl.textContent = navItem.label;
+      }
 
-    // 滚动到顶部
-    const contentArea = document.getElementById('contentArea');
-    if (contentArea) contentArea.scrollTop = 0;
-  };
+      // 滚动到顶部
+      const contentArea = document.getElementById('contentArea');
+      if (contentArea) contentArea.scrollTop = 0;
+    };
+  }
 
   /** 注册页面回调 */
   App.registerPageCallback = function(pageId, onEnterFn) {
@@ -218,7 +223,7 @@
   App.renderSidebar = function() {
     const nav = document.getElementById('sidebarNav');
     if (!nav) return;
-    nav.innerHTML = this.NAV_ITEMS.map(item => `
+    nav.innerHTML = App.NAV_ITEMS.map(item => `
       <a href="#${item.page}" class="nav-item" data-page="${item.page}" onclick="App.navigate('${item.page}');return false;">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <use href="#${item.iconSvg}"/>
@@ -248,7 +253,7 @@
     try {
       const custom = Storage.get('customNavItems', []);
       if (Array.isArray(custom) && custom.length > 0) {
-        this.NAV_ITEMS = [...this.NAV_ITEMS, ...custom];
+        App.NAV_ITEMS = [...App.NAV_ITEMS, ...custom];
       }
     } catch(e) { console.warn('[AppRouter] load custom nav failed:', e); }
   };

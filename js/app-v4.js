@@ -360,7 +360,125 @@ const App = {
   }
 };
 
-// DOM ready
+// ===== 页面导航与路由系统 =====
+App.navigate = function(pageId) {
+  location.hash = pageId;
+  // hashchange 事件会自动触发 handleRoute，无需重复调用
+};
+
+App.handleRoute = function() {
+  const pageId = location.hash.replace('#', '') || 'home';
+  console.log('[App] 路由到:', pageId);
+  // 隐藏所有页面
+  document.querySelectorAll('.page-view').forEach(p => {
+    p.classList.remove('active');
+    p.style.display = 'none';
+  });
+  // 显示目标页面
+  const target = document.getElementById('page-' + pageId);
+  if (target) {
+    target.style.display = 'block';
+    target.classList.add('active');
+  } else {
+    console.warn('[App] 页面容器不存在:', 'page-' + pageId);
+    const homePage = document.getElementById('page-home');
+    if (homePage) { homePage.style.display = 'block'; homePage.classList.add('active'); }
+  }
+  // 触发页面回调
+  const cb = this.callbacks[pageId];
+  if (cb && typeof cb.onEnter === 'function') {
+    try { cb.onEnter(); } catch(e) { console.warn('[App] 页面回调失败:', pageId, e); }
+  }
+  this.currentPage = pageId;
+};
+
+App.initModules = function() {
+  const modules = [
+    'HomePage','NovelRuntime','APISettings','NPCManager','BackgroundLibrary',
+    'MusicManager','MapSystem','StatusBar','PromptSystem','MemorySystem',
+    'PresetManager','RegexEngine','WorldBook','CGGallery','StoryTreeEditor',
+    'SettingsHub','InventorySystem','QuestSystem','WeatherSystem','LetterSystem',
+    'Notes','Relations','AchievementSystem','Timeline','Events','SaveManager',
+    'ChapterEditor','TextNovel','WorldNotes','SceneSystem','NPCBehavior',
+    'CodePatcher'
+  ];
+  modules.forEach(modName => {
+    const mod = window[modName] || window[modName.replace(/System$/, '')];
+    if (mod && typeof mod.init === 'function') {
+      try { mod.init(); } catch(e) { console.warn('[App]', modName, 'init失败:', e.message); }
+    }
+  });
+  // 注册回调 — 覆盖所有 NAV_ITEMS 中定义的页面
+  const pageMap = {
+    'home': 'HomePage', 'runtime': 'NovelRuntime', 'api': 'APISettings',
+    'npc': 'NPCManager', 'background': 'BackgroundLibrary', 'music': 'MusicManager',
+    'map': 'MapSystem', 'status': 'StatusBar', 'prompts': 'PromptSystem',
+    'memory': 'MemorySystem', 'presets': 'PresetManager', 'regex': 'RegexEngine',
+    'worldbook': 'WorldBook', 'cg-gallery': 'CGGallery', 'storytree': 'StoryTreeEditor',
+    'settings-hub': 'SettingsHub', 'inventory': 'InventorySystem',
+    'quest': 'QuestSystem', 'weather': 'WeatherSystem', 'letter': 'LetterSystem',
+    'notes': 'Notes', 'relations': 'Relations', 'achievement': 'AchievementSystem',
+    'timeline': 'Timeline', 'events': 'Events', 'save-manager': 'SaveManager',
+    'chapter-editor': 'ChapterEditor', 'text-novel': 'TextNovel',
+    'world-notes': 'WorldNotes', 'scene': 'SceneSystem', 'npc-behavior': 'NPCBehavior',
+    'code-patcher': 'CodePatcher',
+    // NPC 好感度事件链
+    'affection': 'NPCAffection',
+    // 补充缺失的页面映射
+    'world-selector': 'WorldSelector', 'hero': 'HeroSystem',
+    'import': 'ImportManager', 'backup': 'BackupManager',
+    'ui-diy': 'UIDIY', 'baike': 'BaikeIntegration',
+    'design-suite': 'DesignSuite', 'skill-discovery': 'SkillDiscovery',
+    'custom-creator': 'CustomCreator', 'mobile-preview': 'MobilePreview',
+    'pwa': 'PWASystem', 'assistant': 'Assistant',
+    'plugins': 'PluginManager', 'chat': 'AppChat',
+    'forum': 'AppForum', 'mail': 'AppMail',
+    'settings': 'AppSettings', 'beautify': 'AppBeautify',
+    'custom': 'AppCustom', 'alliance': 'AllianceSystem',
+    'fun': 'FunFeatures', 'juncheng': 'Portal',
+    'storyline': 'Storyline', 'storyline-manager': 'StorylineManager',
+    'random-events': 'RandomEvents', 'badge-wall': 'BadgeWall',
+    'system-builder': 'SystemBuilder', 'worldview': 'WorldviewEngine',
+    'family': 'FamilySystem', 'political': 'PoliticalSystem',
+    'conspiracy': 'ConspiracySystem', 'button-customizer': 'ButtonCustomizer'
+  };
+  Object.keys(pageMap).forEach(pageId => {
+    const modName = pageMap[pageId];
+    const mod = window[modName];
+    if (mod && typeof mod.renderPage === 'function') {
+      this.callbacks[pageId] = { onEnter: () => mod.renderPage() };
+    }
+  });
+  console.log('[App] 已注册', Object.keys(this.callbacks).length, '个页面回调');
+};
+
+App.renderSidebar = function() {
+  // 移动端侧边栏不再渲染（由 page-frame 统一顶部条替代）
+  const sidebar = document.getElementById('sidebar');
+  if (sidebar) sidebar.style.display = 'none';
+};
+
+App.renderTopBar = function() {
+  // 由 page-frame.js 统一处理顶部条
+};
+
+App.renderBottomNav = function() {
+  // 由 page-frame.js 统一处理底部导航
+};
+
+App.bindEvents = function() {
+  // 核心事件已由 page-frame.js 处理
+  // 键盘ESC关闭模态框
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { this.closeModal(); }
+  });
+};
+
+App.loadCustomNavItems = function() {
+  // 用户自定义导航（暂不使用侧边栏）
+};
+
+// ===== DOM Ready =====
 document.addEventListener('DOMContentLoaded', () => {
   let savedMask = null;
   let gameLaunched = false;

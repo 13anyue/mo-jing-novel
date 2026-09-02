@@ -1,417 +1,514 @@
 /**
  * =========================================================
- * Home Page v8 — 主操作面板（参考UI重设计）
- * 古风墨境风格 · 顶部状态条 · 大地图 · 底部功能导航
+ * HomePage v8 — 古风主操作面板（截图风格重设计）
+ * 配色：羊皮纸底色 #F5E6D3 + 金色高亮 #C9A227 + 墨色 #2C1810
+ * 结构：顶部状态条 | 左-中-右三栏 | 底部功能导航 | 回府按钮
  * =========================================================
  */
 const HomePage = {
+  /** 页面初始化入口 */
   init() { this.renderPage(); },
+
+  /** 每次进入本页面时重新渲染 */
   onEnter() { this.renderPage(); },
 
+  /** =========================================================
+   *  主渲染方法：构建完整的古风操作面板 HTML
+   * ========================================================= */
   renderPage() {
     const page = document.getElementById('page-home');
     if (!page) return;
 
-    // 获取玩家数据
-    const playerName = this._safeGet('playerName', '无名');
-    const playerTitle = this._safeGet('playerTitle', '寒门书生');
-    const playerAge = this._safeGet('playerAge', '18');
+    // 从本地存储或默认值读取玩家数据
+    const playerName   = this._safeGet('playerName',   '苏砚书');
+    const playerTitle  = this._safeGet('playerTitle',  '从九品·宝林');
     const playerAvatar = this._safeGet('playerAvatar', '');
-    const currentLocation = this._safeGet('currentLocation', '汴京·市集');
-    const currentDate = this._safeGet('currentDate', '第三年·三月初八');
-    const currentWeather = this._safeGet('currentWeather', '晴');
+    const playerLevel  = this._safeGet('playerLevel',  '30');
 
+    // 构建主面板 HTML
     page.innerHTML = `
-      <div id="homeDashboard" style="display:flex;flex-direction:column;height:100%;background:var(--bg-body);overflow:hidden;">
-        ${this._renderTopBar(playerName, playerTitle, playerAvatar, currentLocation, currentDate, currentWeather)}
+      <div id="homeDashboard" style="display:flex;flex-direction:column;height:100%;background:#F5E6D3;overflow:hidden;font-family:'Noto Serif SC',serif;">
+        <!-- ① 顶部状态条 -->
+        ${this._renderTopBar(playerName, playerTitle, playerAvatar, playerLevel)}
+
+        <!-- ② 中间三栏区域 -->
         ${this._renderMainArea()}
+
+        <!-- ③ 底部功能导航 -->
         ${this._renderBottomNav()}
+
+        <!-- ④ 右下角「回府」大按钮 -->
+        <div class="home-back-btn" onclick="HomePage.scrollToTop()" title="回到顶部">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          <span>回府</span>
+        </div>
+
+        <!-- ⑤ 内联样式 -->
+        <style>
+          /* ===== 顶部状态条 ===== */
+          .home-topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px 14px;
+            background: #2C1810;
+            border-bottom: 2px solid #C9A227;
+            color: #F5E6D3;
+            flex-shrink: 0;
+          }
+          .home-topbar-left {
+            display: flex; align-items: center; gap: 10px;
+          }
+          .home-avatar {
+            width: 44px; height: 44px; border-radius: 50%;
+            border: 2px solid #C9A227;
+            overflow: hidden; flex-shrink: 0;
+            background: #4a2e1a;
+            display: flex; align-items: center; justify-content: center;
+          }
+          .home-avatar img { width: 100%; height: 100%; object-fit: cover; }
+          .home-avatar-placeholder {
+            color: #C9A227; font-size: 20px; font-family: serif;
+          }
+          .home-player-info {
+            display: flex; flex-direction: column; gap: 2px;
+          }
+          .home-player-name {
+            font-size: 16px; font-weight: 700; color: #F5E6D3;
+          }
+          .home-player-title {
+            font-size: 11px; color: #C9A227;
+            background: rgba(201,162,39,0.18);
+            padding: 1px 7px; border-radius: 4px;
+            border: 1px solid rgba(201,162,39,0.35);
+            display: inline-block; width: fit-content;
+          }
+          .home-topbar-right {
+            display: flex; align-items: center; gap: 12px;
+          }
+          .home-currency {
+            display: flex; align-items: center; gap: 4px;
+            font-size: 14px; font-weight: 600; color: #C9A227;
+          }
+          .home-currency svg { width: 18px; height: 18px; }
+          .home-topbar-btns {
+            display: flex; gap: 6px;
+          }
+          .home-top-btn {
+            background: rgba(201,162,39,0.15);
+            border: 1px solid rgba(201,162,39,0.35);
+            color: #C9A227;
+            padding: 5px 10px; border-radius: 10px;
+            font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; gap: 3px;
+            transition: background 0.2s;
+            font-family: inherit;
+          }
+          .home-top-btn:hover { background: rgba(201,162,39,0.3); }
+
+          /* ===== 中间三栏区域 ===== */
+          .home-main {
+            flex: 1; display: flex; gap: 8px;
+            padding: 8px; overflow: hidden;
+          }
+
+          /* 左侧边栏：活动/福利/首充等入口 */
+          .home-left-bar {
+            width: 70px; flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 6px;
+            padding-top: 4px;
+          }
+          .home-left-entry {
+            width: 100%;
+            background: #2C1810;
+            border: 1px solid #C9A227;
+            border-radius: 6px;
+            color: #F5E6D3;
+            font-size: 12px;
+            padding: 10px 4px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            letter-spacing: 2px;
+            font-family: inherit;
+          }
+          .home-left-entry:hover {
+            background: rgba(201,162,39,0.25);
+            color: #C9A227;
+          }
+          .home-left-entry.gold {
+            background: rgba(201,162,39,0.2);
+            border-color: #C9A227;
+            color: #C9A227;
+            font-weight: 700;
+          }
+
+          /* 中间主区域：古风场景 + 系统消息 */
+          .home-center-panel {
+            flex: 1; position: relative;
+            background: #2C1810;
+            border: 1px solid #C9A227;
+            border-radius: 8px;
+            overflow: hidden;
+          }
+          .home-scene-bg {
+            position: absolute; inset: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500"><rect fill="%232C1810" width="800" height="500"/><ellipse cx="400" cy="250" rx="300" ry="180" fill="%233d2518"/><path d="M0 400 Q200 350 400 380 T800 350 V500 H0Z" fill="%234a2e1a" opacity="0.5"/></svg>');
+            background-size: cover; background-position: center;
+            opacity: 0.35;
+          }
+          .home-scene-overlay {
+            position: absolute; inset: 0;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 20px;
+            gap: 16px;
+          }
+          .home-sys-msg {
+            max-width: 90%;
+            background: rgba(44,24,16,0.82);
+            border: 1px solid rgba(201,162,39,0.4);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #F5E6D3;
+            font-size: 14px;
+            line-height: 1.7;
+            text-align: center;
+            backdrop-filter: blur(3px);
+          }
+          .home-sys-msg strong {
+            color: #C9A227;
+          }
+          .home-location-tag {
+            position: absolute; bottom: 12px; left: 50%;
+            transform: translateX(-50%);
+            background: rgba(44,24,16,0.85);
+            border: 1px solid rgba(201,162,39,0.4);
+            color: #C9A227;
+            padding: 5px 16px; border-radius: 14px;
+            font-size: 12px;
+            display: flex; align-items: center; gap: 4px;
+          }
+
+          /* 右侧边栏：剧情/日常任务卡片 */
+          .home-right-bar {
+            width: 140px; flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 8px;
+          }
+          .home-right-card {
+            background: #2C1810;
+            border: 1px solid #C9A227;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+          }
+          .home-right-card:hover {
+            background: rgba(201,162,39,0.12);
+            transform: translateY(-1px);
+          }
+          .home-right-card-title {
+            font-size: 13px; font-weight: 700; color: #C9A227;
+            margin-bottom: 6px;
+            display: flex; align-items: center; gap: 4px;
+          }
+          .home-right-card-sub {
+            font-size: 11px; color: #A08060;
+          }
+          .home-right-progress {
+            margin-top: 6px;
+            height: 4px; background: rgba(255,255,255,0.1);
+            border-radius: 2px; overflow: hidden;
+          }
+          .home-right-progress-fill {
+            height: 100%; background: #C9A227; border-radius: 2px;
+          }
+          .home-right-progress-text {
+            font-size: 10px; color: #A08060; margin-top: 3px; text-align: right;
+          }
+
+          /* ===== 底部功能导航 ===== */
+          .home-bottom-nav {
+            display: flex; justify-content: space-around;
+            padding: 6px 8px;
+            background: #2C1810;
+            border-top: 2px solid #C9A227;
+            flex-shrink: 0;
+          }
+          .home-nav-item {
+            display: flex; flex-direction: column; align-items: center;
+            gap: 2px; padding: 4px 10px; cursor: pointer;
+            color: #A08060; transition: all 0.2s; border-radius: 8px;
+          }
+          .home-nav-item:hover { color: #C9A227; background: rgba(201,162,39,0.1); }
+          .home-nav-item.active { color: #C9A227; }
+          .home-nav-icon { width: 22px; height: 22px; }
+          .home-nav-label { font-size: 11px; }
+
+          /* ===== 右下角回府大按钮 ===== */
+          .home-back-btn {
+            position: absolute; bottom: 72px; right: 12px;
+            width: 56px; height: 56px; border-radius: 50%;
+            background: #C9A227;
+            color: #2C1810;
+            border: 3px solid #2C1810;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            gap: 1px; cursor: pointer;
+            font-size: 10px; font-weight: 700;
+            transition: all 0.2s; z-index: 10;
+            font-family: inherit;
+          }
+          .home-back-btn:hover {
+            transform: scale(1.08);
+            box-shadow: 0 4px 12px rgba(201,162,39,0.4);
+          }
+          .home-back-btn svg { width: 20px; height: 20px; }
+
+          /* ===== 移动端适配 ===== */
+          @media (max-width: 768px) {
+            .home-left-bar { display: none; }
+            .home-right-bar { display: none; }
+            .home-topbar { padding: 6px 10px; }
+            .home-player-name { font-size: 14px; }
+            .home-currency { font-size: 12px; }
+            .home-top-btn { padding: 4px 7px; font-size: 11px; }
+            .home-bottom-nav { padding: 4px 6px; }
+            .home-nav-icon { width: 20px; height: 20px; }
+            .home-nav-label { font-size: 10px; }
+            .home-back-btn { bottom: 66px; right: 8px; width: 48px; height: 48px; }
+            .home-back-btn svg { width: 16px; height: 16px; }
+            .home-back-btn span { font-size: 9px; }
+          }
+        </style>
       </div>
-      <style>
-        /* ===== v8 主操作面板样式 ===== */
-        .dash-topbar {
-          display: flex; align-items: center; gap: 12px;
-          padding: 8px 16px;
-          background: linear-gradient(180deg, #2C1810 0%, #3d2518 100%);
-          border-bottom: 2px solid #C9A227;
-          color: #F5E6D3;
-          flex-shrink: 0;
-          flex-wrap: wrap;
-        }
-        .dash-avatar {
-          width: 44px; height: 44px; border-radius: 50%;
-          border: 2px solid #C9A227;
-          overflow: hidden; flex-shrink: 0;
-          background: #5D3A1A;
-        }
-        .dash-avatar img { width: 100%; height: 100%; object-fit: cover; }
-        .dash-info { flex: 1; min-width: 120px; }
-        .dash-name-row { display: flex; align-items: center; gap: 6px; }
-        .dash-name { font-family: 'Noto Serif SC', serif; font-size: 16px; font-weight: 700; color: #F5E6D3; }
-        .dash-title-tag {
-          background: rgba(201,162,39,0.25); color: #C9A227;
-          padding: 1px 6px; border-radius: 4px; font-size: 11px;
-          border: 1px solid rgba(201,162,39,0.4);
-        }
-        .dash-meta { font-size: 11px; color: #A08060; margin-top: 2px; }
-        .dash-stats { display: flex; gap: 8px; align-items: center; }
-        .dash-stat-item { display: flex; flex-direction: column; align-items: center; }
-        .dash-stat-bar { width: 40px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 2px; overflow: hidden; }
-        .dash-stat-fill { height: 100%; border-radius: 2px; }
-        .dash-stat-label { font-size: 9px; color: #A08060; margin-top: 2px; }
-        .dash-resources { display: flex; gap: 10px; align-items: center; }
-        .dash-res-item { font-size: 12px; color: #C9A227; }
-        .dash-quick-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-        .dash-qbtn {
-          background: rgba(201,162,39,0.15); border: 1px solid rgba(201,162,39,0.3);
-          color: #C9A227; padding: 4px 10px; border-radius: 12px;
-          font-size: 12px; cursor: pointer; transition: all 0.2s;
-          display: flex; align-items: center; gap: 3px;
-        }
-        .dash-qbtn:hover { background: rgba(201,162,39,0.3); }
-
-        /* 主区域 */
-        .dash-main {
-          flex: 1; display: flex; gap: 8px;
-          padding: 8px; overflow: hidden;
-        }
-        .dash-left-panel, .dash-right-panel {
-          width: 180px; flex-shrink: 0;
-          background: var(--bg-card);
-          border: 1px solid var(--border-color);
-          border-radius: var(--border-radius-md);
-          padding: 10px;
-          overflow-y: auto;
-        }
-        .dash-center-panel {
-          flex: 1; position: relative;
-          background: var(--bg-card);
-          border: 1px solid var(--border-color);
-          border-radius: var(--border-radius-md);
-          overflow: hidden;
-        }
-        .dash-map-bg {
-          position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-          background-size: cover; background-position: center;
-          opacity: 0.6;
-        }
-        .dash-map-overlay {
-          position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-          display: flex; align-items: center; justify-content: center;
-        }
-        .dash-map-label {
-          background: rgba(44,24,16,0.7); border: 1px solid rgba(201,162,39,0.4);
-          color: #F5E6D3; padding: 4px 12px; border-radius: 14px;
-          font-size: 13px; cursor: pointer; transition: all 0.2s;
-          backdrop-filter: blur(4px);
-        }
-        .dash-map-label:hover {
-          background: rgba(201,162,39,0.3); border-color: #C9A227;
-          transform: scale(1.05);
-        }
-        .dash-panel-title {
-          font-family: 'Noto Serif SC', serif; font-size: 14px;
-          color: var(--color-primary-dark); margin-bottom: 8px;
-          border-bottom: 1px solid var(--border-gold); padding-bottom: 4px;
-        }
-        .dash-info-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; }
-        .dash-info-row .label { color: var(--text-muted); }
-        .dash-info-row .value { color: var(--text-primary); font-weight: 500; }
-        .dash-stat-row { display: flex; justify-content: space-between; align-items: center; padding: 4px 0; }
-        .dash-stat-name { font-size: 12px; color: var(--text-secondary); }
-        .dash-stat-val { font-size: 12px; font-weight: 600; color: var(--color-primary-dark); }
-
-        /* 底部区域 */
-        .dash-bottom {
-          display: flex; gap: 8px;
-          padding: 0 8px 8px;
-          flex-shrink: 0;
-        }
-        .dash-bottom-panel {
-          flex: 1;
-          background: var(--bg-card);
-          border: 1px solid var(--border-color);
-          border-radius: var(--border-radius-md);
-          padding: 10px;
-          min-height: 120px;
-          overflow-y: auto;
-        }
-        .dash-event-item {
-          font-size: 12px; color: var(--text-secondary); padding: 4px 0;
-          border-bottom: 1px solid rgba(201,162,39,0.1);
-        }
-        .dash-event-item:last-child { border-bottom: none; }
-        .dash-relation-card {
-          display: flex; align-items: center; gap: 8px;
-          padding: 6px 0;
-          border-bottom: 1px solid rgba(201,162,39,0.1);
-        }
-        .dash-rel-avatar {
-          width: 32px; height: 32px; border-radius: 50%;
-          background: var(--bg-body); border: 1px solid var(--border-color);
-          display: flex; align-items: center; justify-content: center;
-          font-size: 14px; flex-shrink: 0;
-        }
-        .dash-rel-info { flex: 1; }
-        .dash-rel-name { font-size: 12px; font-weight: 600; color: var(--text-primary); }
-        .dash-rel-desc { font-size: 10px; color: var(--text-muted); }
-        .dash-rel-tag {
-          font-size: 10px; padding: 1px 5px; border-radius: 3px;
-          background: rgba(201,162,39,0.15); color: #C9A227;
-        }
-
-        /* 底部导航 */
-        .dash-bottom-nav {
-          display: flex; justify-content: space-around;
-          padding: 6px 8px;
-          background: linear-gradient(180deg, #2C1810 0%, #3d2518 100%);
-          border-top: 2px solid #C9A227;
-          flex-shrink: 0;
-        }
-        .dash-nav-item {
-          display: flex; flex-direction: column; align-items: center;
-          gap: 2px; padding: 4px 12px; cursor: pointer;
-          color: #A08060; transition: all 0.2s; border-radius: 8px;
-        }
-        .dash-nav-item:hover { color: #C9A227; background: rgba(201,162,39,0.1); }
-        .dash-nav-item.active { color: #C9A227; }
-        .dash-nav-icon { width: 20px; height: 20px; }
-        .dash-nav-label { font-size: 10px; }
-
-        /* 移动端适配 */
-        @media (max-width: 768px) {
-          .dash-left-panel, .dash-right-panel { display: none; }
-          .dash-topbar { padding: 6px 10px; gap: 8px; }
-          .dash-name { font-size: 14px; }
-          .dash-resources { gap: 6px; }
-          .dash-res-item { font-size: 10px; }
-          .dash-quick-btns { gap: 4px; }
-          .dash-qbtn { padding: 3px 6px; font-size: 10px; }
-          .dash-bottom-panel { min-height: 80px; padding: 6px; }
-          .dash-bottom { gap: 4px; padding: 0 4px 4px; }
-        }
-      </style>
     `;
 
-    page.style.display = 'flex';
-    page.style.flexDirection = 'column';
-    page.style.height = '100%';
-    page.style.overflow = 'hidden';
+    // 确保页面容器正确撑满
+    page.style.display        = 'flex';
+    page.style.flexDirection  = 'column';
+    page.style.height         = '100%';
+    page.style.overflow       = 'hidden';
+    page.style.position       = 'relative';   // 为右下角绝对定位按钮提供参考
   },
 
-  _renderTopBar(name, title, avatar, location, date, weather) {
+  /** =========================================================
+   *  顶部状态条：头像 + 玩家信息 + 数值 + 按钮
+   * ========================================================= */
+  _renderTopBar(name, title, avatar, level) {
+    // 头像：有图则显示，无图则显示「砚」字占位
     const avatarHtml = avatar
       ? `<img src="${avatar}" alt="${name}">`
-      : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C9A227" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>';
+      : `<span class="home-avatar-placeholder">砚</span>`;
 
     return `
-      <div class="dash-topbar">
-        <div class="dash-avatar">${avatarHtml}</div>
-        <div class="dash-info">
-          <div class="dash-name-row">
-            <span class="dash-name">${name}</span>
-            <span class="dash-title-tag">${title}</span>
-          </div>
-          <div class="dash-meta">${location} · ${date} · ${weather}</div>
-        </div>
-        <div class="dash-stats">
-          <div class="dash-stat-item">
-            <div class="dash-stat-bar"><div class="dash-stat-fill" style="width:82%;background:#7CB342;"></div></div>
-            <span class="dash-stat-label">体力</span>
-          </div>
-          <div class="dash-stat-item">
-            <div class="dash-stat-bar"><div class="dash-stat-fill" style="width:72%;background:#42A5F5;"></div></div>
-            <span class="dash-stat-label">心情</span>
-          </div>
-          <div class="dash-stat-item">
-            <div class="dash-stat-bar"><div class="dash-stat-fill" style="width:90%;background:#EF5350;"></div></div>
-            <span class="dash-stat-label">健康</span>
+      <div class="home-topbar">
+        <!-- 左侧：头像 + 玩家名 + 称号 -->
+        <div class="home-topbar-left">
+          <div class="home-avatar">${avatarHtml}</div>
+          <div class="home-player-info">
+            <div class="home-player-name">${name}</div>
+            <div class="home-player-title">${title}</div>
           </div>
         </div>
-        <div class="dash-resources">
-          <span class="dash-res-item">💰 352两</span>
-          <span class="dash-res-item">🏆 326</span>
-          <span class="dash-res-item">📜 421</span>
-        </div>
-        <div class="dash-quick-btns">
-          <button class="dash-qbtn" onclick="App.navigate('save-manager')" title="存档">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/></svg>存档
-          </button>
-          <button class="dash-qbtn" onclick="App.navigate('save-manager')" title="读档">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/></svg>读档
-          </button>
-          <button class="dash-qbtn" onclick="App.navigate('settings-hub')" title="设置">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l-.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06-.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>设置
-          </button>
-          <button class="dash-qbtn" onclick="App.navigate('map')" title="地图">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="1 6 1 22 8 18 16 22 21 18 21 2 16 6 8 2 1 6"/></svg>地图
-          </button>
-          <button class="dash-qbtn" onclick="App.navigate('quest')" title="任务">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>任务
-          </button>
-          <button class="dash-qbtn" onclick="App.navigate('npc')" title="人物">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>人物
-          </button>
-          <button class="dash-qbtn" onclick="App.navigate('inventory')" title="背包">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>背包
-          </button>
+
+        <!-- 右侧：元宝数值 + 操作按钮 -->
+        <div class="home-topbar-right">
+          <div class="home-currency" title="元宝">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M9 9h6M9 15h6"/></svg>
+            23260
+          </div>
+          <div class="home-topbar-btns">
+            <button class="home-top-btn" onclick="App.navigate('settings-hub')" title="设置">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l-.06-.06A1.65 1.65 0 004.62 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+              设置
+            </button>
+            <button class="home-top-btn" onclick="App.navigate('more')" title="更多">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+              更多
+            </button>
+            <button class="home-top-btn" onclick="App.navigate('exit')" title="退出">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+              退出
+            </button>
+          </div>
         </div>
       </div>
     `;
   },
 
+  /** =========================================================
+   *  中间三栏区域：左侧活动入口 | 中间场景+消息 | 右侧任务卡片
+   * ========================================================= */
   _renderMainArea() {
     return `
-      <div class="dash-main">
-        <!-- 左侧面板：基本信息+能力属性 -->
-        <div class="dash-left-panel">
-          <div class="dash-panel-title">基本信息</div>
-          <div class="dash-info-row"><span class="label">年龄</span><span class="value">18岁</span></div>
-          <div class="dash-info-row"><span class="label">身份</span><span class="value">寒门书生</span></div>
-          <div class="dash-info-row"><span class="label">出身</span><span class="value">江南小镇</span></div>
-          <div class="dash-info-row"><span class="label">家境</span><span class="value">清贫</span></div>
-          <div class="dash-info-row"><span class="label">性格</span><span class="value">聪慧内敛</span></div>
-          <div class="dash-info-row"><span class="label">特长</span><span class="value">诗文、书法</span></div>
-          <div class="dash-info-row"><span class="label">武艺</span><span class="value">略知一二</span></div>
-
-          <div class="dash-panel-title" style="margin-top:12px;">能力属性</div>
-          <div class="dash-stat-row"><span class="dash-stat-name">文才</span><span class="dash-stat-val">72</span></div>
-          <div class="dash-stat-row"><span class="dash-stat-name">智谋</span><span class="dash-stat-val">65</span></div>
-          <div class="dash-stat-row"><span class="dash-stat-name">口才</span><span class="dash-stat-val">58</span></div>
-          <div class="dash-stat-row"><span class="dash-stat-name">武艺</span><span class="dash-stat-val">41</span></div>
-          <div class="dash-stat-row"><span class="dash-stat-name">交际</span><span class="dash-stat-val">53</span></div>
-          <div class="dash-stat-row"><span class="dash-stat-name">魅力</span><span class="dash-stat-val">60</span></div>
+      <div class="home-main">
+        <!-- 左侧边栏：活动 / 福利 / 首充等入口 -->
+        <div class="home-left-bar">
+          <div class="home-left-entry"       onclick="App.navigate('activity')">活动</div>
+          <div class="home-left-entry gold"  onclick="App.navigate('welfare')">福利</div>
+          <div class="home-left-entry"       onclick="App.navigate('first-recharge')">首充</div>
+          <div class="home-left-entry"       onclick="App.navigate('ranking')">排行榜</div>
+          <div class="home-left-entry"       onclick="App.navigate('mail')">邮件</div>
         </div>
 
-        <!-- 中间：地图探索区域 -->
-        <div class="dash-center-panel">
-          <div class="dash-map-bg" style="background-image:linear-gradient(180deg, #6b8e6b 0%, #5d7a5d 50%, #4a6b4a 100%);"></div>
-          <div class="dash-map-overlay" style="position:relative;flex-wrap:wrap;gap:12px;padding:20px;">
-            <div class="dash-map-label" onclick="App.navigate('map')">🏯 城北</div>
-            <div class="dash-map-label" onclick="App.navigate('map')">📚 书院</div>
-            <div class="dash-map-label" onclick="App.navigate('map')">🏛️ 官署</div>
-            <div class="dash-map-label" onclick="App.navigate('map')">🐎 驿站</div>
-            <div class="dash-map-label" onclick="App.navigate('map')">🏨 客栈</div>
-            <div class="dash-map-label" onclick="App.navigate('map')">🏪 商铺</div>
-            <div class="dash-map-label" onclick="App.navigate('map')">🌿 郊外</div>
-            <div class="dash-map-label" onclick="App.navigate('map')">🏠 居所</div>
-            <div class="dash-map-label" onclick="App.navigate('map')">🎪 市集</div>
-            <div class="dash-map-label" onclick="App.navigate('map')">⚓ 码头</div>
-          </div>
-          <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(44,24,16,0.8);color:#C9A227;padding:4px 14px;border-radius:12px;font-size:12px;border:1px solid rgba(201,162,39,0.3);">
-            📍 当前：汴京·市集 · 点击地点探索
-          </div>
-        </div>
+        <!-- 中间主区域：古风场景背景 + 系统消息 -->
+        <div class="home-center-panel">
+          <!-- 半透明古风场景背景 -->
+          <div class="home-scene-bg"></div>
 
-        <!-- 右侧面板：今日行程 -->
-        <div class="dash-right-panel">
-          <div class="dash-panel-title">今日行程</div>
-          <div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px;">
-            <div style="padding:6px 0;border-bottom:1px dashed rgba(201,162,39,0.2);">① 书院上课 <span style="color:var(--text-muted);font-size:10px;">未开始</span></div>
-            <div style="padding:6px 0;border-bottom:1px dashed rgba(201,162,39,0.2);">② 温习功课 <span style="color:var(--text-muted);font-size:10px;">未开始</span></div>
-            <div style="padding:6px 0;">③ 前往市集 <span style="color:var(--text-muted);font-size:10px;">未开始</span></div>
-          </div>
-          <button class="btn btn-sm btn-gold" style="width:100%;margin-top:8px;" onclick="App.navigate('runtime')">🚀 开始今日</button>
-          <button class="btn btn-sm btn-secondary" style="width:100%;margin-top:6px;" onclick="App.navigate('runtime')">🎮 进入剧情</button>
-
-          <div class="dash-panel-title" style="margin-top:12px;">生活状态</div>
-          <div class="dash-info-row"><span class="label">衣食</span><span class="value">78(温饱)</span></div>
-          <div class="dash-info-row"><span class="label">住所</span><span class="value">62(简陋)</span></div>
-          <div class="dash-info-row"><span class="label">学业</span><span class="value">68(勤勉)</span></div>
-          <div class="dash-info-row"><span class="label">家庭</span><span class="value">55(和睦)</span></div>
-        </div>
-      </div>
-
-      <!-- 底部区域：事件+关系+物品 -->
-      <div class="dash-bottom">
-        <div class="dash-bottom-panel" style="flex:1.2;">
-          <div class="dash-panel-title">近期事件</div>
-          <div class="dash-event-item">· 你在书院的表现引起了先生的注意。<span style="color:var(--text-muted);font-size:10px;">(2日前)</span></div>
-          <div class="dash-event-item">· 母亲托人送来一点盘缠。<span style="color:var(--text-muted);font-size:10px;">(5日前)</span></div>
-          <div class="dash-event-item">· 邻居张叔家女儿对你似乎有些好感。<span style="color:var(--text-muted);font-size:10px;">(7日前)</span></div>
-          <div class="dash-event-item">· 听说今年春闱竞争比往年更加激烈。<span style="color:var(--text-muted);font-size:10px;">(10日前)</span></div>
-        </div>
-        <div class="dash-bottom-panel" style="flex:1;">
-          <div class="dash-panel-title">人物关系</div>
-          <div class="dash-relation-card">
-            <div class="dash-rel-avatar">👴</div>
-            <div class="dash-rel-info">
-              <div class="dash-rel-name">先生·周敬之</div>
-              <div class="dash-rel-desc">教导之恩，受益匪浅。</div>
+          <!-- 系统消息层 -->
+          <div class="home-scene-overlay">
+            <div class="home-sys-msg">
+              <strong>系统消息</strong><br>
+              恭喜您家眷儿将随从<b style="color:#C9A227;">秋蝉</b>培养至三阶！<br>
+              府中库房新增<b style="color:#C9A227;">丝绸 × 20</b>，请及时查收。
             </div>
-            <span class="dash-rel-tag">尊敬</span>
-          </div>
-          <div class="dash-relation-card">
-            <div class="dash-rel-avatar">👨</div>
-            <div class="dash-rel-info">
-              <div class="dash-rel-name">同窗·陆文轩</div>
-              <div class="dash-rel-desc">志趣相投，常相互切磋。</div>
+            <div class="home-sys-msg">
+              <strong>日常提醒</strong><br>
+              今日可领取晨昏定省礼，前往<b style="color:#C9A227;">书房</b>触发剧情。
             </div>
-            <span class="dash-rel-tag">友好</span>
           </div>
-          <div class="dash-relation-card">
-            <div class="dash-rel-avatar">👩</div>
-            <div class="dash-rel-info">
-              <div class="dash-rel-name">邻居·苏小娘</div>
-              <div class="dash-rel-desc">常在巷口遇见，笑意盈盈。</div>
-            </div>
-            <span class="dash-rel-tag">好感</span>
+
+          <!-- 当前位置标签 -->
+          <div class="home-location-tag">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            当前：汴京·府邸
           </div>
         </div>
-        <div class="dash-bottom-panel" style="flex:0.8;">
-          <div class="dash-panel-title">携带物品</div>
-          <div class="dash-info-row"><span class="label">银两</span><span class="value">352两</span></div>
-          <div class="dash-info-row"><span class="label">文房四宝</span><span class="value">1套</span></div>
-          <div class="dash-info-row"><span class="label">粗布衣</span><span class="value">2件</span></div>
-          <div class="dash-info-row"><span class="label">馒头</span><span class="value">3个</span></div>
+
+        <!-- 右侧边栏：剧情 / 日常任务卡片 -->
+        <div class="home-right-bar">
+          <!-- 剧情卡片 -->
+          <div class="home-right-card" onclick="App.navigate('story')">
+            <div class="home-right-card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+              第一章·落梅知
+            </div>
+            <div class="home-right-card-sub">剧情进度</div>
+            <div class="home-right-progress">
+              <div class="home-right-progress-fill" style="width:35%;"></div>
+            </div>
+            <div class="home-right-progress-text">35%</div>
+          </div>
+
+          <!-- 日常任务卡片 -->
+          <div class="home-right-card" onclick="App.navigate('daily-quest')">
+            <div class="home-right-card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              今日可完成
+            </div>
+            <div class="home-right-card-sub">日常任务</div>
+            <div class="home-right-progress">
+              <div class="home-right-progress-fill" style="width:60%;"></div>
+            </div>
+            <div class="home-right-progress-text">3 / 5</div>
+          </div>
+
+          <!-- 限时活动卡片 -->
+          <div class="home-right-card" onclick="App.navigate('limited-event')">
+            <div class="home-right-card-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              限时活动
+            </div>
+            <div class="home-right-card-sub">中秋赏月宴</div>
+            <div class="home-right-progress">
+              <div class="home-right-progress-fill" style="width:20%;"></div>
+            </div>
+            <div class="home-right-progress-text">剩余 2 天</div>
+          </div>
         </div>
       </div>
     `;
   },
 
+  /** =========================================================
+   *  底部功能导航：NPC/衣橱/商城/任务/成就/图鉴/信件/背包
+   * ========================================================= */
   _renderBottomNav() {
+    // 导航项配置：[图标路径d, 标签文字, 跳转页面]
     const navItems = [
-      { icon: 'npc', label: '人物', page: 'npc' },
-      { icon: 'bg', label: '行囊', page: 'inventory' },
-      { icon: 'api', label: '武学', page: 'status' },
-      { icon: 'relations', label: '关系', page: 'relations' },
-      { icon: 'game', label: '成就', page: 'achievement' },
-      { icon: 'notes', label: '记事', page: 'notes' }
+      {
+        icon: '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+        label: 'NPC',
+        page: 'npc'
+      },
+      {
+        icon: '<path d="M20.38 3.46L16 7.84l-1.1-1.1L19.27 2.36a2.5 2.5 0 011.11 1.1z"/><path d="M14 7.84l-2 2L8.62 6.46 10 5.08l2.38 2.38z"/><path d="M4 16l4-4 2 2-4 4z"/><path d="M8 20l-4-4"/>',
+        label: '衣橱',
+        page: 'wardrobe'
+      },
+      {
+        icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
+        label: '商城',
+        page: 'shop'
+      },
+      {
+        icon: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+        label: '任务',
+        page: 'quest'
+      },
+      {
+        icon: '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+        label: '成就',
+        page: 'achievement'
+      },
+      {
+        icon: '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
+        label: '图鉴',
+        page: 'archive'
+      },
+      {
+        icon: '<path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>',
+        label: '情缘',
+        page: 'affection'
+      },
+      {
+        icon: '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>',
+        label: '信件',
+        page: 'letters'
+      },
+      {
+        icon: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>',
+        label: '背包',
+        page: 'inventory'
+      }
     ];
 
-    const icons = {
-      npc: '<path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>',
-      bg: '<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>',
-      api: '<rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>',
-      relations: '<circle cx="5" cy="6" r="3"/><circle cx="19" cy="6" r="3"/><circle cx="12" cy="18" r="3"/><line x1="5" y1="9" x2="10" y2="15"/><line x1="19" y1="9" x2="14" y2="15"/>',
-      game: '<polygon points="5 3 19 12 5 21 5 3"/>',
-      notes: '<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>'
-    };
-
     return `
-      <div class="dash-bottom-nav">
+      <div class="home-bottom-nav">
         ${navItems.map(item => `
-          <div class="dash-nav-item" onclick="App.navigate('${item.page}')">
-            <svg class="dash-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              ${icons[item.icon] || icons.game}
+          <div class="home-nav-item" onclick="App.navigate('${item.page}')" title="${item.label}">
+            <svg class="home-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              ${item.icon}
             </svg>
-            <span class="dash-nav-label">${item.label}</span>
+            <span class="home-nav-label">${item.label}</span>
           </div>
         `).join('')}
       </div>
     `;
   },
 
-  /* ===== 辅助函数 ===== */
+  /** =========================================================
+   *  安全读取本地存储数据
+   * ========================================================= */
   _safeGet(key, defaultValue) {
     try {
       if (typeof Storage !== 'undefined' && Storage.get) {
         return Storage.get(key, defaultValue);
       }
-    } catch (e) {}
+    } catch (e) {
+      /* 静默失败，返回默认值 */
+    }
     return defaultValue;
+  },
+  /** 回到页面顶部 */
+  scrollToTop() {
+    const content = document.querySelector('.page-frame-content') || document.getElementById('page-home');
+    if (content) content.scrollTop = 0;
   }
 };
 
-// 全局暴露
+/** 全局暴露，供 App 路由调用 */
 window.HomePage = HomePage;

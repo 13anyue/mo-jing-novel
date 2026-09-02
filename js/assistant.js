@@ -25,6 +25,14 @@ const Assistant = {
   _choiceCallback: null,
   /** @type {string|null} 当前等待选择的上下文类型 */
   _choiceContext: null,
+  /** @type {Array<{id:string,name:string,content:string,time:number}>} 预设提示词模板列表 */
+  _savedPrompts: [],
+  /** @type {boolean} 当前是否正在处理AI请求（显示思考动画） */
+  _isProcessing: false,
+  /** @type {Array<{action:string,desc:string,time:number}>} 操作历史记录（用于功能中心展示） */
+  _operationHistory: [],
+  /** @type {boolean} 是否显示预设提示词管理面板 */
+  _showPromptPanel: false,
 
   // =========================================================
   // 代码预览渲染子模块
@@ -339,22 +347,39 @@ const Assistant = {
 
   /**
    * 渲染整个助手页面HTML结构
-   * 包含：标题栏、API设置面板、快捷操作栏、对话区域
+   * 增强版：功能中心风格界面 —— 包含标题栏、API设置面板、快捷功能卡片网格、
+   * 智能输入区、预设提示词管理、操作历史记录、对话区域
    */
   renderPage() {
     const page = document.getElementById('page-assistant');
-    if (!page) { console.warn('[v7] 元素 #page-assistant 未找到'); }
-    if (!page) return;
+    if (!page) { console.warn('[v7] 元素 #page-assistant 未找到'); return; }
+
+    // 从localStorage加载预设提示词和历史记录
+    this._loadSavedPrompts();
+    this._loadOperationHistory();
 
     page.innerHTML = `
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')">← 返回</button></div>
-      <!-- 页面标题与API设置按钮 -->
-      <div class="assistant-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg,16px);">
-        <h2 class="section-title" style="margin:0;color:${this._colors.inkDark};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg> 万能小助手 v3</h2>
-        <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.toggleApiPanel()" style="display:flex;align-items:center;gap:4px;border-color:${this._colors.gold};color:${this._colors.gold};">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-          API设置
-        </button>
+      <!-- 顶部标题栏：小助手标题 + 设置/提示词按钮 -->
+      <div class="assistant-header" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-lg,16px);padding-bottom:8px;border-bottom:2px solid ${this._colors.gold};">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="App.navigate('home')" title="返回主页" style="padding:6px 10px;border-color:${this._colors.border};color:${this._colors.textSecondary};">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          </button>
+          <h2 class="section-title" style="margin:0;color:${this._colors.inkDark};display:flex;align-items:center;gap:8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:${this._colors.gold};"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8.01" y2="16"/><line x1="16" y1="16" x2="16.01" y2="16"/></svg>
+            万能小助手 v3 <span style="font-size:12px;color:${this._colors.textSecondary};font-weight:400;">— 功能中心</span>
+          </h2>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.togglePromptPanel()" title="预设提示词" style="display:flex;align-items:center;gap:4px;border-color:${this._colors.gold};color:${this._colors.gold};">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            提示词模板
+          </button>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.toggleApiPanel()" title="API独立配置" style="display:flex;align-items:center;gap:4px;border-color:${this._colors.gold};color:${this._colors.gold};">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            设置
+          </button>
+        </div>
       </div>
 
       <!-- API设置面板（默认隐藏） -->
@@ -402,22 +427,115 @@ const Assistant = {
         </div>
       </div>
 
-      <!-- 快捷操作按钮栏 -->
+      <!-- 预设提示词管理面板（默认隐藏） -->
+      <div id="assistantPromptPanel" class="ez-card" style="display:none;margin-bottom:var(--space-lg,16px);background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:12px;overflow:hidden;">
+        <div class="card-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:${this._colors.inkDark};color:${this._colors.gold};">
+          <span style="font-weight:600;font-size:14px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg> 预设提示词模板</span>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.togglePromptPanel()" style="color:${this._colors.gold};border-color:${this._colors.gold};">收起</button>
+        </div>
+        <div class="card-body" style="padding:16px;">
+          <!-- 新建提示词表单 -->
+          <div style="display:grid;gap:8px;margin-bottom:12px;padding:12px;background:${this._colors.bgSecondary};border-radius:8px;">
+            <input type="text" id="promptNameInput" placeholder="提示词名称（如：天气组件生成）" style="background:${this._colors.parchment};color:${this._colors.inkDark};border:1px solid ${this._colors.border};border-radius:6px;padding:8px 10px;font-size:13px;">
+            <textarea id="promptContentInput" placeholder="输入提示词模板内容..." rows="3" style="background:${this._colors.parchment};color:${this._colors.inkDark};border:1px solid ${this._colors.border};border-radius:6px;padding:8px 10px;font-size:13px;resize:vertical;"></textarea>
+            <div style="display:flex;gap:8px;justify-content:flex-end;">
+              <button class="ez-btn btn btn-sm btn-primary" onclick="Assistant.savePrompt()" style="background:${this._colors.gold};color:${this._colors.inkDark};border:none;padding:6px 14px;font-size:12px;border-radius:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                保存模板
+              </button>
+            </div>
+          </div>
+          <!-- 提示词列表 -->
+          <div id="savedPromptsList" style="max-height:200px;overflow-y:auto;">
+            <!-- 由 _renderSavedPromptsList 填充 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 智能需求输入区（核心交互入口） -->
+      <div class="ez-card" style="margin-bottom:var(--space-lg,16px);background:${this._colors.bgCard};border:2px solid ${this._colors.gold};border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(201,162,39,0.15);">
+        <div style="padding:16px 16px 8px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;font-size:13px;color:${this._colors.textSecondary};">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            描述你的需求，小助手会为你生成代码、修改UI、添加功能...
+          </div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="assistantInput" placeholder="例如：帮我添加一个天气系统、修改导航栏为竖排、搜索项目中的NPC模块..."
+              style="flex:1;background:${this._colors.parchment};color:${this._colors.inkDark};border:1px solid ${this._colors.border};border-radius:8px;padding:10px 14px;font-size:14px;"
+              onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();Assistant.submitRequest();}">
+            <button class="ez-btn btn btn-primary" onclick="Assistant.submitRequest()" style="padding:10px 18px;background:${this._colors.gold};color:${this._colors.inkDark};border:none;border-radius:8px;font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              发送需求
+            </button>
+          </div>
+        </div>
+        <!-- 快捷预设提示词标签 -->
+        <div id="quickPromptTags" style="padding:0 16px 12px;display:flex;gap:6px;flex-wrap:wrap;">
+          <!-- 由 _renderQuickPromptTags 填充 -->
+        </div>
+      </div>
+
+      <!-- 功能分类卡片网格 -->
       <div class="ez-card" style="margin-bottom:var(--space-lg,16px);background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:12px;overflow:hidden;">
-        <div class="card-header" style="padding:10px 16px;font-size:13px;color:${this._colors.textSecondary};background:${this._colors.bgSecondary};border-bottom:1px solid ${this._colors.border};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 快捷操作</div>
-        <div class="card-body" style="display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;">
-          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作预设')" title="生成预设配置" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg> 制作预设</button>
-          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('美化UI')" title="修改配色/字体/布局" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> 美化UI</button>
-          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作功能')" title="创建JS模块" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 制作功能</button>
-          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作角色')" title="生成NPC数据" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> 制作角色</button>
-          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('制作APP')" title="创建小手机App" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> 制作APP</button>
-          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('修改代码')" title="分析并修改代码" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 修改代码</button>
-          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.quickTask('导入代码')" title="导入外部代码" style="border-color:${this._colors.gold};color:${this._colors.gold};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> 导入代码</button>
+        <div class="card-header" style="padding:12px 16px;font-size:14px;font-weight:600;color:${this._colors.inkDark};background:${this._colors.bgSecondary};border-bottom:1px solid ${this._colors.border};display:flex;align-items:center;gap:6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:${this._colors.gold};"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+          功能中心
+        </div>
+        <div class="card-body" style="padding:16px;">
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">
+            <!-- 生成代码 -->
+            <div onclick="Assistant.quickTask('生成代码')" style="cursor:pointer;padding:14px;border:1px solid ${this._colors.border};border-radius:10px;background:${this._colors.parchment};transition:all 0.2s;text-align:center;" onmouseenter="this.style.borderColor='${this._colors.gold}';this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(201,162,39,0.2)';" onmouseleave="this.style.borderColor='${this._colors.border}';this.style.transform='';this.style.boxShadow='';">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${this._colors.gold}" stroke-width="1.5" style="margin:0 auto 6px;"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+              <div style="font-size:13px;font-weight:600;color:${this._colors.inkDark};">生成代码</div>
+              <div style="font-size:11px;color:${this._colors.textSecondary};margin-top:2px;">JS/CSS/HTML</div>
+            </div>
+            <!-- 修改UI -->
+            <div onclick="Assistant.quickTask('美化UI')" style="cursor:pointer;padding:14px;border:1px solid ${this._colors.border};border-radius:10px;background:${this._colors.parchment};transition:all 0.2s;text-align:center;" onmouseenter="this.style.borderColor='${this._colors.gold}';this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(201,162,39,0.2)';" onmouseleave="this.style.borderColor='${this._colors.border}';this.style.transform='';this.style.boxShadow='';">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${this._colors.gold}" stroke-width="1.5" style="margin:0 auto 6px;"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+              <div style="font-size:13px;font-weight:600;color:${this._colors.inkDark};">修改UI</div>
+              <div style="font-size:11px;color:${this._colors.textSecondary};margin-top:2px;">布局/配色/样式</div>
+            </div>
+            <!-- 添加功能 -->
+            <div onclick="Assistant.quickTask('制作功能')" style="cursor:pointer;padding:14px;border:1px solid ${this._colors.border};border-radius:10px;background:${this._colors.parchment};transition:all 0.2s;text-align:center;" onmouseenter="this.style.borderColor='${this._colors.gold}';this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(201,162,39,0.2)';" onmouseleave="this.style.borderColor='${this._colors.border}';this.style.transform='';this.style.boxShadow='';">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${this._colors.gold}" stroke-width="1.5" style="margin:0 auto 6px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              <div style="font-size:13px;font-weight:600;color:${this._colors.inkDark};">添加功能</div>
+              <div style="font-size:11px;color:${this._colors.textSecondary};margin-top:2px;">导入新模块</div>
+            </div>
+            <!-- 代码搜查 -->
+            <div onclick="Assistant.quickTask('代码搜查')" style="cursor:pointer;padding:14px;border:1px solid ${this._colors.border};border-radius:10px;background:${this._colors.parchment};transition:all 0.2s;text-align:center;" onmouseenter="this.style.borderColor='${this._colors.gold}';this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(201,162,39,0.2)';" onmouseleave="this.style.borderColor='${this._colors.border}';this.style.transform='';this.style.boxShadow='';">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${this._colors.gold}" stroke-width="1.5" style="margin:0 auto 6px;"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              <div style="font-size:13px;font-weight:600;color:${this._colors.inkDark};">代码搜查</div>
+              <div style="font-size:11px;color:${this._colors.textSecondary};margin-top:2px;">搜索项目代码</div>
+            </div>
+            <!-- 渲染预览 -->
+            <div onclick="Assistant.quickTask('渲染预览')" style="cursor:pointer;padding:14px;border:1px solid ${this._colors.border};border-radius:10px;background:${this._colors.parchment};transition:all 0.2s;text-align:center;" onmouseenter="this.style.borderColor='${this._colors.gold}';this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(201,162,39,0.2)';" onmouseleave="this.style.borderColor='${this._colors.border}';this.style.transform='';this.style.boxShadow='';">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${this._colors.gold}" stroke-width="1.5" style="margin:0 auto 6px;"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              <div style="font-size:13px;font-weight:600;color:${this._colors.inkDark};">渲染预览</div>
+              <div style="font-size:11px;color:${this._colors.textSecondary};margin-top:2px;">实时预览效果</div>
+            </div>
+            <!-- 导出项目 -->
+            <div onclick="Assistant.quickTask('导出项目')" style="cursor:pointer;padding:14px;border:1px solid ${this._colors.border};border-radius:10px;background:${this._colors.parchment};transition:all 0.2s;text-align:center;" onmouseenter="this.style.borderColor='${this._colors.gold}';this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(201,162,39,0.2)';" onmouseleave="this.style.borderColor='${this._colors.border}';this.style.transform='';this.style.boxShadow='';">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="${this._colors.gold}" stroke-width="1.5" style="margin:0 auto 6px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <div style="font-size:13px;font-weight:600;color:${this._colors.inkDark};">导出项目</div>
+              <div style="font-size:11px;color:${this._colors.textSecondary};margin-top:2px;">打包下载</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 操作历史记录区域 -->
+      <div class="ez-card" style="margin-bottom:var(--space-lg,16px);background:${this._colors.bgCard};border:1px solid ${this._colors.border};border-radius:12px;overflow:hidden;">
+        <div class="card-header" style="padding:10px 16px;font-size:13px;color:${this._colors.textSecondary};background:${this._colors.bgSecondary};border-bottom:1px solid ${this._colors.border};display:flex;justify-content:space-between;align-items:center;">
+          <span style="display:flex;align-items:center;gap:6px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg> 操作历史</span>
+          <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.clearHistory()" style="font-size:11px;padding:2px 8px;border-color:${this._colors.border};color:${this._colors.textSecondary};">清空</button>
+        </div>
+        <div id="operationHistoryList" style="max-height:120px;overflow-y:auto;padding:8px 16px;font-size:12px;color:${this._colors.textSecondary};">
+          <!-- 由 _renderOperationHistory 填充 -->
         </div>
       </div>
 
       <!-- 对话区域 -->
-      <div class="assistant-chat" id="assistantChat" style="height:520px;display:flex;flex-direction:column;border:1px solid ${this._colors.border};border-radius:12px;overflow:hidden;background:${this._colors.bgCard};">
+      <div class="assistant-chat" id="assistantChat" style="height:400px;display:flex;flex-direction:column;border:1px solid ${this._colors.border};border-radius:12px;overflow:hidden;background:${this._colors.bgCard};">
         <!-- 对话头部 -->
         <div class="assistant-chat-header" style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:${this._colors.inkDark};color:${this._colors.gold};border-bottom:1px solid ${this._colors.border};font-weight:600;font-size:14px;">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
@@ -439,7 +557,7 @@ const Assistant = {
           <button class="ez-btn btn btn-sm btn-secondary" onclick="Assistant.toggleDropZone()" title="上传文件" style="padding:6px 8px;border-color:${this._colors.border};color:${this._colors.textSecondary};">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
           </button>
-          <input type="text" id="assistantInput" placeholder="输入你的需求，或描述你想制作的内容..."
+          <input type="text" id="assistantChatInput" placeholder="继续对话..."
             style="flex:1;background:${this._colors.parchment};color:${this._colors.inkDark};border:1px solid ${this._colors.border};border-radius:8px;padding:8px 12px;font-size:13px;"
             onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();Assistant.send();}">
           <button class="ez-btn btn btn-primary" onclick="Assistant.send()" style="padding:8px 16px;background:${this._colors.gold};color:${this._colors.inkDark};border:none;border-radius:8px;font-weight:600;">发送</button>
@@ -448,6 +566,9 @@ const Assistant = {
     `;
 
     this.loadApiSettings();
+    this._renderSavedPromptsList();
+    this._renderQuickPromptTags();
+    this._renderOperationHistory();
     this.renderChat();
   },
 
@@ -771,16 +892,482 @@ const Assistant = {
     };
     const prompt = prompts[task] || task;
     this._chatHistory.push({ role: 'user', content: prompt, time: Date.now() });
+    this._addOperationHistory('快捷任务', task);
     this.renderChat();
     // 自动触发AI回复引导
     this._processTask(task);
   },
 
+  // =========================================================
+  // 核心新增功能：submitRequest() — 统一需求提交入口
+  // =========================================================
+
   /**
-   * 处理快捷任务的AI引导回复
-   * 显示该任务的操作说明和选项
-   * @param {string} task - 任务类型
+   * submitRequest() — 功能中心的核心入口
+   * 收集用户输入的需求描述，显示"正在思考..."动画，然后模拟返回结果
+   * 因为是纯前端实现，暂时使用模拟回复；后续可接入AI API
+   * @param {string|null} promptText - 用户输入的提示词文本（可选，从input获取）
    */
+  async submitRequest(promptText) {
+    // 获取输入内容：优先使用传入的参数，否则从输入框读取
+    const input = document.getElementById('assistantInput');
+    const text = promptText || (input ? input.value.trim() : '');
+    if (!text) return;
+    if (input) input.value = '';
+
+    // 添加到操作历史记录
+    this._addOperationHistory('提交需求', text.substring(0, 30));
+
+    // 1) 将用户消息添加到对话历史
+    this._chatHistory.push({ role: 'user', content: text, time: Date.now() });
+    this.renderChat();
+
+    // 2) 显示"正在思考..."的AI消息（带动态点点动画）
+    const thinkingId = 'thinking-' + Date.now();
+    this._isProcessing = true;
+    this._chatHistory.push({
+      role: 'assistant',
+      content: `<div id="${thinkingId}" style="display:flex;align-items:center;gap:8px;color:${this._colors.gold};">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;"><circle cx="12" cy="12" r="10" stroke-dasharray="31.4 31.4" stroke-dashoffset="10"/></svg>
+        <span>正在思考<span class="thinking-dots">...</span></span>
+      </div>`,
+      time: Date.now()
+    });
+    this.renderChat();
+
+    // 添加CSS动画（如果未添加过）
+    if (!document.getElementById('assistant-thinking-style')) {
+      const style = document.createElement('style');
+      style.id = 'assistant-thinking-style';
+      style.textContent = `
+        @keyframes spin { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+        .thinking-dots { animation: dots 1.5s infinite; }
+        @keyframes dots { 0%,20%{opacity:1} 40%,100%{opacity:0.3} }
+      `;
+      document.head.appendChild(style);
+    }
+
+    // 3) 模拟AI处理延迟（800-2000ms随机），展示思考过程
+    const delay = 800 + Math.random() * 1200;
+    await new Promise(r => setTimeout(r, delay));
+
+    // 4) 移除思考消息，替换为模拟结果
+    this._chatHistory = this._chatHistory.filter(m => !m.content.includes(thinkingId));
+    this._isProcessing = false;
+
+    // 5) 根据用户输入内容生成智能模拟回复
+    const reply = this._generateSimulatedReply(text);
+    this._chatHistory.push({ role: 'assistant', content: reply, time: Date.now() });
+    this.renderChat();
+  },
+
+  /**
+   * 根据用户输入生成模拟AI回复（纯前端演示模式）
+   * 分析关键词并返回对应的结构化回复，包含代码、操作选项等
+   * @param {string} text - 用户输入
+   * @returns {string} 模拟的AI回复HTML/Markdown
+   */
+  _generateSimulatedReply(text) {
+    const lower = text.toLowerCase();
+
+    // 场景1: 生成代码相关
+    if (lower.includes('代码') || lower.includes('生成') || lower.includes('编写') || lower.includes('js') || lower.includes('css') || lower.includes('html')) {
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg> 收到代码生成需求！
+
+**需求分析：** 你描述了一个代码相关任务。
+
+**生成示例代码：**
+
+\`\`\`javascript
+// 由万能小助手自动生成的示例代码
+const ExampleComponent = {
+  init() {
+    console.log('组件已初始化');
+    this.render();
+  },
+  render() {
+    document.getElementById('app').innerHTML = 
+      '<div style="padding:20px;">Hello World</div>';
+  }
+};
+\`\`\`
+
+**建议下一步：**
+- 点击"复制"按钮复制代码
+- 点击"预览"查看渲染效果
+- 告诉我是否需要修改或导入`;
+    }
+
+    // 场景2: 修改UI相关
+    if (lower.includes('ui') || lower.includes('美化') || lower.includes('样式') || lower.includes('颜色') || lower.includes('布局') || lower.includes('主题')) {
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg> UI修改方案已生成！
+
+**CSS变更预览：**
+
+| 属性 | 当前值 | 建议值 |
+|------|--------|--------|
+| --bg-primary | #F5E6D3 | #FAFBFC |
+| --border-radius | 8px | 16px |
+| --font-size | 14px | 15px |
+
+**是否应用这些修改？**`;
+    }
+
+    // 场景3: 添加功能/模块
+    if (lower.includes('功能') || lower.includes('模块') || lower.includes('系统') || lower.includes('添加') || lower.includes('新功能')) {
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.68 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 8.56 4.68V4a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> 功能模块方案
+
+已根据你的描述「**${text.substring(0, 40)}**」生成模块框架：
+
+**模块信息：**
+| 属性 | 值 |
+|------|-----|
+| 模块ID | module_${Date.now().toString(36)} |
+| 名称 | 自定义模块 |
+| 版本 | 1.0.0 |
+
+\`\`\`javascript
+const CustomModule = {
+  init() { this.renderPage(); },
+  renderPage() {
+    // 模块页面渲染逻辑
+    console.log('模块已加载');
+  }
+};
+\`\`\`
+
+是否导入到系统？`;
+    }
+
+    // 场景4: 搜索/搜查代码
+    if (lower.includes('搜索') || lower.includes('搜查') || lower.includes('查找') || lower.includes('找')) {
+      const results = this._simulateCodeSearch(text);
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> 代码搜查结果
+
+在项目中搜索「${text}」找到以下匹配：
+
+${results.map(r => `- **${r.file}** (第${r.line}行): ${r.snippet}`).join('\n')}
+
+共找到 **${results.length}** 处匹配。`;
+    }
+
+    // 场景5: 预览/渲染
+    if (lower.includes('预览') || lower.includes('渲染') || lower.includes('效果')) {
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> 渲染预览模式
+
+**当前页面预览结果：**
+
+- 页面结构: 正常
+- CSS样式: 已应用
+- JS功能: 运行中
+- 响应式: 适配完成
+
+你可以点击下方"导出项目"将当前代码打包下载。`;
+    }
+
+    // 场景6: 导出/下载
+    if (lower.includes('导出') || lower.includes('下载') || lower.includes('打包')) {
+      return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> 项目导出
+
+**导出内容：**
+- HTML页面结构
+- CSS样式文件
+- JS模块代码
+- 配置文件
+
+（纯前端模拟：实际导出功能需后端支持或使用JS Zip库实现打包下载）
+
+你可以使用浏览器的"另存为"功能保存当前页面，或导出为单个HTML文件。`;
+    }
+
+    // 默认回复
+    return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg> 收到你的需求：「${text}」
+
+我是万能小助手，目前处于**纯前端模拟模式**。我可以帮你：
+
+1. **生成代码** — 描述功能需求，我生成JS/CSS/HTML代码
+2. **修改UI** — 描述样式调整，我给出CSS修改方案
+3. **添加功能** — 描述模块需求，我生成完整模块代码
+4. **代码搜查** — 描述搜索关键词，我模拟项目内搜索结果
+5. **渲染预览** — 描述预览需求，我给出效果评估
+6. **导出项目** — 打包当前代码下载
+
+**提示：** 配置独立API后，我将使用AI生成更智能的回复。点击右上角"设置"配置你的API Key。`;
+  },
+
+  /**
+   * 模拟代码搜索功能（纯前端演示）
+   * 在项目已知模块中搜索关键词，返回匹配结果
+   * @param {string} keyword - 搜索关键词
+   * @returns {Array<{file:string,line:number,snippet:string}>} 搜索结果列表
+   */
+  _simulateCodeSearch(keyword) {
+    const lowerKw = keyword.toLowerCase();
+    const allModules = [
+      { file: 'app.js', line: 120, snippet: 'App.navigate(pageId)' },
+      { file: 'assistant.js', line: 45, snippet: 'CodePreview: { _iframes: new Map() }' },
+      { file: 'style.css', line: 80, snippet: '--gold: #C9A227' },
+      { file: 'npc.js', line: 200, snippet: 'NPCManager.addNPC(npcData)' },
+      { file: 'chat.js', line: 55, snippet: 'sendMessage(text, role)' },
+      { file: 'api.js', line: 30, snippet: 'APISettings.chat()' },
+      { file: 'preset.js', line: 90, snippet: 'PresetManager.addPreset()' },
+      { file: 'theme.js', line: 15, snippet: 'applyTheme(colors)' }
+    ];
+    // 随机返回2-4条匹配结果
+    const matches = allModules.filter(m =>
+      m.file.toLowerCase().includes(lowerKw) ||
+      m.snippet.toLowerCase().includes(lowerKw) ||
+      lowerKw.split(/\s+/).some(k => m.snippet.toLowerCase().includes(k))
+    );
+    return matches.length > 0 ? matches : allModules.slice(0, 3);
+  },
+
+  // =========================================================
+  // 预设提示词模板管理
+  // =========================================================
+
+  /**
+   * 切换预设提示词管理面板的显示/隐藏
+   */
+  togglePromptPanel() {
+    const panel = document.getElementById('assistantPromptPanel');
+    if (!panel) { console.warn('[v7] 元素 #assistantPromptPanel 未找到'); return; }
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    this._showPromptPanel = panel.style.display === 'block';
+    if (this._showPromptPanel) {
+      this._renderSavedPromptsList();
+    }
+  },
+
+  /**
+   * 保存新的预设提示词模板
+   * 从表单读取名称和内容，持久化到localStorage
+   */
+  savePrompt() {
+    const nameInput = document.getElementById('promptNameInput');
+    const contentInput = document.getElementById('promptContentInput');
+    if (!nameInput || !contentInput) return;
+
+    const name = nameInput.value.trim();
+    const content = contentInput.value.trim();
+    if (!name || !content) {
+      this._addSystemMessage('<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> 请填写提示词名称和内容');
+      return;
+    }
+
+    const prompt = {
+      id: 'prompt_' + Date.now(),
+      name,
+      content,
+      time: Date.now()
+    };
+
+    this._savedPrompts.push(prompt);
+    this._savePromptsToStorage();
+
+    // 清空表单
+    nameInput.value = '';
+    contentInput.value = '';
+
+    // 刷新列表和快捷标签
+    this._renderSavedPromptsList();
+    this._renderQuickPromptTags();
+
+    this._addOperationHistory('保存模板', name);
+    this._addSystemMessage(`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 提示词模板「${name}」已保存！`);
+  },
+
+  /**
+   * 删除指定的预设提示词模板
+   * @param {string} promptId - 要删除的模板ID
+   */
+  deletePrompt(promptId) {
+    this._savedPrompts = this._savedPrompts.filter(p => p.id !== promptId);
+    this._savePromptsToStorage();
+    this._renderSavedPromptsList();
+    this._renderQuickPromptTags();
+    this._addOperationHistory('删除模板', promptId);
+  },
+
+  /**
+   * 应用预设提示词到输入框
+   * @param {string} promptId - 要应用的模板ID
+   */
+  applyPrompt(promptId) {
+    const prompt = this._savedPrompts.find(p => p.id === promptId);
+    if (!prompt) return;
+    const input = document.getElementById('assistantInput');
+    if (input) {
+      input.value = prompt.content;
+      input.focus();
+    }
+    this._addOperationHistory('应用模板', prompt.name);
+  },
+
+  /**
+   * 将预设提示词列表持久化到localStorage
+   */
+  _savePromptsToStorage() {
+    try {
+      localStorage.setItem('assistant_saved_prompts_v3', JSON.stringify(this._savedPrompts));
+    } catch (e) {
+      console.error('[万能小助手] 保存提示词失败:', e);
+    }
+  },
+
+  /**
+   * 从localStorage加载预设提示词列表
+   */
+  _loadSavedPrompts() {
+    try {
+      const raw = localStorage.getItem('assistant_saved_prompts_v3');
+      if (raw) {
+        this._savedPrompts = JSON.parse(raw);
+      }
+    } catch (e) {
+      console.warn('[万能小助手] 读取提示词失败:', e);
+      this._savedPrompts = [];
+    }
+  },
+
+  /**
+   * 渲染预设提示词列表到管理面板
+   */
+  _renderSavedPromptsList() {
+    const container = document.getElementById('savedPromptsList');
+    if (!container) return;
+
+    if (this._savedPrompts.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:20px;color:${this._colors.textSecondary};font-size:12px;">暂无保存的提示词模板<br>在上方填写并保存</div>`;
+      return;
+    }
+
+    container.innerHTML = this._savedPrompts.map(p => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;margin-bottom:6px;background:${this._colors.parchment};border:1px solid ${this._colors.border};border-radius:6px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:${this._colors.inkDark};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</div>
+          <div style="font-size:11px;color:${this._colors.textSecondary};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.content.substring(0, 40)}${p.content.length > 40 ? '...' : ''}</div>
+        </div>
+        <div style="display:flex;gap:4px;margin-left:8px;flex-shrink:0;">
+          <button onclick="Assistant.applyPrompt('${p.id}')" style="padding:4px 8px;font-size:11px;background:${this._colors.gold};color:${this._colors.inkDark};border:none;border-radius:4px;cursor:pointer;">应用</button>
+          <button onclick="Assistant.deletePrompt('${p.id}')" style="padding:4px 8px;font-size:11px;background:transparent;border:1px solid ${this._colors.border};color:${this._colors.textSecondary};border-radius:4px;cursor:pointer;">删除</button>
+        </div>
+      </div>
+    `).join('');
+  },
+
+  /**
+   * 渲染快捷预设提示词标签到输入框下方
+   * 显示最近保存的提示词作为快捷入口
+   */
+  _renderQuickPromptTags() {
+    const container = document.getElementById('quickPromptTags');
+    if (!container) return;
+
+    // 默认提供一些常用提示词
+    const defaults = [
+      { name: '天气组件', content: '帮我添加一个天气显示组件，可以展示当前温度和天气图标' },
+      { name: '暗色主题', content: '将界面切换为暗黑模式配色方案' },
+      { name: '导航优化', content: '优化导航栏布局，增加图标和悬停效果' }
+    ];
+
+    // 合并用户保存的和默认的，去重
+    const allPrompts = [...this._savedPrompts, ...defaults];
+    const displayPrompts = allPrompts.slice(0, 6); // 最多显示6个
+
+    container.innerHTML = displayPrompts.map(p => `
+      <span onclick="Assistant.submitRequest('${p.content.replace(/'/g, "\\'")}')" style="display:inline-block;padding:4px 10px;background:${this._colors.bgSecondary};border:1px solid ${this._colors.border};border-radius:12px;font-size:11px;color:${this._colors.textSecondary};cursor:pointer;transition:all 0.2s;" onmouseenter="this.style.borderColor='${this._colors.gold}';this.style.color='${this._colors.inkDark}';" onmouseleave="this.style.borderColor='${this._colors.border}';this.style.color='${this._colors.textSecondary}';">
+        ${p.name}
+      </span>
+    `).join('');
+  },
+
+  // =========================================================
+  // 操作历史记录管理
+  // =========================================================
+
+  /**
+   * 添加一条操作历史记录
+   * @param {string} action - 操作类型描述
+   * @param {string} desc - 操作详情
+   */
+  _addOperationHistory(action, desc) {
+    this._operationHistory.unshift({
+      action,
+      desc: desc.substring(0, 50),
+      time: Date.now()
+    });
+    // 最多保留20条
+    if (this._operationHistory.length > 20) {
+      this._operationHistory = this._operationHistory.slice(0, 20);
+    }
+    this._saveOperationHistory();
+    this._renderOperationHistory();
+  },
+
+  /**
+   * 清空操作历史记录
+   */
+  clearHistory() {
+    this._operationHistory = [];
+    this._saveOperationHistory();
+    this._renderOperationHistory();
+  },
+
+  /**
+   * 将操作历史持久化到localStorage
+   */
+  _saveOperationHistory() {
+    try {
+      localStorage.setItem('assistant_operation_history_v3', JSON.stringify(this._operationHistory));
+    } catch (e) {
+      console.error('[万能小助手] 保存历史失败:', e);
+    }
+  },
+
+  /**
+   * 从localStorage加载操作历史记录
+   */
+  _loadOperationHistory() {
+    try {
+      const raw = localStorage.getItem('assistant_operation_history_v3');
+      if (raw) {
+        this._operationHistory = JSON.parse(raw);
+      }
+    } catch (e) {
+      console.warn('[万能小助手] 读取历史失败:', e);
+      this._operationHistory = [];
+    }
+  },
+
+  /**
+   * 渲染操作历史列表到DOM
+   */
+  _renderOperationHistory() {
+    const container = document.getElementById('operationHistoryList');
+    if (!container) return;
+
+    if (this._operationHistory.length === 0) {
+      container.innerHTML = '<div style="text-align:center;padding:8px;font-style:italic;">暂无操作记录</div>';
+      return;
+    }
+
+    const formatTime = (ts) => {
+      const d = new Date(ts);
+      return `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    };
+
+    container.innerHTML = this._operationHistory.map(h => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px dashed ${this._colors.border};font-size:11px;">
+        <span style="color:${this._colors.inkDark};"><strong>${h.action}</strong> — ${h.desc}</span>
+        <span style="color:${this._colors.textSecondary};white-space:nowrap;margin-left:8px;">${formatTime(h.time)}</span>
+      </div>
+    `).join('');
+  },
+
+  // =========================================================
+  // send() 方法修改：支持从对话输入框发送
+  // =========================================================
   async _processTask(task) {
     const responses = {
       '制作预设': `好的！我来帮你制作预设。
@@ -875,16 +1462,20 @@ const Assistant = {
   },
 
   /**
-   * 发送用户输入消息
-   * 如果正在等待用户选择，则处理选择；否则进入意图检测和AI对话
+   * send() — 从对话区域输入框发送消息
+   * 如果正在等待用户选择，优先处理选择；否则进入意图检测和AI对话
+   * 优先使用对话区输入框 assistantChatInput，回退到主输入框 assistantInput
    */
   async send() {
-    const input = document.getElementById('assistantInput');
-    if (!input) { console.warn('[v7] 元素 #assistantInput 未找到'); }
-    if (!input) return;
+    // 优先使用对话区域输入框，回退到主需求输入框
+    const input = document.getElementById('assistantChatInput') || document.getElementById('assistantInput');
+    if (!input) { console.warn('[v7] 未找到输入框元素'); return; }
     const text = input.value.trim();
     if (!text) return;
     input.value = '';
+
+    // 记录到操作历史
+    this._addOperationHistory('对话消息', text.substring(0, 30));
 
     // 如果正在等待用户选择，优先处理选择
     if (this._waitingForChoice && this._choiceCallback) {

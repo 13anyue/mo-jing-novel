@@ -26,14 +26,212 @@ const Launcher = {
     { key: 'skills',     label: '技能 / 特长', type: 'text' }
   ],
 
+  /**
+   * 初始化启动页
+   * 渲染古风墨境风格的全屏启动界面，包含状态栏、标题区、AI助手气泡和操作按钮卡片
+   */
   init() {
-    // Launcher is always visible initially; mainApp hidden
+    const launcher = document.getElementById('gameLauncher');
+    if (!launcher) return;
+
+    // 清空并注入古风启动页HTML
+    launcher.innerHTML = `
+      <!-- 启动页外层容器：全屏羊皮纸底色 + 古风渐变 -->
+      <div id="launcherPage" style="
+        width:100%; height:100vh; display:flex; flex-direction:column;
+        background: linear-gradient(180deg, #F5E6D3 0%, #EDE0CC 50%, #E5D5B8 100%);
+        color: #2C1810; font-family: var(--font-display, 'Georgia', serif);
+        position: relative; overflow: hidden;">
+
+        <!-- 装饰性背景纹理（fallback为CSS径向渐变模拟羊皮纸肌理） -->
+        <div style="
+          position:absolute; inset:0; pointer-events:none; opacity:0.15;
+          background-image: radial-gradient(circle at 20% 30%, rgba(201,162,39,0.3) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 70%, rgba(44,24,16,0.1) 0%, transparent 50%);"></div>
+
+        <!-- ====== 顶部系统状态栏 ====== -->
+        <div id="launcherStatusBar" style="
+          display:flex; justify-content:space-between; align-items:center;
+          padding: 8px 16px; font-size: 12px; color: #2C1810; opacity: 0.7;
+          position: relative; z-index: 2;">
+          <span id="launcherTime">--:--</span>
+          <div style="display:flex; gap:6px; align-items:center;">
+            <span id="launcherSignal">📶</span>
+            <span>🔋</span>
+          </div>
+        </div>
+
+        <!-- ====== 右上角AI助手悬浮气泡 ====== -->
+        <div onclick="Launcher.openAssistant()" style="
+          position:absolute; top:48px; right:16px; z-index:10;
+          width:48px; height:48px; border-radius:50%;
+          background: linear-gradient(135deg, #C9A227, #B8931F);
+          display:flex; align-items:center; justify-content:center;
+          box-shadow: 0 4px 12px rgba(201,162,39,0.4);
+          cursor: pointer; transition: transform 0.2s;
+          font-size: 22px;" title="AI小助手">
+          🤖
+        </div>
+
+        <!-- ====== 中间标题区域 ====== -->
+        <div style="
+          flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+          position: relative; z-index: 2; padding-bottom: 20px;">
+          <!-- 主标题：墨境 -->
+          <h1 style="
+            font-size: 56px; font-weight: 700; letter-spacing: 12px;
+            margin: 0; color: #2C1810; text-shadow: 2px 2px 8px rgba(201,162,39,0.3);
+            font-family: var(--font-display, 'Georgia', serif);">
+            墨境
+          </h1>
+          <!-- 副标题 -->
+          <p style="
+            font-size: 14px; color: #C9A227; margin-top: 8px; letter-spacing: 4px;
+            text-transform: uppercase;">
+            Story World
+          </p>
+          <!-- 装饰分隔线 -->
+          <div style="
+            width: 60px; height: 2px; background: linear-gradient(90deg, transparent, #C9A227, transparent);
+            margin-top: 16px;"></div>
+        </div>
+
+        <!-- ====== 下方操作按钮卡片区域 ====== -->
+        <div style="
+          padding: 0 20px 24px 20px; display:flex; flex-direction:column; gap: 12px;
+          position: relative; z-index: 2;">
+
+          <!-- 卡片1：开始冒险（继续最近的故事） -->
+          <div onclick="Launcher.enterMainApp()" class="launcher-card" style="
+            display:flex; align-items:center; gap: 14px;
+            background: rgba(245,230,211,0.85); backdrop-filter: blur(8px);
+            border: 1px solid rgba(201,162,39,0.3); border-radius: 16px;
+            padding: 16px 18px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(44,24,16,0.08);">
+            <!-- 左侧圆形金色图标 -->
+            <div style="
+              width:44px; height:44px; border-radius:50%; flex-shrink:0;
+              background: linear-gradient(135deg, #C9A227, #B8931F);
+              display:flex; align-items:center; justify-content:center;
+              font-size: 20px; color: #fff;">
+              ⚔️
+            </div>
+            <!-- 中间文字区 -->
+            <div style="flex:1; min-width:0;">
+              <div style="font-size: 16px; font-weight: 600; color: #2C1810;">开始冒险</div>
+              <div style="font-size: 12px; color: #8B7355; margin-top: 2px;">继续最近的故事</div>
+            </div>
+            <!-- 右侧箭头 -->
+            <div style="font-size: 18px; color: #C9A227; flex-shrink:0;">›</div>
+          </div>
+
+          <!-- 卡片2：选择世界（切换或管理存档） -->
+          <div onclick="App.navigate('world-selector')" class="launcher-card" style="
+            display:flex; align-items:center; gap: 14px;
+            background: rgba(245,230,211,0.85); backdrop-filter: blur(8px);
+            border: 1px solid rgba(201,162,39,0.3); border-radius: 16px;
+            padding: 16px 18px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(44,24,16,0.08);">
+            <div style="
+              width:44px; height:44px; border-radius:50%; flex-shrink:0;
+              background: linear-gradient(135deg, #C9A227, #B8931F);
+              display:flex; align-items:center; justify-content:center;
+              font-size: 20px; color: #fff;">
+              🌍
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size: 16px; font-weight: 600; color: #2C1810;">选择世界</div>
+              <div style="font-size: 12px; color: #8B7355; margin-top: 2px;">切换或管理存档</div>
+            </div>
+            <div style="font-size: 18px; color: #C9A227; flex-shrink:0;">›</div>
+          </div>
+
+          <!-- 卡片3：我的角色（管理玩家化身与收录角色卡） -->
+          <div onclick="Launcher.userMask()" class="launcher-card" style="
+            display:flex; align-items:center; gap: 14px;
+            background: rgba(245,230,211,0.85); backdrop-filter: blur(8px);
+            border: 1px solid rgba(201,162,39,0.3); border-radius: 16px;
+            padding: 16px 18px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(44,24,16,0.08);">
+            <div style="
+              width:44px; height:44px; border-radius:50%; flex-shrink:0;
+              background: linear-gradient(135deg, #C9A227, #B8931F);
+              display:flex; align-items:center; justify-content:center;
+              font-size: 20px; color: #fff;">
+              🎭
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size: 16px; font-weight: 600; color: #2C1810;">我的角色</div>
+              <div style="font-size: 12px; color: #8B7355; margin-top: 2px;">管理玩家化身与收录角色卡</div>
+            </div>
+            <div style="font-size: 18px; color: #C9A227; flex-shrink:0;">›</div>
+          </div>
+
+          <!-- 卡片4：设置（API & 主题） -->
+          <div onclick="Launcher.settings()" class="launcher-card" style="
+            display:flex; align-items:center; gap: 14px;
+            background: rgba(245,230,211,0.85); backdrop-filter: blur(8px);
+            border: 1px solid rgba(201,162,39,0.3); border-radius: 16px;
+            padding: 16px 18px; cursor: pointer; transition: all 0.2s;
+            box-shadow: 0 2px 8px rgba(44,24,16,0.08);">
+            <div style="
+              width:44px; height:44px; border-radius:50%; flex-shrink:0;
+              background: linear-gradient(135deg, #C9A227, #B8931F);
+              display:flex; align-items:center; justify-content:center;
+              font-size: 20px; color: #fff;">
+              ⚙️
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-size: 16px; font-weight: 600; color: #2C1810;">设置</div>
+              <div style="font-size: 12px; color: #8B7355; margin-top: 2px;">API & 主题</div>
+            </div>
+            <div style="font-size: 18px; color: #C9A227; flex-shrink:0;">›</div>
+          </div>
+        </div>
+
+        <!-- ====== 底部系统导航栏 ====== -->
+        <div style="
+          display:flex; justify-content:center; align-items:center; gap: 40px;
+          padding: 8px 0 12px 0; font-size: 20px; color: #2C1810; opacity: 0.5;
+          position: relative; z-index: 2;">
+          <span>◻</span>
+          <span style="width:40px; height:4px; background:#C9A227; border-radius:2px;"></span>
+          <span>△</span>
+        </div>
+      </div>
+    `;
+
+    // 启动时间更新定时器
+    this._startClock();
+
+    // 如果有存档且已启动过，自动进入主应用（保留原逻辑）
     const savedMask = Storage.get('userMask', null);
     if (savedMask && Storage.get('gameLaunched', false)) {
       this.enterMainApp();
     }
   },
 
+  /**
+   * 启动状态栏时间更新
+   * 每30秒刷新一次显示的时间
+   */
+  _startClock() {
+    const updateTime = () => {
+      const el = document.getElementById('launcherTime');
+      if (el) {
+        const now = new Date();
+        el.textContent = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+      }
+    };
+    updateTime();
+    if (this._clockTimer) clearInterval(this._clockTimer);
+    this._clockTimer = setInterval(updateTime, 30000);
+  },
+
+  /**
+   * 进入主应用
+   * 隐藏启动页，显示主应用容器，并标记游戏已启动
+   */
   enterMainApp() {
     document.getElementById('gameLauncher').classList.add('hidden');
     document.getElementById('mainApp').style.display = 'flex';
@@ -41,10 +239,18 @@ const Launcher = {
     if (window.App) App.init();
   },
 
+  /**
+   * 新建游戏
+   * 打开世界观创建向导
+   */
   newGame() {
     Wizard.show();
   },
 
+  /**
+   * 读取存档
+   * 弹出模态框展示所有存档列表
+   */
   loadGame() {
     const saves = Storage.get('gameSaves', []);
     if (saves.length === 0) { App.toast('没有存档', 'info'); return; }
@@ -54,6 +260,10 @@ const Launcher = {
     App.showModal('📂 读档', content);
   },
 
+  /**
+   * 执行读档操作
+   * @param {string} saveId 存档ID
+   */
   doLoad(saveId) {
     const saves = Storage.get('gameSaves', []);
     const save = saves.find(s => s.id === saveId);
@@ -66,6 +276,18 @@ const Launcher = {
     if (save.flags) Storage.set('gameFlags', save.flags);
     this.enterMainApp();
     App.toast('读档成功', 'success');
+  },
+
+  /**
+   * 打开AI小助手
+   * 可扩展为打开侧边聊天面板，当前先导航到assistant页面
+   */
+  openAssistant() {
+    if (window.App && typeof App.navigate === 'function') {
+      App.navigate('assistant');
+    } else {
+      App.toast('AI助手即将上线', 'info');
+    }
   },
 
   /**
@@ -182,7 +404,7 @@ const Launcher = {
   },
 
   settings() {
-    // Quick jump to API settings from launcher
+    // 从启动页快速跳转到API设置
     this.enterMainApp();
     setTimeout(() => App.navigate('api'), 100);
   }
@@ -349,3 +571,7 @@ const Wizard = {
 
   removeChar(idx) { this._worldData.mainChars.splice(idx, 1); this.renderStep(); },
 };
+
+/* ===== 全局导出 ===== */
+window.Launcher = Launcher;
+window.Wizard = Wizard;
