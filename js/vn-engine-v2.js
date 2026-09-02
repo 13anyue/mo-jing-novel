@@ -1,0 +1,19 @@
+/* 墨境 VN Engine v2：把视觉小说 UI 与世界状态、群像、记忆、模式切换真正连接。 */
+(function(){'use strict';
+const KEY='mo_vn_engine_v2';
+const read=(k,d)=>{try{const x=localStorage.getItem(k);return x==null?d:JSON.parse(x)}catch(_){return d}};
+const save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(_){return false}};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const state=()=>read(KEY,{version:2,mode:'visual',cast:[],history:[],speaker:'旁白'});
+function patch(p){const s=state();Object.assign(s,p||{});save(KEY,s);return s}
+function toast(msg){try{window.App?.toast?.(msg);return}catch(_){};const e=document.createElement('div');e.className='mo-v3-toast';e.textContent=msg;document.body.appendChild(e);setTimeout(()=>e.remove(),2600)}
+function getProfiles(){try{return window.MOWorldV2?.getProfiles?.()||[]}catch(_){return[]}}
+function cast(limit=6){const all=getProfiles();const s=state();if(s.cast.length){const chosen=all.filter(x=>s.cast.includes(x.id));if(chosen.length)return chosen}return all.slice(0,limit)}
+function setCast(ids){if(!Array.isArray(ids))throw Error('群像角色选择无效');patch({cast:ids.slice(0,12)});return cast()}
+function buildContext(input){const people=cast(8);const world=people.map(p=>`${p.name}｜地点:${p.location}｜活动:${p.activity}｜心情:${p.mood}｜精力:${p.energy}｜目标:${(p.goals||[]).join('、')||'日常生活'}`).join('\n');let memory='';try{memory=(window.LongMemory?.search?.(input,6)||[]).map(x=>x.text||x.content).join('\n')}catch(_){};return `【助手规则】助手优先；其次预设；其次世界书；最后记忆。\n【群像状态】\n${world||'当前没有可用的独立生活档案。'}\n【相关记忆】\n${memory||'无'}\n【玩家行动】\n${input}\n请保持角色各自独立，不要让所有角色机械轮流发言；只有与当前地点、关系或事件相关的人才回应。若需要多人回应，使用“角色名：台词”的格式。`}
+function parse(text){const lines=String(text||'').split(/\n+/).map(x=>x.trim()).filter(Boolean);const hits=[];for(const line of lines){const m=line.match(/^([^：:]{1,20})[：:](.+)$/);if(m)hits.push({name:m[1],text:m[2]})}return hits.length?hits:[{name:'世界',text:String(text||'')}]} 
+function renderResult(text){const s=document.getElementById('moV3Stage');if(!s)return;const parts=parse(text);const first=parts[0];const name=s.querySelector('#v3Name'),body=s.querySelector('#v3Text');if(name)name.textContent=first.name;if(body)body.textContent=parts.map(x=>parts.length>1?`${x.name}：${x.text}`:x.text).join('\n');const md=s.querySelector('#v3MdText');if(md)md.innerHTML=esc(parts.map(x=>`${x.name}：${x.text}`).join('\n')).replace(/\n/g,'<br>')}
+async function send(text){text=String(text||'').trim();if(!text)return null;const s=state();s.history.push({role:'user',text,at:Date.now()});s.history=s.history.slice(-80);save(KEY,s);try{window.MOWorldV2?.tick?.('player-action');window.MOWorldV2?.addWorldEvent?.(`玩家行动：${text}`,cast().map(x=>x.id))}catch(_){};let result=null;try{if(window.NovelRuntime?.genAIReply){result=await window.NovelRuntime.genAIReply(text,buildContext(text))}else throw Error('AI运行时未加载，请检查聊天模块或刷新页面')}catch(e){toast('AI 请求失败：'+(e?.message||'未知错误'));throw e}const textOut=typeof result==='string'?result:(result?.text||result?.content||result?.message||'世界暂时没有回应。');s.history.push({role:'assistant',text:textOut,at:Date.now()});s.speaker=parse(textOut)[0].name;save(KEY,s);try{window.LongMemory?.add?.({text:`玩家：${text}\n世界：${textOut}`,type:'event',importance:0.6})}catch(_){}renderResult(textOut);return textOut}
+function install(){window.VNEngineV2={state,patch,cast,setCast,buildContext,send,parse,renderResult};document.addEventListener('click',e=>{const b=e.target.closest('[data-vn-action]');if(!b)return;const a=b.dataset.vnAction;if(a==='back')document.getElementById('moV3Stage')?.remove();if(a==='visual')window.MoV3?.mode?.('vn');if(a==='markdown')window.MoV3?.mode?.('md')});}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else install();
+})();
