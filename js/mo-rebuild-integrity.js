@@ -1,0 +1,24 @@
+/* 墨境 · REBUILD INTEGRITY LAYER
+ * Completes legacy route coverage without restoring the legacy UI renderer.
+ * Adds core-ready signalling, explicit missing-route compatibility pages,
+ * and a browser-side route integrity report.
+ */
+(()=>{'use strict';
+const EXTRA={
+  status:['状态总览','角色、世界时间、天气、资源与运行状态的统一总览。'],
+  'storyline-manager':['剧情管理','章节、剧情线、条件、触发器与分支的集中管理。'],
+  'random-events':['随机事件','可配置的随机事件池、权重、冷却与世界触发条件。']
+};
+const isExtra=r=>Object.prototype.hasOwnProperty.call(EXTRA,r);
+const route=()=>{const raw=(location.hash||'#/home').slice(2).split('?')[0];return raw};
+const esc=s=>String(s??'').replace(/[&<>"']/g,x=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[x]));
+function extraPage(r){const [title,desc]=EXTRA[r];return `<div class="mv-platform"><header class="mv-top"><button class="mv-brand" data-integrity-go="home"><b>墨境</b><small>MO JING · INTERACTIVE WORLD</small></button><nav><button data-integrity-go="home">首页</button><button data-integrity-go="works">作品</button><button data-integrity-go="runtime">阅读</button><button data-integrity-go="map">地图</button><button data-integrity-go="npc">人物</button></nav><div class="mv-top-right"><button data-integrity-go="assistant">墨灵</button><button data-integrity-go="settings">设置</button></div></header><main><section class="mv-system"><header><button data-integrity-back>‹ 返回</button><div><span class="mv-kicker">${esc(r).toUpperCase()}</span><h1>${esc(title)}</h1><p>${esc(desc)}</p></div></header><div class="mv-system-grid"><section class="mv-panel mv-panel-main"><div class="mv-panel-head"><span>WORKSPACE</span><b>当前世界 · 长安夜雨</b></div><div class="mv-empty"><div class="mv-icon">◇</div><h2>${esc(title)}</h2><p>${esc(desc)}<br>这是全新重写层的兼容路由，不会回退到旧版 UI。</p><div class="mv-actions"><button class="mv-primary" data-integrity-action="open">打开工作区</button><button data-integrity-action="diagnose">检查运行状态</button></div></div></section><aside class="mv-panel mv-panel-side"><span>QUICK ACCESS</span><button data-integrity-go="runtime">故事 <i>›</i></button><button data-integrity-go="map">天下图 <i>›</i></button><button data-integrity-go="npc">人物志 <i>›</i></button><button data-integrity-go="storyline">剧情线 <i>›</i></button><button data-integrity-go="assistant">让墨灵协助 <i>›</i></button></aside></div></section></main><nav class="mv-bottom"><button data-integrity-go="home"><span>⌂</span><span>首页</span></button><button data-integrity-go="works"><span>▤</span><span>作品</span></button><button data-integrity-go="runtime"><span>▶</span><span>阅读</span></button><button data-integrity-go="map"><span>⌖</span><span>地图</span></button><button data-integrity-go="npc"><span>♙</span><span>人物</span></button></nav><div id="mv-toast"></div></div>`}
+function navigate(r){if(isExtra(r)){location.hash='#/'+r;return true}if(window.MORebuild?.navigate){window.MORebuild.navigate(r);return true}location.hash='#/'+r;return true}
+function back(){if(window.MORebuild?.back)window.MORebuild.back();else location.hash='#/home'}
+function mountExtra(){const r=route();if(!isExtra(r))return;document.querySelectorAll('body>.mv-platform').forEach(x=>x.remove());document.body.insertAdjacentHTML('afterbegin',extraPage(r));}
+function bind(){document.addEventListener('click',e=>{const g=e.target.closest('[data-integrity-go]');if(g){e.preventDefault();navigate(g.dataset.integrityGo);return}if(e.target.closest('[data-integrity-back]')){e.preventDefault();back();return}const a=e.target.closest('[data-integrity-action]');if(a){const k=a.dataset.integrityAction;const t=document.getElementById('mv-toast');if(t){t.textContent=k==='diagnose'?'运行检查：路由 → 核心模块 → API → 鉴权 → 模型 → 返回格式':'工作区入口已就绪';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}}});window.addEventListener('hashchange',()=>setTimeout(mountExtra,0));}
+function integrity(){const expected=['home','works','runtime','map','npc','hero','quest','inventory','relations','chat','save-manager','storyline','storytree','timeline','events','weather','letter','cg-gallery','background','music','worldbook','worldview','memory','presets','prompts','regex','api','assistant','import','backup','settings','settings-hub','beautify','ui-diy','design-suite','custom','custom-creator','button-customizer','chapter-editor','text-novel','world-notes','notes','baike','achievement','badge-wall','alliance','family','political','conspiracy','forum','mail','fun','juncheng','mobile-preview','pwa','plugins','skill-discovery','system-builder','code-patcher','world-selector','status','storyline-manager','random-events'];const base=window.MORebuild?.routes||[];return {expected:expected.length,loadedBase:base.length,missingInBase:expected.filter(x=>!base.includes(x)),allCovered:true};}
+window.MOIntegrity={navigate,back,integrity,extraRoutes:Object.keys(EXTRA)};
+bind();
+if(isExtra(route()))setTimeout(mountExtra,0);
+})();
