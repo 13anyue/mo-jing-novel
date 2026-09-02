@@ -1,0 +1,30 @@
+/* 墨境 UI v5：高级文游视觉系统。重点：舞台、层级、留白、金属/玻璃质感、移动端沉浸。 */
+:root{--mo-ink:#17130f;--mo-paper:#f6f0e5;--mo-gold:#c9a86a;--mo-gold2:#ead8ad;--mo-line:rgba(255,255,255,.16);--mo-glass:rgba(18,17,18,.58)}
+#moV3Stage.mo-v5-stage{font-family:"Noto Serif SC","Source Han Serif SC",Georgia,serif;background:#0b0b0c;color:#f8f2e8}
+#moV3Stage.mo-v5-stage .mo-v3-bg{background:radial-gradient(ellipse at 50% 28%,rgba(255,232,190,.14),transparent 30%),linear-gradient(180deg,#3a3430 0,#181719 52%,#080809 100%);transform:scale(1.04);filter:saturate(.9)}
+#moV3Stage.mo-v5-stage .mo-v3-vignette{background:radial-gradient(ellipse at center,transparent 35%,rgba(0,0,0,.48) 100%),linear-gradient(180deg,rgba(0,0,0,.5),transparent 25%,transparent 55%,rgba(0,0,0,.86)}
+#moV3Stage.mo-v5-stage .mo-v3-top{height:72px;padding:0 30px;gap:14px;background:linear-gradient(180deg,rgba(9,8,8,.82),rgba(9,8,8,0));border:0}
+#moV3Stage.mo-v5-stage .mo-v3-title{font-size:17px;letter-spacing:.16em;text-shadow:0 2px 10px #000}
+#moV3Stage.mo-v5-stage .mo-v3-meta{letter-spacing:.08em;color:#e8d9bc}
+#moV3Stage.mo-v5-stage .mo-v3-icon,#moV3Stage.mo-v5-stage .mo-v3-side button{border:1px solid rgba(234,216,173,.28);background:rgba(14,12,11,.48);box-shadow:inset 0 1px rgba(255,255,255,.08),0 8px 30px rgba(0,0,0,.22);border-radius:50%;color:#f2e6ce;transition:.2s}
+#moV3Stage.mo-v5-stage .mo-v3-icon:hover,#moV3Stage.mo-v5-stage .mo-v3-side button:hover{transform:translateY(-2px);border-color:rgba(234,216,173,.62);background:rgba(45,38,30,.7)}
+#moV3Stage.mo-v5-stage .mo-v3-side{right:28px;top:112px;gap:12px}
+#moV3Stage.mo-v5-stage .mo-v3-side button{width:48px;height:48px;font-size:12px;letter-spacing:.08em}
+#moV3Stage.mo-v5-stage .mo-v3-dialogue{left:8%;right:8%;bottom:94px;padding:22px 30px 20px;border:1px solid rgba(234,216,173,.28);border-radius:6px;background:linear-gradient(180deg,rgba(22,19,18,.72),rgba(11,10,10,.86));box-shadow:0 28px 90px rgba(0,0,0,.48),inset 0 1px rgba(255,255,255,.08);backdrop-filter:blur(20px)}
+#moV3Stage.mo-v5-stage .mo-v3-dialogue:before{content:"";position:absolute;inset:7px;border:1px solid rgba(234,216,173,.09);pointer-events:none}
+#moV3Stage.mo-v5-stage .mo-v3-name{position:relative;padding:4px 20px;margin-bottom:9px;border-radius:2px;border-left:2px solid var(--mo-gold);background:linear-gradient(90deg,rgba(201,168,106,.16),transparent);color:#f1dfbb;letter-spacing:.12em}
+#moV3Stage.mo-v5-stage .mo-v3-text{position:relative;font-size:19px;line-height:1.95;letter-spacing:.035em;max-width:1100px;text-shadow:0 2px 7px #000}
+#moV3Stage.mo-v5-stage .mo-v3-input{border-top:1px solid rgba(255,255,255,.09);padding-top:13px}
+#moV3Stage.mo-v5-stage .mo-v3-input textarea{background:rgba(0,0,0,.28);border:1px solid rgba(234,216,173,.18);border-radius:4px;font-size:14px;color:#f7f0e4}
+#moV3Stage.mo-v5-stage .mo-v3-btn.primary{background:linear-gradient(180deg,#f1dfbd,#c5a56d);color:#241b10;border-radius:4px;min-width:92px;box-shadow:0 5px 18px rgba(0,0,0,.25)}
+#moV3Stage.mo-v5-stage .mo-v3-mode{right:8%;bottom:58px;border:1px solid rgba(234,216,173,.2);background:rgba(8,7,7,.68);border-radius:4px}
+#moV3Stage.mo-v5-stage .mo-v3-mode button.active{background:#e9d5aa;color:#241c13;border-radius:2px}
+#moV3Stage.mo-v5-stage .mo-v3-bottom{height:62px;background:linear-gradient(180deg,rgba(12,11,11,.78),rgba(5,5,5,.94));border-top:1px solid rgba(234,216,173,.14)}
+#moV3Stage.mo-v5-stage .mo-v3-nav{position:relative;color:#c9c0b1;letter-spacing:.05em;transition:.2s}.mo-v5-stage .mo-v3-nav:hover{color:#f4dfb5!important;background:rgba(255,255,255,.035)}
+#moV3Stage.mo-v5-stage .mo-v3-nav:after{content:"";position:absolute;bottom:0;width:0;height:2px;background:#d9b979;transition:.2s}.mo-v5-stage .mo-v3-nav:hover:after{width:26px}
+#moV3Stage.mo-v5-stage .mo-v3-nav svg{opacity:.82}
+/* 通用文游页面：让既有功能页也共享高级舞台语言 */
+.mo-v5-page,.msp-stage,.mo-reference-page{font-family:"Noto Serif SC","Source Han Serif SC",Georgia,serif}
+.mo-v5-page .panel,.mo-v5-card{background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));border:1px solid rgba(234,216,173,.16);box-shadow:0 18px 55px rgba(0,0,0,.18);backdrop-filter:blur(18px);border-radius:10px}
+.mo-v5-page button,.mo-v5-card button{transition:transform .18s,border-color .18s,background .18s}.mo-v5-page button:hover,.mo-v5-card button:hover{transform:translateY(-1px)}
+@media(max-width:700px){#moV3Stage.mo-v5-stage .mo-v3-top{height:58px;padding:0 12px}.mo-v5-stage .mo-v3-title{font-size:14px}.mo-v5-stage .mo-v3-side{right:10px;top:78px}.mo-v5-stage .mo-v3-side button{width:40px;height:40px}.mo-v5-stage .mo-v3-dialogue{left:8px!important;right:8px!important;bottom:72px!important;padding:15px 16px!important;border-radius:5px}.mo-v5-stage .mo-v3-text{font-size:16px;line-height:1.72;max-height:25vh;overflow:auto}.mo-v5-stage .mo-v3-input{flex-direction:column}.mo-v5-stage .mo-v3-btn.primary{height:42px}.mo-v5-stage .mo-v3-mode{right:10px!important;bottom:58px!important}.mo-v5-stage .mo-v3-bottom{height:54px}.mo-v5-stage .mo-v3-nav{min-width:0;flex:1;font-size:10px}}
