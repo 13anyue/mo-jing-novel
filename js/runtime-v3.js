@@ -170,7 +170,27 @@ const NovelRuntime = {
           </div>
         </div>
       </div>
+
+      <style>
+        @media (max-width: 768px) {
+          .vn-choice-btn { min-height: 48px; font-size: 15px; }
+          .vn-dialog-box { padding: 12px 16px; border-radius: 16px; }
+          .vn-portrait img { object-fit: contain; }
+          #rt_input { font-size: 16px; } /* 防止iOS缩放 */
+        }
+      </style>
     `;
+
+    // 移动端：监听虚拟键盘弹出，调整滚动位置
+    if ('visualViewport' in window) {
+      window.visualViewport.addEventListener('resize', () => {
+        const input = document.getElementById('rt_input');
+        if (input && document.activeElement === input) {
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    }
+
     this.refreshSelectors();
     if (typeof UIDIY !== 'undefined' && UIDIY) document.addEventListener('keydown', (e) => UIDIY.handleKeydown(e));
   },
@@ -1291,6 +1311,7 @@ const NovelRuntime = {
           transition:all 0.25s;
           text-align:center;
           box-shadow:0 2px 12px rgba(0,0,0,0.2);
+          min-height:48px;
         }
         .vn-immersive-choice:hover {
           background:rgba(201,162,39,0.2);
@@ -1307,6 +1328,8 @@ const NovelRuntime = {
           .vn-side-menu { right:6px;gap:6px; }
           .vn-side-btn { width:32px;height:32px; }
           .vn-bottom-bar { padding:6px 12px; }
+          .vn-immersive-choice { min-height:48px;font-size:15px; }
+          #rt_input { font-size:16px; }
         }
       </style>
     `;

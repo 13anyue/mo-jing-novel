@@ -50,6 +50,13 @@ const InventorySystem = {
         `).join('')}
       </div>
       <div id="inventoryGrid" class="grid grid-4"></div>
+      <style>
+        @media (max-width: 768px) {
+          .grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+      </style>
     `;
     this.renderInventory();
   },

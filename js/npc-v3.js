@@ -551,6 +551,13 @@ const NPCManager = {
           font-size: 14px;
         }
       </style>
+      <style>
+        @media (max-width: 768px) {
+          .grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+      </style>
 
       <!-- 页面头部：标题与视图切换 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">

@@ -33,6 +33,13 @@ const WorldBook = {
           </div>
         </div>
       </div>
+      <style>
+        @media (max-width: 768px) {
+          .grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-3 { grid-template-columns: repeat(2, 1fr) !important; }
+          .grid-4 { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+      </style>
     `;
     this.renderStats(); this.renderList();
   },

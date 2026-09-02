@@ -67,6 +67,9 @@ const MapSystem = {
   _draggedNode: null,
   _dragNodeOffset: { x: 0, y: 0 },
 
+  /** 双指缩放状态 */
+  _lastPinchDistance: 0,
+
   /** 地点与路径选择状态 */
   _selectedLocationId: null,   // 选中的地点（用于创建路径）
   _hoveredLocationId: null,    // 鼠标悬停的地点
@@ -364,7 +367,7 @@ const MapSystem = {
         </div>
 
         <!-- Canvas 地图 -->
-        <canvas class="map-v12-canvas" id="mapCanvas"></canvas>
+        <canvas class="map-v12-canvas" id="mapCanvas" style="touch-action:none;"></canvas>
 
         <!-- 详情面板 -->
         <div class="map-v12-detail-panel" id="mapDetailPanel">
@@ -415,16 +418,29 @@ const MapSystem = {
 
   /**
    * 调整 Canvas 尺寸以匹配容器
+   * 移动端自适应：减去状态条和底导航高度预留
    */
   _resizeCanvas() {
     if (!this._canvas) return;
     const container = this._canvas.parentElement;
     const rect = container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
-    this._canvas.width = rect.width * dpr;
-    this._canvas.height = rect.height * dpr;
-    this._canvas.style.width = rect.width + 'px';
-    this._canvas.style.height = rect.height + 'px';
+    const isMobile = window.innerWidth <= 768;
+
+    let canvasWidth = rect.width;
+    let canvasHeight = rect.height;
+
+    if (isMobile) {
+      // 移动端：减去顶部搜索栏(~52px) + 底部信息栏(~36px) + 控制按钮区(~60px) 的近似值
+      // 实际 CSS 中 .map-v12-topbar top:12px, .map-v12-info-bar bottom:20px, .map-v12-controls bottom:20px
+      // 保守预留 100px 确保不重叠
+      canvasHeight = Math.max(rect.height - 100, rect.height * 0.75);
+    }
+
+    this._canvas.width = canvasWidth * dpr;
+    this._canvas.height = canvasHeight * dpr;
+    this._canvas.style.width = canvasWidth + 'px';
+    this._canvas.style.height = canvasHeight + 'px';
     this._ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this._draw();
   },
@@ -815,6 +831,33 @@ const MapSystem = {
 
       this._draw();
     }, { passive: false });
+
+    // 双指缩放（touch）
+    this._canvas.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 2) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        this._lastPinchDistance = Math.sqrt(dx * dx + dy * dy);
+      }
+    });
+
+    this._canvas.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 2 && this._lastPinchDistance > 0) {
+        const dx = e.touches[0].clientX - e.touches[1].clientX;
+        const dy = e.touches[0].clientY - e.touches[1].clientY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const scaleDelta = distance / this._lastPinchDistance;
+        this._camera.zoom *= scaleDelta;
+        this._camera.zoom = Math.max(0.3, Math.min(3, this._camera.zoom));
+        this._lastPinchDistance = distance;
+        e.preventDefault();
+        this._draw();
+      }
+    });
+
+    this._canvas.addEventListener('touchend', () => {
+      this._lastPinchDistance = 0;
+    });
 
     // 鼠标按下（开始拖拽或选点）
     this._canvas.addEventListener('mousedown', (e) => {

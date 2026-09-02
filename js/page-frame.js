@@ -109,11 +109,40 @@ const PageFrame = {
         .pf-btn-group { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px; }
         .pf-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px; }
 
-        /* 移动端 */
+        /* 移动端适配（≤768px） */
         @media (max-width:768px) {
-          .pf-page-title { display:none; }
-          .pf-topbar { padding:6px 10px; }
-          .pf-name { font-size:13px; }
+          .pf-topbar { padding: 6px 10px; gap: 6px; min-height: 44px; }
+          .pf-avatar { width: 32px; height: 32px; }
+          .pf-name { font-size: 13px; }
+          .pf-title-tag { font-size: 9px; padding: 0 4px; }
+          .pf-meta { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+          .pf-page-title { display: none; }
+          .pf-back-btn { padding: 3px 8px; font-size: 11px; }
+          
+          /* 底部导航改为可横向滑动 */
+          .pf-bottom-nav {
+            justify-content: flex-start;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            gap: 4px;
+            padding: 6px 12px;
+          }
+          .pf-bottom-nav::-webkit-scrollbar { display: none; }
+          .pf-nav-item {
+            flex-shrink: 0;
+            padding: 4px 14px;
+            min-width: 52px;
+          }
+          .pf-nav-icon { width: 20px; height: 20px; }
+          .pf-nav-label { font-size: 10px; }
+          
+          /* 内容区 */
+          .page-frame-content { padding: 8px; }
+          .pf-card { padding: 10px; margin-bottom: 8px; }
+          .pf-card-title { font-size: 14px; }
+          .pf-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .pf-btn-group { gap: 6px; }
         }
       </style>
     `;
@@ -272,10 +301,40 @@ const PageFrame = {
         .pf-btn-group { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px; }
         .pf-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px; }
 
+        /* 移动端适配（≤768px） */
         @media (max-width:768px) {
-          .pf-page-title { display:none; }
-          .pf-topbar { padding:6px 10px; }
-          .pf-name { font-size:13px; }
+          .pf-topbar { padding: 6px 10px; gap: 6px; min-height: 44px; }
+          .pf-avatar { width: 32px; height: 32px; }
+          .pf-name { font-size: 13px; }
+          .pf-title-tag { font-size: 9px; padding: 0 4px; }
+          .pf-meta { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 140px; }
+          .pf-page-title { display: none; }
+          .pf-back-btn { padding: 3px 8px; font-size: 11px; }
+          
+          /* 底部导航改为可横向滑动 */
+          .pf-bottom-nav {
+            justify-content: flex-start;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            gap: 4px;
+            padding: 6px 12px;
+          }
+          .pf-bottom-nav::-webkit-scrollbar { display: none; }
+          .pf-nav-item {
+            flex-shrink: 0;
+            padding: 4px 14px;
+            min-width: 52px;
+          }
+          .pf-nav-icon { width: 20px; height: 20px; }
+          .pf-nav-label { font-size: 10px; }
+          
+          /* 内容区 */
+          .page-frame-content { padding: 8px; }
+          .pf-card { padding: 10px; margin-bottom: 8px; }
+          .pf-card-title { font-size: 14px; }
+          .pf-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+          .pf-btn-group { gap: 6px; }
         }
       `;
       page.appendChild(styleEl);
@@ -289,6 +348,10 @@ const PageFrame = {
 
     // 11. 标记已包装，防止重复调用
     page.dataset.pfWrapped = '1';
+
+    // 12. 移动端优化初始化
+    this.initMobileGestures();
+    this.injectSafeAreaStyles();
   },
 
   _renderTopBar(name, title, avatar, location, date, pageTitle, showBack, customTop) {
@@ -352,6 +415,79 @@ const PageFrame = {
     try { if (typeof Storage !== 'undefined' && Storage.get) return Storage.get(key, defaultValue); }
     catch (e) {}
     return defaultValue;
+  },
+
+  /** 初始化移动端触摸手势（屏幕边缘右滑返回） */
+  initMobileGestures() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchStartTime = 0;
+    const EDGE_THRESHOLD = 30;   // 屏幕边缘30px内触发
+    const SWIPE_DISTANCE = 80;   // 滑动超过80px视为返回
+    const SWIPE_MAX_Y = 60;      // Y轴偏移不超过60px（防止斜滑）
+    const MAX_DURATION = 500;    // 手势必须在500ms内完成
+
+    document.addEventListener('touchstart', (e) => {
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        // 只在屏幕左边缘触发
+        if (touch.clientX < EDGE_THRESHOLD) {
+          touchStartX = touch.clientX;
+          touchStartY = touch.clientY;
+          touchStartTime = Date.now();
+        }
+      }
+    }, { passive: true });
+
+    document.addEventListener('touchend', (e) => {
+      if (touchStartX === 0) return;
+      const touch = e.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = Math.abs(touch.clientY - touchStartY);
+      const dt = Date.now() - touchStartTime;
+
+      // 判定：向右滑动足够距离、Y偏移不大、时间不长
+      if (dx > SWIPE_DISTANCE && dy < SWIPE_MAX_Y && dt < MAX_DURATION) {
+        // 触发返回（优先 history.back，否则跳转home）
+        if (window.history.length > 1) {
+          history.back();
+        } else if (typeof App !== 'undefined' && App.navigate) {
+          App.navigate('home');
+        }
+      }
+      touchStartX = 0;
+    }, { passive: true });
+
+    // 防止左右滑动时页面滚动
+    document.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && touchStartX > 0) {
+        const touch = e.touches[0];
+        const dx = Math.abs(touch.clientX - touchStartX);
+        const dy = Math.abs(touch.clientY - touchStartY);
+        if (dx > dy && dx > 10) {
+          e.preventDefault();
+        }
+      }
+    }, { passive: false });
+  },
+
+  /** 注入全局移动端安全区适配样式 */
+  injectSafeAreaStyles() {
+    if (document.getElementById('pf-safe-area-style')) return;
+    const style = document.createElement('style');
+    style.id = 'pf-safe-area-style';
+    style.textContent = `
+      /* 刘海屏/全面屏安全区适配 */
+      @supports (padding-top: env(safe-area-inset-top)) {
+        .pf-topbar { padding-top: max(8px, env(safe-area-inset-top)); }
+        .pf-bottom-nav { padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+      }
+      /* 字体回退：Noto Serif SC 不可用时用系统字体 */
+      .pf-name, .pf-page-title, .pf-card-title {
+        font-family: 'Noto Serif SC', 'PingFang SC', 'Microsoft YaHei', 'STSong', serif;
+      }
+    `;
+    document.head.appendChild(style);
   }
 };
 
