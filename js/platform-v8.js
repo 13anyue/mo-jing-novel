@@ -1,0 +1,13 @@
+/* 墨境 v8 页面编排层：统一高级文游导航，不破坏现有业务渲染。 */
+(function(){'use strict';
+const names={home:'墨境',runtime:'沉浸式剧情',api:'连接中心',npc:'人物志',background:'背景库',music:'音乐库',map:'天下图',status:'状态',prompts:'提示词',memory:'长记忆',presets:'预设',regex:'正则引擎',worldbook:'世界书','world-selector':'世界选择',hero:'我的角色',assistant:'墨境助手',relations:'关系网',storyline:'故事线',chat:'群像聊天',settings:'系统设置',inventory:'背包',quest:'任务委托',timeline:'时间线',events:'世界事件','cg-gallery':'CG画廊'};
+const nav=[['home','首页'],['world-selector','世界'],['runtime','剧情'],['map','地图'],['npc','人物'],['assistant','助手'],['settings','设置']];
+function route(){return (location.hash||'#home').replace(/^#/,'')||'home'}
+function go(p){if(window.App&&typeof App.navigate==='function'){try{App.navigate(p);return}catch(e){}}location.hash='#'+p}
+function back(){if(history.length>1)history.back();else go('home')}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function mount(){if(document.getElementById('moV8Stage'))return;const el=document.createElement('div');el.id='moV8Stage';el.innerHTML='<div class="v8-head"><div><span class="v8-title">墨境</span><span class="v8-sub" id="moV8Sub"></span></div><div class="v8-actions"><button class="v8-btn" data-v8="back">返回</button><button class="v8-btn" data-v8="home">首页</button><button class="v8-btn" data-v8="more">更多</button></div></div><div class="v8-body"></div><div class="v8-foot" id="moV8Foot"></div>';document.body.appendChild(el);el.addEventListener('click',e=>{const b=e.target.closest('[data-v8]');if(!b)return;const a=b.dataset.v8;if(a==='back')back();if(a==='home')go('home');if(a==='more')go('settings')});}
+function refresh(){mount();const p=route(), page=document.getElementById('page-'+p);document.body.classList.add('mo-v8-app');document.querySelectorAll('.page-view').forEach(x=>x.classList.toggle('v8-immersive',x===page));const sub=document.getElementById('moV8Sub');if(sub)sub.textContent=names[p]||'墨境世界';const foot=document.getElementById('moV8Foot');if(foot)foot.innerHTML=nav.map(([id,label])=>'<button class="v8-nav '+(id===p?'active':'')+'" data-v8-route="'+id+'">'+esc(label)+'</button>').join('');foot?.querySelectorAll('[data-v8-route]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.v8Route)));}
+function boot(){refresh();window.addEventListener('hashchange',()=>setTimeout(refresh,0));new MutationObserver(()=>{if(!document.getElementById('moV8Stage'))mount()}).observe(document.body,{childList:true});window.MOPlatformV8={go,back,refresh}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
