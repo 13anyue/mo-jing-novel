@@ -1,10 +1,10 @@
 /** Knowledge Framework & Static Data */
 const KnowledgeData={categories:[],writingTips:[],assetChecklist:[]};
 
-/* v28 loader：VN v4 + 群像 v2 + 统一世界状态桥 v3。 */
+/* v29 loader：VN v5 高级文游 UI + 群像 v2 + 世界状态桥 v3。 */
 (function(){
-  const css=['css/ui-overhaul.css','css/interaction-safety.css','css/ui-reference.css','css/ui-scene-pages.css','css/ui-v3.css','css/ui-v4.css','css/world-state-v3.css'];
-  css.forEach(href=>{if(!document.querySelector(`link[href="${href}"]`)){const l=document.createElement('link');l.rel='stylesheet';l.href=href;l.dataset.moUi='1';document.head.appendChild(l)}});
+  const css=['css/ui-overhaul.css','css/interaction-safety.css','css/ui-reference.css','css/ui-scene-pages.css','css/ui-v3.css','css/ui-v4.css','css/ui-v5.css','css/world-state-v3.css'];
+  css.forEach(href=>{if(!document.querySelector(`link[href="${href}"]`)){const l=document.createElement('link');l.rel='stylesheet';l.href=href; l.dataset.moUi='1';document.head.appendChild(l)}});
   const load=(src)=>new Promise((resolve,reject)=>{if(document.querySelector(`script[src="${src}"]`)){resolve();return}const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error('模块加载失败：'+src));document.head.appendChild(s)});
   load('js/material-library.js')
     .then(()=>load('js/ui-overhaul.js'))
